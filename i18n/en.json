@@ -1,0 +1,61 @@
+{
+    "app": {
+        "title": "Undercover",
+        "tagline": "Uncover the spy among you."
+    },
+    "common": {
+        "next": "Next",
+        "back": "Back",
+        "confirm": "Confirm",
+        "cancel": "Cancel",
+        "start": "Start Game",
+        "rules": "Rules",
+        "error": "Error",
+        "loading": "Loading...",
+        "connected": "Connected",
+        "disconnected": "Disconnected"
+    },
+    "home": {
+        "newGame": "New Game",
+        "joinGame": "Join Game",
+        "howToPlay": "How to Play"
+    },
+    "lobby": {
+        "title": "Lobby",
+        "waiting": "Waiting for players...",
+        "playersJoined": "{{count}} players joined",
+        "roomCode": "Room Code: {{code}}",
+        "roomIdPlaceholder": "Room ID",
+        "joinOrCreate": "Join / Create",
+        "roomLabel": "Room: {{id}}",
+        "playersLabel": "Players:",
+        "enterName": "Enter your name",
+        "you": "(You)"
+    },
+    "role": {
+        "reveal": "Tap to reveal your role",
+        "hide": "Tap to hide",
+        "secretWord": "Your word is:",
+        "youAre": "You are:"
+    },
+    "roles": {
+        "civilian": "Civilian",
+        "undercover": "Undercover",
+        "mrwhite": "Mr. White"
+    },
+    "turn": {
+        "instruction": "Describe your word",
+        "currentPlayer": "It's {{name}}'s turn"
+    },
+    "vote": {
+        "title": "Vote",
+        "instruction": "Who is the Undercover?",
+        "eliminate": "Eliminate"
+    },
+    "result": {
+        "civilianWin": "Civilians Win!",
+        "undercoverWin": "Undercover Wins!",
+        "mrwhiteWin": "Mr. White Wins!",
+        "playAgain": "Play Again"
+    }
+}

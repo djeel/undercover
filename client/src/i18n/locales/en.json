@@ -1,0 +1,82 @@
+{
+    "app": {
+        "title": "UNDERCOVER"
+    },
+    "home": {
+        "subtitle": "The ultimate social deduction game",
+        "newGame": "New Game",
+        "history": "Game History",
+        "howToPlay": "How to Play"
+    },
+    "setup": {
+        "title": "Game Setup",
+        "players": "Players",
+        "addPlayer": "Add Player",
+        "playerName": "Player name",
+        "minPlayers": "Minimum {{count}} players required",
+        "settings": "Settings",
+        "undercoverCount": "Undercover agents",
+        "mrWhiteCount": "Mr. White",
+        "startGame": "Start Game",
+        "removePlayer": "Remove player"
+    },
+    "players": {
+        "title": "Players",
+        "ready": "{{count}} players ready"
+    },
+    "reveal": {
+        "passPhone": "Pass the device to",
+        "iam": "I am",
+        "yourWord": "Your word",
+        "youAreMrWhite": "Mr. White",
+        "mrWhiteHint": "You don't know the word. Listen to others to guess it!",
+        "memorize": "Describe this word without saying it directly",
+        "nextPlayer": "Next Player",
+        "startDiscussion": "Start Game"
+    },
+    "game": {
+        "title": "Discussion",
+        "round": "Round {{round}}",
+        "playersRemaining": "{{count}} players remaining",
+        "eliminated": "Eliminated",
+        "vote": "Vote",
+        "votingPhase": "Voting Phase",
+        "selectToEliminate": "Select a player to eliminate",
+        "confirmElimination": "Confirm Elimination",
+        "eliminatePlayer": "Eliminate {{name}}?",
+        "cancel": "Cancel",
+        "confirm": "Confirm"
+    },
+    "results": {
+        "title": "Game Over",
+        "civiliansWin": "Civilians Win!",
+        "undercoversWin": "Undercovers Win!",
+        "mrWhiteWins": "Mr. White Wins!",
+        "civilianWord": "Civilian word",
+        "undercoverWord": "Undercover word",
+        "playAgain": "Play Again",
+        "backToHome": "Back to Home",
+        "roles": "Player Roles"
+    },
+    "history": {
+        "title": "Game History",
+        "noGames": "No games played yet",
+        "playFirst": "Play your first game!",
+        "winner": "Winner",
+        "players": "{{count}} players",
+        "rounds": "{{count}} rounds",
+        "clearHistory": "Clear History",
+        "confirmClear": "Are you sure you want to clear all history?"
+    },
+    "common": {
+        "back": "Back",
+        "continue": "Continue",
+        "loading": "Loading...",
+        "error": "Something went wrong"
+    },
+    "roles": {
+        "civilian": "Civilian",
+        "undercover": "Undercover",
+        "mrWhite": "Mr. White"
+    }
+}

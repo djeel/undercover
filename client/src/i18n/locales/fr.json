@@ -1,0 +1,82 @@
+{
+    "app": {
+        "title": "UNDERCOVER"
+    },
+    "home": {
+        "subtitle": "Le jeu de déduction sociale ultime",
+        "newGame": "Nouvelle Partie",
+        "history": "Historique",
+        "howToPlay": "Comment Jouer"
+    },
+    "setup": {
+        "title": "Configuration",
+        "players": "Joueurs",
+        "addPlayer": "Ajouter un joueur",
+        "playerName": "Nom du joueur",
+        "minPlayers": "Minimum {{count}} joueurs requis",
+        "settings": "Paramètres",
+        "undercoverCount": "Agents infiltrés",
+        "mrWhiteCount": "Mr. White",
+        "startGame": "Démarrer",
+        "removePlayer": "Retirer le joueur"
+    },
+    "players": {
+        "title": "Joueurs",
+        "ready": "{{count}} joueurs prêts"
+    },
+    "reveal": {
+        "passPhone": "Passez l'appareil à",
+        "iam": "Je suis",
+        "yourWord": "Votre mot",
+        "youAreMrWhite": "Mr. White",
+        "mrWhiteHint": "Vous ne connaissez pas le mot. Écoutez les autres pour deviner !",
+        "memorize": "Décrivez ce mot sans le dire directement",
+        "nextPlayer": "Joueur suivant",
+        "startDiscussion": "Lancer la partie"
+    },
+    "game": {
+        "title": "Discussion",
+        "round": "Manche {{round}}",
+        "playersRemaining": "{{count}} joueurs restants",
+        "eliminated": "Éliminé",
+        "vote": "Voter",
+        "votingPhase": "Phase de Vote",
+        "selectToEliminate": "Sélectionnez un joueur à éliminer",
+        "confirmElimination": "Confirmer l'élimination",
+        "eliminatePlayer": "Éliminer {{name}} ?",
+        "cancel": "Annuler",
+        "confirm": "Confirmer"
+    },
+    "results": {
+        "title": "Fin de Partie",
+        "civiliansWin": "Les Civils Gagnent !",
+        "undercoversWin": "Les Infiltrés Gagnent !",
+        "mrWhiteWins": "Mr. White Gagne !",
+        "civilianWord": "Mot des civils",
+        "undercoverWord": "Mot des infiltrés",
+        "playAgain": "Rejouer",
+        "backToHome": "Retour à l'Accueil",
+        "roles": "Rôles des Joueurs"
+    },
+    "history": {
+        "title": "Historique",
+        "noGames": "Aucune partie jouée",
+        "playFirst": "Jouez votre première partie !",
+        "winner": "Gagnant",
+        "players": "{{count}} joueurs",
+        "rounds": "{{count}} manches",
+        "clearHistory": "Effacer l'historique",
+        "confirmClear": "Êtes-vous sûr de vouloir effacer tout l'historique ?"
+    },
+    "common": {
+        "back": "Retour",
+        "continue": "Continuer",
+        "loading": "Chargement...",
+        "error": "Une erreur est survenue"
+    },
+    "roles": {
+        "civilian": "Civil",
+        "undercover": "Infiltré",
+        "mrWhite": "Mr. White"
+    }
+}

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { VenetianMask, Check, User } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { useGameStore } from '../store/gameStore';
 import { cn } from '../lib/utils';
@@ -70,13 +70,17 @@ const RevealPage = () => {
                             </h2>
                         </div>
 
-                        <Button
-                            onClick={handleIdentify}
-                            size="lg"
-                            className="w-full h-16 text-lg rounded-2xl bg-secondary hover:bg-secondary/80 text-foreground border border-border"
-                        >
-                            {t('reveal.iam')} {currentPlayer.name}
-                        </Button>
+                        <div className="flex flex-col items-center gap-6">
+                            <Button
+                                onClick={handleIdentify}
+                                className="w-24 h-24 rounded-full bg-secondary hover:bg-secondary/80 text-foreground border-4 border-zinc-800 flex items-center justify-center shadow-[0_0_30px_-5px_hsl(var(--secondary)/0.3)] transition-transform hover:scale-105"
+                            >
+                                <Eye className="w-10 h-10" />
+                            </Button>
+                            <p className="text-zinc-500 text-sm font-medium animate-pulse">
+                                {t('reveal.identify', "Tap to reveal")}
+                            </p>
+                        </div>
                     </motion.div>
                 ) : (
                     <motion.div

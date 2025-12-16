@@ -10,7 +10,7 @@ import { cn } from '../lib/utils';
 const ResultsPage = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const { winner, players, config, resetGame } = useGameStore();
+    const { winner, players, config, resetGame, restartGame } = useGameStore();
 
     if (!winner) {
         return (
@@ -26,24 +26,13 @@ const ResultsPage = () => {
             ? t('results.undercoversWin')
             : t('results.civiliansWin');
 
-    // Strict Neon Noir Colors
-    // Civilians: #06B6D4 (Cyan) -> Matches role color
-    // Undercovers: #06B6D4 (Cyan) -> BUT real role reveal should be distinct? 
-    // Wait, prompt says: "Civils : voient UNIQUEMENT [mot]... Undercovers : voient UNIQUEMENT [mot différent]".
-    // On RESULTS page: "Révélation de TOUS les rôles réels"
-
-    // Let's use:
-    // Civilian: #06B6D4 (Cyan)
-    // Undercover: #A855F7 (Purple/Primary) -> Or maybe Orange? Let's stick to theme.
-    // Mr White: #F43F5E (Rose)
-
     const getWinnerColor = (w: typeof winner) => {
         if (w === 'mrWhite') return 'text-[#F43F5E]';
         return 'text-[#8B5CF6]'; // Primary Violet for everyone else
     };
 
     const handlePlayAgain = () => {
-        resetGame();
+        restartGame();
         navigate('/setup');
     };
 

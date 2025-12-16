@@ -54,6 +54,7 @@ interface GameState {
     startPlaying: () => void;
     eliminatePlayer: (id: string) => void;
     resetGame: () => void;
+    restartGame: () => void;
     clearHistory: () => void;
 }
 
@@ -261,6 +262,26 @@ export const useGameStore = create<GameState>()(
                 set({
                     players: [],
                     config: initialConfig,
+                    phase: 'idle',
+                    currentRevealIndex: 0,
+                    round: 1,
+                    winner: null,
+                });
+            },
+
+            restartGame: () => {
+                // Keep players and config, just reset game state
+                const { players } = get();
+                const resetPlayers = players.map(p => ({
+                    ...p,
+                    role: 'civilian' as Role, // Reset to default
+                    word: '',
+                    isEliminated: false,
+                    hasRevealed: false
+                }));
+
+                set({
+                    players: resetPlayers,
                     phase: 'idle',
                     currentRevealIndex: 0,
                     round: 1,

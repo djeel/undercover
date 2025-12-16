@@ -85,7 +85,7 @@ const SetupPage = () => {
                             </Button>
                         </form>
 
-                        <div className="flex-1 overflow-y-auto min-h-[150px] max-h-[300px] pr-2 custom-scrollbar grid grid-cols-2 gap-3 content-start">
+                        <div className="h-[300px] overflow-y-auto pr-2 custom-scrollbar grid grid-cols-2 gap-3 content-start">
                             <AnimatePresence initial={false} mode="popLayout">
                                 {players.map((player) => (
                                     <motion.div

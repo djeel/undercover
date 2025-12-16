@@ -85,41 +85,40 @@ const SetupPage = () => {
                             </Button>
                         </form>
 
-                        <div className="flex-1 overflow-y-auto min-h-[150px] max-h-[300px] pr-2 custom-scrollbar space-y-2">
-                            <AnimatePresence initial={false}>
+                        <div className="flex-1 overflow-y-auto min-h-[150px] max-h-[300px] pr-2 custom-scrollbar grid grid-cols-2 gap-3 content-start">
+                            <AnimatePresence initial={false} mode="popLayout">
                                 {players.map((player) => (
                                     <motion.div
                                         key={player.id}
-                                        initial={{ opacity: 0, height: 0 }}
-                                        animate={{ opacity: 1, height: 'auto' }}
-                                        exit={{ opacity: 0, height: 0 }}
-                                        className="flex items-center justify-between p-3 rounded-lg bg-zinc-900 border border-zinc-800"
+                                        layout
+                                        initial={{ opacity: 0, scale: 0.8 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        exit={{ opacity: 0, scale: 0.8 }}
+                                        className="flex items-center justify-between p-3 rounded-xl bg-zinc-900 border border-zinc-800 relative group overflow-hidden"
                                     >
-                                        <span className="font-medium text-zinc-200">{player.name}</span>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
+                                        <span className="font-medium text-zinc-200 truncate pr-6">{player.name}</span>
+                                        <button
                                             onClick={() => removePlayer(player.id)}
-                                            className="h-8 w-8 text-zinc-500 hover:text-red-500 hover:bg-red-500/10"
+                                            className="absolute right-0 top-0 bottom-0 w-8 flex items-center justify-center bg-zinc-800/50 hover:bg-red-500/20 text-zinc-500 hover:text-red-500 transition-colors"
                                         >
                                             <Trash2 className="w-4 h-4" />
-                                        </Button>
+                                        </button>
                                     </motion.div>
                                 ))}
                             </AnimatePresence>
-                            {players.length === 0 && (
-                                <p className="text-center text-zinc-600 py-4 text-sm italic">
-                                    {t('setup.minPlayers', { count: 3 })}
-                                </p>
-                            )}
                         </div>
+                        {players.length === 0 && (
+                            <p className="text-center text-zinc-600 py-4 text-sm italic col-span-2">
+                                {t('setup.minPlayers', { count: 3 })}
+                            </p>
+                        )}
                     </CardContent>
                 </Card>
 
                 <Card className="border-zinc-800 bg-[#18181B]">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-white">
-                            <Settings2 className="w-5 h-5 text-secondary" />
+                            <Settings2 className="w-5 h-5 text-primary" />
                             {t('setup.settings')}
                         </CardTitle>
                     </CardHeader>

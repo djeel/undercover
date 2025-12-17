@@ -11,7 +11,7 @@ import {
 
 function App() {
     return (
-        <BrowserRouter>
+        <BrowserRouter basename="/undercover/">
             <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/setup" element={<SetupPage />} />

@@ -82,7 +82,7 @@ const GamePage = () => {
             if (gameMode === 'online') {
                 if (!onlineState.roomId) return;
                 try {
-                    const res = await api.eliminatePlayer(onlineState.roomId, selectedPlayer.id);
+                    await api.eliminatePlayer(onlineState.roomId, selectedPlayer.id);
                     // State will update via poll, but we can optimise?
                     // Let's rely on poll or return value?
                     // The syncWithServer handles state.

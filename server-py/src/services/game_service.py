@@ -47,7 +47,7 @@ class GameService:
     
     async def get_game(self, game_id: str) -> Optional[GameDocument]:
         """Get game by public ID."""
-        data = self.games.get(game_id)
+        data = self.games.get(game_id.upper())
         if data:
             return GameDocument(**data)
         return None

@@ -21,7 +21,7 @@ const MultiplayerSetupPage = () => {
     const onlineState = useGameStore(state => state.onlineState);
     const players = useGameStore(state => state.players);
     const syncWithServer = useGameStore(state => state.syncWithServer);
-    const phase = useGameStore(state => state.phase);
+
     const isHost = onlineState.isHost;
 
     // Polling effect

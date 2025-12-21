@@ -7,11 +7,15 @@ import { Button } from '../components/ui/Button';
 import { Card, CardContent, CardFooter } from '../components/ui/Card';
 import { useGameStore } from '../store/gameStore';
 import { cn } from '../lib/utils';
+import { api } from '../services/api';
 
 const ResultsPage = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const { winner, players, config, resetGame, restartGame, phase, onlineState, syncWithServer } = useGameStore();
+    const syncWithServer = useGameStore(state => state.syncWithServer);
+    const gameMode = useGameStore(state => state.gameMode);
+    const onlineState = useGameStore(state => state.onlineState);
+    const { winner, players, config, resetGame, restartGame, phase } = useGameStore();
 
     // Redirect if game restarts (phase changes to 'setup'/'lobby')
     useEffect(() => {
@@ -22,20 +26,29 @@ const ResultsPage = () => {
 
     // Polling for online games
     useEffect(() => {
-        if (!onlineState.roomId || phase === 'idle') return;
+        if (gameMode !== 'online' || !onlineState.roomId) return;
 
         const poll = async () => {
             try {
-                const state = await import('../services/api').then(m => m.api.getGameState(onlineState.roomId!));
+                const state = await api.getGameState(
+                    onlineState.roomId!,
+                    onlineState.playerId || undefined
+                );
                 syncWithServer(state);
+
+                // If game restarted (host clicked Play Again), redirect to reveal
+                if (state.phase === 'PLAYING') {
+                    navigate('/reveal');
+                }
             } catch (e) {
-                console.error("Polling error in results:", e);
+                console.error('ResultsPage polling error:', e);
             }
         };
 
-        const interval = setInterval(poll, 3000);
+        poll(); // Initial poll
+        const interval = setInterval(poll, 2000);
         return () => clearInterval(interval);
-    }, [onlineState.roomId, phase, syncWithServer]);
+    }, [gameMode, onlineState.roomId, onlineState.playerId, navigate, syncWithServer]);
 
     if (!winner) {
         return (

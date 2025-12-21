@@ -152,33 +152,36 @@ class GameService:
     
     
     async def restart_game(self, game_id: str) -> bool:
-        """Restart a game, sending it back to LOBBY.
+        """Restart a game with the same players and settings.
         
-        Resets:
-        - Phase to LOBBY
-        - Winner to None
-        - Players: alive, no votes, no roles, no words, no revealed
-        - Config: remains same
+        Instead of going back to LOBBY, this reassigns roles and starts
+        a new game immediately with the same configuration.
         """
         game = await self.get_game(game_id)
         if not game:
             return False
-            
-        # Reset game state
-        game.phase = GamePhase.LOBBY
+        
+        # Save the previous game configuration
+        undercover_count = game.undercover_count
+        mr_white_count = game.mr_white_count
+        
+        # Reset game state but keep players
+        game.phase = GamePhase.LOBBY  # Temporarily
         game.winner = None
         game.finished_at = None
         game.current_turn_player_id = None
         
-        # Reset players
+        # Reset player states
         for player in game.players:
             player.is_alive = True
             player.has_voted = False
             player.votes_received = 0
             player.role = None
             player.word = None
-            
-        await self._update_game(game)
+        
+        # Reassign roles with same configuration
+        await self.assign_roles(game_id, undercover_count, mr_white_count)
+        
         return True
 
     async def remove_player(self, game_id: str, player_id: str) -> bool:

@@ -339,10 +339,20 @@ export const useGameStore = create<GameState>()(
 
             syncWithServer: (response: GameStateResponse) => {
                 const state = get();
+
+                const mapRole = (serverRole?: string): Role => {
+                    switch (serverRole) {
+                        case 'CIVILIAN': return 'civilian';
+                        case 'UNDERCOVER': return 'undercover';
+                        case 'MR_WHITE': return 'mrWhite';
+                        default: return 'unknown';
+                    }
+                };
+
                 const mappedPlayers: Player[] = response.players.map(p => ({
                     id: p.id,
                     name: p.name,
-                    role: (p.role as Role) || 'unknown',
+                    role: mapRole(p.role),
                     word: p.word || '',
                     isEliminated: !p.is_alive,
                     hasRevealed: true
@@ -354,10 +364,19 @@ export const useGameStore = create<GameState>()(
                 else if (response.phase === 'VOTING') phase = 'voting';
                 else if (response.phase === 'FINISHED') phase = 'results';
 
+                const mapWinner = (serverWinner?: string) => {
+                    switch (serverWinner) {
+                        case 'CIVILIANS': return 'civilians';
+                        case 'UNDERCOVER': return 'undercovers';
+                        case 'MR_WHITE': return 'mrWhite';
+                        default: return null;
+                    }
+                };
+
                 set({
                     players: mappedPlayers,
                     phase,
-                    winner: (response.winner as any) || null,
+                    winner: mapWinner(response.winner),
                     onlineState: { ...state.onlineState, lastPoll: Date.now() },
                     // If settings present, update config
                     config: response.settings ? {

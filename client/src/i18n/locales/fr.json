@@ -34,7 +34,10 @@
         "mrWhiteHint": "Vous ne connaissez pas le mot. Écoutez les autres pour deviner !",
         "memorize": "Décrivez ce mot sans le dire directement",
         "nextPlayer": "Joueur suivant",
-        "startDiscussion": "Lancer la partie"
+        "startDiscussion": "Lancer la partie",
+        "getReady": "Préparez-vous !",
+        "yourRole": "Votre Rôle",
+        "identify": "Touchez pour révéler"
     },
     "game": {
         "title": "Discussion",

@@ -1,8 +1,9 @@
-"""MongoDB document models for game state persistence."""
 from datetime import datetime
 from typing import Optional, List
 from pydantic import BaseModel, Field
 import uuid
+import random
+import string
 
 from .schemas import GamePhase, PlayerRole, WinnerType
 
@@ -10,6 +11,11 @@ from .schemas import GamePhase, PlayerRole, WinnerType
 def generate_uuid() -> str:
     """Generate a new UUID string."""
     return str(uuid.uuid4())
+
+def generate_room_code() -> str:
+    """Generate a short 6-character uppercase alphanumeric code."""
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+
 
 
 # ============================================================================
@@ -47,7 +53,7 @@ class GameDocument(BaseModel):
     
     Note: _id is handled by MongoDB, we use public_id for API exposure.
     """
-    public_id: str = Field(default_factory=generate_uuid)
+    public_id: str = Field(default_factory=generate_room_code)
     phase: GamePhase = GamePhase.LOBBY
     players: List[PlayerDocument] = Field(default_factory=list)
     

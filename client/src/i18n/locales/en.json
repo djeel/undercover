@@ -34,7 +34,10 @@
         "mrWhiteHint": "You don't know the word. Listen to others to guess it!",
         "memorize": "Describe this word without saying it directly",
         "nextPlayer": "Next Player",
-        "startDiscussion": "Start Game"
+        "startDiscussion": "Start Game",
+        "getReady": "Get Ready!",
+        "yourRole": "Your Role",
+        "identify": "Tap to reveal"
     },
     "game": {
         "title": "Discussion",

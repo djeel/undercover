@@ -36,9 +36,9 @@ const MultiplayerSetupPage = () => {
                 );
                 syncWithServer(state);
 
-                // Navigate to game if started
+                // Navigate to reveal if started
                 if (state.phase === 'PLAYING') {
-                    navigate('/game');
+                    navigate('/reveal');
                 }
             } catch (e) {
                 console.error('Polling error:', e);

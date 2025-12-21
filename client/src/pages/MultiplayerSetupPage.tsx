@@ -44,6 +44,14 @@ const MultiplayerSetupPage = () => {
                 );
                 syncWithServer(state);
 
+                // Check if we are still in the game (might have been kicked)
+                const me = state.players.find(p => p.id === onlineState.playerId);
+                if (!me) {
+                    leaveRoom(); // Clear state
+                    navigate('/'); // Back to home
+                    return;
+                }
+
                 // Navigate to reveal if started
                 if (state.phase === 'PLAYING') {
                     navigate('/reveal');
@@ -56,7 +64,7 @@ const MultiplayerSetupPage = () => {
         poll(); // Initial call
         const interval = setInterval(poll, 2000);
         return () => clearInterval(interval);
-    }, [onlineState.roomId, onlineState.playerId, navigate, syncWithServer]);
+    }, [onlineState.roomId, onlineState.playerId, navigate, syncWithServer, leaveRoom]);
 
 
     const handleCreateRoom = async () => {

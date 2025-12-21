@@ -15,6 +15,7 @@ export interface Player {
     isEliminated: boolean;
     hasRevealed: boolean;
     votesReceived: number;
+    hasVoted: boolean;
 }
 
 export interface GameConfig {
@@ -148,6 +149,7 @@ export const useGameStore = create<GameState>()(
                             isEliminated: false,
                             hasRevealed: false,
                             votesReceived: 0,
+                            hasVoted: false,
                         },
                     ],
                 }));
@@ -191,6 +193,7 @@ export const useGameStore = create<GameState>()(
                     hasRevealed: false,
                     isEliminated: false,
                     votesReceived: 0,
+                    hasVoted: false,
                 }));
 
                 set({
@@ -327,6 +330,7 @@ export const useGameStore = create<GameState>()(
                     isEliminated: false,
                     hasRevealed: false,
                     votesReceived: 0,
+                    hasVoted: false,
                 }));
 
                 set({
@@ -387,7 +391,8 @@ export const useGameStore = create<GameState>()(
                     word: p.word || '',
                     isEliminated: !p.is_alive,
                     hasRevealed: true,
-                    votesReceived: p.votes_received
+                    votesReceived: p.votes_received,
+                    hasVoted: p.has_voted
                 }));
 
                 let phase: GamePhase = state.phase;

@@ -129,6 +129,12 @@ const GamePage = () => {
         setGuessWord('');
     };
 
+    // Find current player for online mode
+    const currentPlayer = gameMode === 'online'
+        ? players.find(p => p.id === onlineState.playerId)
+        : null;
+    const hasCurrentPlayerVoted = currentPlayer?.hasVoted || false;
+
     return (
         <div className="min-h-screen p-4 bg-background pb-24">
             <header className="flex items-center justify-between py-4 max-w-2xl mx-auto mb-6">
@@ -143,6 +149,14 @@ const GamePage = () => {
                         </span>
                         <span>•</span>
                         <span>{t('game.playersRemaining', { count: activePlayers.length })}</span>
+                        {gameMode === 'online' && (
+                            <>
+                                <span>•</span>
+                                <span className={hasCurrentPlayerVoted ? "text-green-500" : "text-yellow-500"}>
+                                    {hasCurrentPlayerVoted ? "✓ Voted" : "Voting..."}
+                                </span>
+                            </>
+                        )}
                     </p>
                 </div>
             </header>
@@ -228,7 +242,9 @@ const GamePage = () => {
                                     {mrWhiteGuessing
                                         ? t('game.mrWhiteGuessPrompt')
                                         : (gameMode === 'online'
-                                            ? `Cast a vote against ${selectedPlayer.name}?`
+                                            ? hasCurrentPlayerVoted
+                                                ? `You already voted this round`
+                                                : `Cast a vote against ${selectedPlayer.name}?`
                                             : t('game.eliminatePlayer', { name: selectedPlayer.name }))
                                     }
                                 </CardDescription>
@@ -274,9 +290,10 @@ const GamePage = () => {
                                             {gameMode === 'online' && !mrWhiteGuessing && (
                                                 <Button
                                                     onClick={handleVote}
-                                                    className="flex-1 bg-secondary hover:bg-secondary/80 text-foreground"
+                                                    disabled={hasCurrentPlayerVoted}
+                                                    className="flex-1 bg-secondary hover:bg-secondary/80 text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
                                                 >
-                                                    Vote
+                                                    {hasCurrentPlayerVoted ? "Already Voted" : "Vote"}
                                                 </Button>
                                             )}
 

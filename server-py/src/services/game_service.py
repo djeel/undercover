@@ -225,23 +225,9 @@ class GameService:
         if not target or not target.is_alive:
             return None
             
-        # Optional: Prevent double voting? Or allow vote switching?
-        # User said "votes but host can force". 
-        # Let's simple toggle: If you click again, does it switch?
-        # For a simple implementation: 
-        # Logic: We lack "who voted for whom" map to switch easily without full map.
-        # But `PlayerDocument` has `has_voted`.
-        # To keep it simple: Add vote, set has_voted = True.
-        # Ideally we should verify if `has_voted` is true and reject, OR support vote changing (complex).
-        # Let's support Single Vote per turn (reset on next turn... wait, we don't have "turns" really in this simplified backend).
-        # But `eliminate_player` doesn't reset `votes_received` currently.
-        # We need to reset votes after elimination!
-        
+        # Prevent double voting - one vote per player per round
         if voter.has_voted:
-            # For this MVP, let's say you can't change vote easily without more complex tracking.
-            # Or we just increment/decrement?
-            # Let's enforce 1 vote for now.
-             pass # Or return None?
+            return None  # Already voted, reject
         
         target.votes_received += 1
         voter.has_voted = True

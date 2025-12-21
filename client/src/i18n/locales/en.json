@@ -4,8 +4,9 @@
     },
     "home": {
         "subtitle": "The ultimate social deduction game",
-        "newGame": "New Game",
-        "history": "Game History",
+        "newGame": "Local Game",
+        "playOnline": "Online Multiplayer",
+        "history": "History",
         "howToPlay": "How to Play"
     },
     "setup": {

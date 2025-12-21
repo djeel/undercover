@@ -61,6 +61,9 @@ class GameDocument(BaseModel):
     # Victory state
     winner: Optional[WinnerType] = None
     
+    # Gameplay state
+    current_turn_player_id: Optional[str] = None
+    
     # Timestamps
     created_at: datetime = Field(default_factory=datetime.utcnow)
     finished_at: Optional[datetime] = None

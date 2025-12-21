@@ -4,7 +4,8 @@
     },
     "home": {
         "subtitle": "Le jeu de déduction sociale ultime",
-        "newGame": "Nouvelle Partie",
+        "newGame": "Partie Locale",
+        "playOnline": "Multijoueur en Ligne",
         "history": "Historique",
         "howToPlay": "Comment Jouer"
     },

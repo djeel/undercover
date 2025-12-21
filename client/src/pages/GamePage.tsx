@@ -8,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardFooter, CardContent }
 import { Input } from '../components/ui/Input';
 import { useGameStore } from '../store/gameStore';
 import { cn } from '../lib/utils';
+import { api } from '../services/api';
 
 
 // Simple string normalization for comparison
@@ -16,7 +17,17 @@ const normalize = (str: string) => str.trim().toLowerCase().normalize("NFD").rep
 const GamePage = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const { players, eliminatePlayer, phase, winner, round, config, setWinner } = useGameStore();
+    const players = useGameStore(state => state.players);
+    const eliminatePlayer = useGameStore(state => state.eliminatePlayer);
+    const phase = useGameStore(state => state.phase);
+    const winner = useGameStore(state => state.winner);
+    const round = useGameStore(state => state.round);
+    const config = useGameStore(state => state.config);
+    const setWinner = useGameStore(state => state.setWinner);
+    const gameMode = useGameStore(state => state.gameMode);
+    const onlineState = useGameStore(state => state.onlineState);
+    const syncWithServer = useGameStore(state => state.syncWithServer);
+
     const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
     const [mrWhiteGuessing, setMrWhiteGuessing] = useState(false);
     const [guessWord, setGuessWord] = useState('');
@@ -24,41 +35,88 @@ const GamePage = () => {
     useEffect(() => {
         // Only redirect if explicitly in results phase or won
         if (phase === 'results' || winner) {
-            const timer = setTimeout(() => navigate('/results'), 1500); // Small delay to see toast/result
+            const timer = setTimeout(() => navigate('/results'), 1500);
             return () => clearTimeout(timer);
         }
 
-        // Redirect to home if game state is invalid/idle
-        if (phase === 'idle') {
+        // Redirect to home if game state is invalid/idle AND local
+        if (phase === 'idle' && gameMode === 'local') {
             navigate('/');
         }
-    }, [phase, winner, navigate]);
+    }, [phase, winner, navigate, gameMode]);
+
+    // Polling for Online Mode
+    useEffect(() => {
+        if (gameMode !== 'online' || !onlineState.roomId) return;
+
+        const poll = async () => {
+            try {
+                const state = await api.getGameState(
+                    onlineState.roomId!,
+                    onlineState.playerId || undefined
+                );
+                syncWithServer(state);
+            } catch (e) {
+                console.error('Polling error:', e);
+            }
+        };
+
+        const interval = setInterval(poll, 2000);
+        return () => clearInterval(interval);
+    }, [gameMode, onlineState.roomId, onlineState.playerId, syncWithServer]);
 
     const activePlayers = players.filter(p => !p.isEliminated);
     const selectedPlayer = players.find(p => p.id === selectedPlayerId);
 
-    const handleElimination = () => {
+    // Check if current player is allowed to eliminate (Host only in this simple version, or Vote logic later)
+    // For now, let's assume Host controls flow or anyone can click (simple PoC)
+    // Ideally: Only Host can eliminate in online mode for now to match local pass & play style
+    const canAction = gameMode === 'local' || onlineState.isHost;
+
+    const handleElimination = async () => {
         if (!selectedPlayer) return;
 
         if (selectedPlayer.role === 'mrWhite') {
             setMrWhiteGuessing(true);
         } else {
-            eliminatePlayer(selectedPlayer.id);
+            if (gameMode === 'online') {
+                if (!onlineState.roomId) return;
+                try {
+                    const res = await api.eliminatePlayer(onlineState.roomId, selectedPlayer.id);
+                    // State will update via poll, but we can optimise?
+                    // Let's rely on poll or return value?
+                    // The syncWithServer handles state.
+                    // But eliminatePlayer returns specific response.
+                } catch (e) {
+                    console.error(e);
+                }
+            } else {
+                eliminatePlayer(selectedPlayer.id);
+            }
             setSelectedPlayerId(null);
         }
     };
 
-    const handleMrWhiteGuess = () => {
+    const handleMrWhiteGuess = async () => {
         if (!selectedPlayerId) return;
 
-        const civilianWord = normalize(config.civilianWord);
+        // Common logic for guess normalization
         const guess = normalize(guessWord);
 
-        // Exact match or very close match
-        if (civilianWord === guess) {
-            setWinner('mrWhite');
+        if (gameMode === 'online') {
+            if (!onlineState.roomId) return;
+            try {
+                await api.eliminatePlayer(onlineState.roomId, selectedPlayerId, guess);
+            } catch (e) {
+                console.error(e);
+            }
         } else {
-            eliminatePlayer(selectedPlayerId);
+            const civilianWord = normalize(config.civilianWord);
+            if (civilianWord === guess) {
+                setWinner('mrWhite');
+            } else {
+                eliminatePlayer(selectedPlayerId);
+            }
         }
 
         setSelectedPlayerId(null);
@@ -72,6 +130,7 @@ const GamePage = () => {
                 <div className="space-y-1">
                     <h1 className="text-2xl font-bold flex items-center gap-2 text-foreground">
                         {t('game.title')}
+                        {gameMode === 'online' && <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded ml-2">ONLINE</span>}
                     </h1>
                     <p className="text-sm text-muted-foreground flex items-center gap-2">
                         <span className="bg-primary/20 text-primary px-2 py-0.5 rounded text-xs font-bold uppercase">
@@ -94,15 +153,16 @@ const GamePage = () => {
                             scale: 1,
                             filter: player.isEliminated ? 'grayscale(1)' : 'grayscale(0)'
                         }}
-                        whileHover={!player.isEliminated ? { scale: 1.05 } : {}}
-                        whileTap={!player.isEliminated ? { scale: 0.95 } : {}}
-                        onClick={() => !player.isEliminated && setSelectedPlayerId(player.id)}
-                        disabled={player.isEliminated}
+                        whileHover={!player.isEliminated && canAction ? { scale: 1.05 } : {}}
+                        whileTap={!player.isEliminated && canAction ? { scale: 0.95 } : {}}
+                        onClick={() => !player.isEliminated && canAction && setSelectedPlayerId(player.id)}
+                        disabled={player.isEliminated || !canAction}
                         className={cn(
                             "relative aspect-square rounded-2xl p-4 flex flex-col items-center justify-center transition-all duration-300",
                             player.isEliminated
                                 ? "bg-card border border-border cursor-not-allowed"
-                                : "bg-card border border-border hover:border-primary/50 hover:bg-secondary"
+                                : canAction ? "bg-card border border-border hover:border-primary/50 hover:bg-secondary cursor-pointer"
+                                    : "bg-card border border-border cursor-default"
                         )}
                     >
                         <div className={cn(
@@ -120,6 +180,22 @@ const GamePage = () => {
                             <span className="absolute inset-0 flex items-center justify-center">
                                 <Skull className="w-16 h-16 text-destructive/40 rotate-12" />
                             </span>
+                        )}
+
+                        {/* Show own role/word if available (for online) */}
+                        {gameMode === 'online' && player.id === onlineState.playerId && player.word && !player.isEliminated && (
+                            <div className="absolute bottom-2 left-0 right-0 text-center">
+                                <span className="text-xs bg-black/50 text-white px-2 py-0.5 rounded-full backdrop-blur-sm">
+                                    {player.role === 'mrWhite' ? 'Mr. White' : player.word}
+                                </span>
+                            </div>
+                        )}
+                        {gameMode === 'online' && player.id === onlineState.playerId && player.role === 'mrWhite' && !player.isEliminated && (
+                            <div className="absolute bottom-2 left-0 right-0 text-center">
+                                <span className="text-xs bg-black/50 text-white px-2 py-0.5 rounded-full backdrop-blur-sm">
+                                    Mr. White
+                                </span>
+                            </div>
                         )}
                     </motion.button>
                 ))}

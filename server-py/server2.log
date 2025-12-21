@@ -1,0 +1,122 @@
+INFO:     Will watch for changes in these directories: ['/home/djeel/Documents/undercover/server-py']
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [40518] using WatchFiles
+INFO:     Started server process [40520]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:48552 - "POST /api/game/create HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56798 - "POST /api/game/create HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56812 - "GET /api/game/27bff715-4114-445b-a14c-c4cbeb3e7e30 HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/djeel/Documents/undercover/server-py/.venv/lib/python3.13/site-packages/uvicorn/protocols/http/httptools_impl.py", line 416, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/djeel/Documents/undercover/server-py/.venv/lib/python3.13/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/djeel/Documents/undercover/server-py/.venv/lib/python3.13/site-packages/fastapi/applications.py", line 1135, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/djeel/Documents/undercover/server-py/.venv/lib/python3.13/site-packages/starlette/applications.py", line 107, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/djeel/Documents/undercover/server-py/.venv/lib/python3.13/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/home/djeel/Documents/undercover/server-py/.venv/lib/python3.13/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/home/djeel/Documents/undercover/server-py/.venv/lib/python3.13/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "/home/djeel/Documents/undercover/server-py/.venv/lib/python3.13/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/djeel/Documents/undercover/server-py/.venv/lib/python3.13/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/djeel/Documents/undercover/server-py/.venv/lib/python3.13/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/djeel/Documents/undercover/server-py/.venv/lib/python3.13/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/djeel/Documents/undercover/server-py/.venv/lib/python3.13/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/djeel/Documents/undercover/server-py/.venv/lib/python3.13/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/home/djeel/Documents/undercover/server-py/.venv/lib/python3.13/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/home/djeel/Documents/undercover/server-py/.venv/lib/python3.13/site-packages/fastapi/routing.py", line 119, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/home/djeel/Documents/undercover/server-py/.venv/lib/python3.13/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/djeel/Documents/undercover/server-py/.venv/lib/python3.13/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/djeel/Documents/undercover/server-py/.venv/lib/python3.13/site-packages/fastapi/routing.py", line 105, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/home/djeel/Documents/undercover/server-py/.venv/lib/python3.13/site-packages/fastapi/routing.py", line 426, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/home/djeel/Documents/undercover/server-py/.venv/lib/python3.13/site-packages/fastapi/routing.py", line 312, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/djeel/Documents/undercover/server-py/src/routes/game_routes.py", line 121, in get_game_state
+    return service.get_filtered_state(game, x_player_id)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/home/djeel/Documents/undercover/server-py/src/services/game_service.py", line 211, in get_filtered_state
+    current_turn_player_id=game.current_turn_player_id,
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/djeel/Documents/undercover/server-py/.venv/lib/python3.13/site-packages/pydantic/main.py", line 1026, in __getattr__
+    raise AttributeError(f'{type(self).__name__!r} object has no attribute {item!r}')
+AttributeError: 'GameDocument' object has no attribute 'current_turn_player_id'
+WARNING:  WatchFiles detected changes in 'src/models/game.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [40520]
+INFO:     Started server process [40901]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:42422 - "POST /api/game/create HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42428 - "GET /api/game/1adb4f1f-9ee4-4141-99af-15f79aaac10c HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52724 - "OPTIONS /api/game/create HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52724 - "POST /api/game/create HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52724 - "OPTIONS /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9/players HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52724 - "POST /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9/players HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52724 - "OPTIONS /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52724 - "GET /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52724 - "GET /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52724 - "GET /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52724 - "GET /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52724 - "GET /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52724 - "GET /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52724 - "GET /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52724 - "GET /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52724 - "GET /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52724 - "GET /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52724 - "GET /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52724 - "GET /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52724 - "GET /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50070 - "OPTIONS /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9/players HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50070 - "POST /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9/players HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50070 - "OPTIONS /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50070 - "GET /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52724 - "GET /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50070 - "GET /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52724 - "GET /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50070 - "GET /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52724 - "GET /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50070 - "GET /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52724 - "GET /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50070 - "GET /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52724 - "GET /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50070 - "GET /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52724 - "GET /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50070 - "GET /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52724 - "GET /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50070 - "GET /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52724 - "GET /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50070 - "GET /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52724 - "GET /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50070 - "GET /api/game/5ac79617-70bb-41e7-adbb-2266374b02d9 HTTP/1.1" 200 OK

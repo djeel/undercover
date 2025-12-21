@@ -8,8 +8,7 @@ Handles:
 """
 import random
 from datetime import datetime
-from typing import Optional, List
-from motor.motor_asyncio import AsyncIOMotorDatabase
+from typing import Optional, List, Any
 
 from ..models.game import GameDocument, PlayerDocument, WordPairDocument
 from ..models.schemas import (
@@ -23,11 +22,9 @@ from .word_service import WordService
 class GameService:
     """Service for game state management."""
     
-    COLLECTION = "games"
-    
-    def __init__(self, db: AsyncIOMotorDatabase):
-        self.db = db
-        self.collection = db[self.COLLECTION]
+    def __init__(self, db: Any):
+        # db is InMemoryDatabase access object
+        self.games = db.get_games_collection()
     
     # ========================================================================
     # Game Lifecycle
@@ -44,22 +41,20 @@ class GameService:
         
         game = GameDocument(word_pair=word_pair)
         
-        await self.collection.insert_one(game.model_dump())
+        # Store in dict
+        self.games[game.public_id] = game.model_dump()
         return game.public_id
     
     async def get_game(self, game_id: str) -> Optional[GameDocument]:
         """Get game by public ID."""
-        doc = await self.collection.find_one({"public_id": game_id})
-        if doc:
-            return GameDocument(**doc)
+        data = self.games.get(game_id)
+        if data:
+            return GameDocument(**data)
         return None
     
     async def _update_game(self, game: GameDocument) -> None:
         """Save game state to database."""
-        await self.collection.update_one(
-            {"public_id": game.public_id},
-            {"$set": game.model_dump()}
-        )
+        self.games[game.public_id] = game.model_dump()
     
     # ========================================================================
     # Player Management
@@ -213,6 +208,7 @@ class GameService:
             players=filtered_players,
             settings=settings,
             winner=game.winner,
+            current_turn_player_id=game.current_turn_player_id,
         )
     
     # ========================================================================
@@ -316,12 +312,14 @@ class GameService:
     # ========================================================================
     
     async def get_finished_games(self, limit: int = 50) -> List[GameDocument]:
-        """Get list of finished games for history."""
-        cursor = self.collection.find(
-            {"phase": GamePhase.FINISHED.value}
-        ).sort("finished_at", -1).limit(limit)
+        """Get list of finished games for history.
         
-        games = []
-        async for doc in cursor:
-            games.append(GameDocument(**doc))
-        return games
+        NOTE: InMemory implementation is simple and unoptimized for sorting.
+        """
+        all_games = [GameDocument(**g) for g in self.games.values()]
+        finished = [g for g in all_games if g.phase == GamePhase.FINISHED]
+        
+        # Sort by finished_at desc
+        finished.sort(key=lambda g: g.finished_at or datetime.min, reverse=True)
+        
+        return finished[:limit]

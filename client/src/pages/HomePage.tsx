@@ -8,10 +8,18 @@ const HomePage = () => {
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const resetGame = useGameStore((state) => state.resetGame);
+    const setGameMode = useGameStore((state) => state.setGameMode);
 
     const handleNewGame = () => {
+        setGameMode('local');
         resetGame();
         navigate('/setup');
+    };
+
+    const handleOnlineGame = () => {
+        setGameMode('online');
+        resetGame();
+        navigate('/lobby');
     };
 
     const toggleLanguage = () => {
@@ -55,6 +63,14 @@ const HomePage = () => {
                         className="w-full text-lg h-16 bg-primary hover:bg-primary/90 text-primary-foreground border-0 rounded-2xl shadow-md shadow-primary/20"
                     >
                         {t('home.newGame')}
+                    </Button>
+
+                    <Button
+                        onClick={handleOnlineGame}
+                        size="lg"
+                        className="w-full text-lg h-16 bg-accent hover:bg-accent/90 text-white border-0 rounded-2xl shadow-md shadow-accent/20"
+                    >
+                        {t('home.playOnline')}
                     </Button>
 
                     <Button

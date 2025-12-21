@@ -86,6 +86,7 @@
     "roles": {
         "civilian": "Civil",
         "undercover": "Infiltré",
-        "mrWhite": "Mr. White"
+        "mrWhite": "Mr. White",
+        "unknown": "Inconnu"
     }
 }

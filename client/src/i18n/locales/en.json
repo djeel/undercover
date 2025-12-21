@@ -86,6 +86,7 @@
     "roles": {
         "civilian": "Civilian",
         "undercover": "Undercover",
-        "mrWhite": "Mr. White"
+        "mrWhite": "Mr. White",
+        "unknown": "Unknown"
     }
 }

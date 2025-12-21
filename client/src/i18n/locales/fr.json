@@ -45,7 +45,11 @@
         "confirmElimination": "Confirmer l'élimination",
         "eliminatePlayer": "Éliminer {{name}} ?",
         "cancel": "Annuler",
-        "confirm": "Confirmer"
+        "confirm": "Confirmer",
+        "mrWhiteFound": "Mr. White Démasqué !",
+        "mrWhiteGuessPrompt": "Vous avez été découvert ! Il vous reste une chance : devinez le mot des civils pour gagner instantanément.",
+        "enterWordPlaceholder": "Entrez le mot des civils",
+        "submitGuess": "Tenter ma chance"
     },
     "results": {
         "title": "Fin de Partie",

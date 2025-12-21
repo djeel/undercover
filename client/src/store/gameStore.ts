@@ -56,6 +56,7 @@ interface GameState {
     resetGame: () => void;
     restartGame: () => void;
     clearHistory: () => void;
+    setWinner: (winner: 'civilians' | 'undercovers' | 'mrWhite' | null) => void;
 }
 
 // Word pairs for the game
@@ -280,6 +281,26 @@ export const useGameStore = create<GameState>()(
 
             clearHistory: () => {
                 set({ history: [] });
+            },
+
+            setWinner: (winner) => {
+                const state = get();
+                // Create game result
+                const result: GameResult = {
+                    id: generateId(),
+                    date: new Date().toISOString(),
+                    players: state.players.map((p) => ({ name: p.name, role: p.role })),
+                    winner: winner!,
+                    civilianWord: state.config.civilianWord,
+                    undercoverWord: state.config.undercoverWord,
+                    rounds: state.round,
+                };
+
+                set({
+                    winner,
+                    phase: 'results',
+                    history: [result, ...state.history].slice(0, 20),
+                });
             },
         }),
         {

@@ -45,7 +45,11 @@
         "confirmElimination": "Confirm Elimination",
         "eliminatePlayer": "Eliminate {{name}}?",
         "cancel": "Cancel",
-        "confirm": "Confirm"
+        "confirm": "Confirm",
+        "mrWhiteFound": "Mr. White Found!",
+        "mrWhiteGuessPrompt": "You have been discovered! You have one last chance: guess the civilian word to win instantly.",
+        "enterWordPlaceholder": "Enter the civilian word",
+        "submitGuess": "Take a guess"
     },
     "results": {
         "title": "Game Over",

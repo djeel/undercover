@@ -4,20 +4,27 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Skull } from 'lucide-react';
 import { Button } from '../components/ui/Button';
-import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from '../components/ui/Card';
+import { Card, CardHeader, CardTitle, CardDescription, CardFooter, CardContent } from '../components/ui/Card';
+import { Input } from '../components/ui/Input';
 import { useGameStore } from '../store/gameStore';
 import { cn } from '../lib/utils';
+
+
+// Simple string normalization for comparison
+const normalize = (str: string) => str.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
 const GamePage = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const { players, eliminatePlayer, phase, winner, round } = useGameStore();
+    const { players, eliminatePlayer, phase, winner, round, config, setWinner } = useGameStore();
     const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
+    const [mrWhiteGuessing, setMrWhiteGuessing] = useState(false);
+    const [guessWord, setGuessWord] = useState('');
 
     useEffect(() => {
         // Only redirect if explicitly in results phase or won
         if (phase === 'results' || winner) {
-            const timer = setTimeout(() => navigate('/results'), 500); // Small delay
+            const timer = setTimeout(() => navigate('/results'), 1500); // Small delay to see toast/result
             return () => clearTimeout(timer);
         }
 
@@ -25,18 +32,38 @@ const GamePage = () => {
         if (phase === 'idle') {
             navigate('/');
         }
-        // Redirect to setup if we are here but phase is setup? No, let's just be strict about playing.
-
     }, [phase, winner, navigate]);
 
     const activePlayers = players.filter(p => !p.isEliminated);
     const selectedPlayer = players.find(p => p.id === selectedPlayerId);
 
     const handleElimination = () => {
-        if (selectedPlayerId) {
-            eliminatePlayer(selectedPlayerId);
+        if (!selectedPlayer) return;
+
+        if (selectedPlayer.role === 'mrWhite') {
+            setMrWhiteGuessing(true);
+        } else {
+            eliminatePlayer(selectedPlayer.id);
             setSelectedPlayerId(null);
         }
+    };
+
+    const handleMrWhiteGuess = () => {
+        if (!selectedPlayerId) return;
+
+        const civilianWord = normalize(config.civilianWord);
+        const guess = normalize(guessWord);
+
+        // Exact match or very close match
+        if (civilianWord === guess) {
+            setWinner('mrWhite');
+        } else {
+            eliminatePlayer(selectedPlayerId);
+        }
+
+        setSelectedPlayerId(null);
+        setMrWhiteGuessing(false);
+        setGuessWord('');
     };
 
     return (
@@ -107,20 +134,54 @@ const GamePage = () => {
                     >
                         <Card className="border-border bg-card shadow-lg">
                             <CardHeader>
-                                <CardTitle className="text-destructive">
-                                    {t('game.confirmElimination')}
+                                <CardTitle className={mrWhiteGuessing ? "text-primary" : "text-destructive"}>
+                                    {mrWhiteGuessing ? t('game.mrWhiteFound') : t('game.confirmElimination')}
                                 </CardTitle>
                                 <CardDescription className="text-muted-foreground">
-                                    {t('game.eliminatePlayer', { name: selectedPlayer.name })}
+                                    {mrWhiteGuessing
+                                        ? t('game.mrWhiteGuessPrompt')
+                                        : t('game.eliminatePlayer', { name: selectedPlayer.name })
+                                    }
                                 </CardDescription>
                             </CardHeader>
+
+                            {mrWhiteGuessing && (
+                                <CardContent>
+                                    <Input
+                                        value={guessWord}
+                                        onChange={(e) => setGuessWord(e.target.value)}
+                                        placeholder={t('game.enterWordPlaceholder')}
+                                        className="text-center text-lg py-6"
+                                        autoFocus
+                                    />
+                                </CardContent>
+                            )}
+
                             <CardFooter className="gap-2">
-                                <Button variant="ghost" onClick={() => setSelectedPlayerId(null)} className="flex-1">
+                                <Button
+                                    variant="ghost"
+                                    onClick={() => {
+                                        setSelectedPlayerId(null);
+                                        setMrWhiteGuessing(false);
+                                        setGuessWord('');
+                                    }}
+                                    className="flex-1"
+                                >
                                     {t('game.cancel')}
                                 </Button>
-                                <Button variant="destructive" onClick={handleElimination} className="flex-1">
-                                    {t('game.confirm')}
-                                </Button>
+                                {mrWhiteGuessing ? (
+                                    <Button
+                                        onClick={handleMrWhiteGuess}
+                                        className="flex-1 bg-primary text-white"
+                                        disabled={!guessWord.trim()}
+                                    >
+                                        {t('game.submitGuess')}
+                                    </Button>
+                                ) : (
+                                    <Button variant="destructive" onClick={handleElimination} className="flex-1">
+                                        {t('game.confirm')}
+                                    </Button>
+                                )}
                             </CardFooter>
                         </Card>
                     </motion.div>

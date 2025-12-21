@@ -25,8 +25,10 @@ const GamePage = () => {
     const config = useGameStore(state => state.config);
     const setWinner = useGameStore(state => state.setWinner);
     const gameMode = useGameStore(state => state.gameMode);
+    const votePlayer = useGameStore(state => state.votePlayer);
     const onlineState = useGameStore(state => state.onlineState);
     const syncWithServer = useGameStore(state => state.syncWithServer);
+    const isHost = onlineState.isHost;
 
     const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
     const [mrWhiteGuessing, setMrWhiteGuessing] = useState(false);
@@ -68,10 +70,10 @@ const GamePage = () => {
     const activePlayers = players.filter(p => !p.isEliminated);
     const selectedPlayer = players.find(p => p.id === selectedPlayerId);
 
-    // Check if current player is allowed to eliminate (Host only in this simple version, or Vote logic later)
-    // For now, let's assume Host controls flow or anyone can click (simple PoC)
-    // Ideally: Only Host can eliminate in online mode for now to match local pass & play style
-    const canAction = gameMode === 'local' || onlineState.isHost;
+    // Online: Everyone can click to open menu (to Vote). Host has extra power.
+    // Local: Anyone can click to Eliminate (Pass & Play).
+    const canAction = gameMode === 'local' || true; // Everyone can interact in online mode
+    const canEliminate = gameMode === 'local' || isHost;
 
     const handleElimination = async () => {
         if (!selectedPlayer) return;
@@ -83,10 +85,6 @@ const GamePage = () => {
                 if (!onlineState.roomId) return;
                 try {
                     await api.eliminatePlayer(onlineState.roomId, selectedPlayer.id);
-                    // State will update via poll, but we can optimise?
-                    // Let's rely on poll or return value?
-                    // The syncWithServer handles state.
-                    // But eliminatePlayer returns specific response.
                 } catch (e) {
                     console.error(e);
                 }
@@ -97,7 +95,14 @@ const GamePage = () => {
         }
     };
 
+    const handleVote = async () => {
+        if (!selectedPlayer || gameMode !== 'online') return;
+        await votePlayer(selectedPlayer.id);
+        setSelectedPlayerId(null);
+    };
+
     const handleMrWhiteGuess = async () => {
+        // ... (keep existing handleMrWhiteGuess)
         if (!selectedPlayerId) return;
 
         // Common logic for guess normalization
@@ -161,17 +166,23 @@ const GamePage = () => {
                             "relative aspect-square rounded-2xl p-4 flex flex-col items-center justify-center transition-all duration-300",
                             player.isEliminated
                                 ? "bg-card border border-border cursor-not-allowed"
-                                : canAction ? "bg-card border border-border hover:border-primary/50 hover:bg-secondary cursor-pointer"
-                                    : "bg-card border border-border cursor-default"
+                                : "bg-card border border-border hover:border-primary/50 hover:bg-secondary cursor-pointer"
                         )}
                     >
                         <div className={cn(
-                            "w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold mb-3 transition-colors",
+                            "w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold mb-3 transition-colors relative",
                             player.isEliminated
                                 ? "bg-secondary text-muted-foreground"
                                 : "bg-primary text-primary-foreground"
                         )}>
                             {player.name.charAt(0).toUpperCase()}
+
+                            {/* Vote Badge */}
+                            {!player.isEliminated && player.votesReceived > 0 && (
+                                <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center border-2 border-card font-bold">
+                                    {player.votesReceived}
+                                </div>
+                            )}
                         </div>
                         <span className="font-medium truncate w-full text-center px-2 text-foreground">
                             {player.name}
@@ -182,7 +193,7 @@ const GamePage = () => {
                             </span>
                         )}
 
-                        {/* Show own role/word if available (for online) */}
+                        {/* Show roles for self */}
                         {gameMode === 'online' && player.id === onlineState.playerId && player.word && !player.isEliminated && (
                             <div className="absolute bottom-2 left-0 right-0 text-center">
                                 <span className="text-xs bg-black/50 text-white px-2 py-0.5 rounded-full backdrop-blur-sm">
@@ -211,12 +222,14 @@ const GamePage = () => {
                         <Card className="border-border bg-card shadow-lg">
                             <CardHeader>
                                 <CardTitle className={mrWhiteGuessing ? "text-primary" : "text-destructive"}>
-                                    {mrWhiteGuessing ? t('game.mrWhiteFound') : t('game.confirmElimination')}
+                                    {mrWhiteGuessing ? t('game.mrWhiteFound') : (gameMode === 'online' && !canEliminate ? "Vote Player" : t('game.confirmElimination'))}
                                 </CardTitle>
                                 <CardDescription className="text-muted-foreground">
                                     {mrWhiteGuessing
                                         ? t('game.mrWhiteGuessPrompt')
-                                        : t('game.eliminatePlayer', { name: selectedPlayer.name })
+                                        : (gameMode === 'online'
+                                            ? `Cast a vote against ${selectedPlayer.name}?`
+                                            : t('game.eliminatePlayer', { name: selectedPlayer.name }))
                                     }
                                 </CardDescription>
                             </CardHeader>
@@ -233,31 +246,53 @@ const GamePage = () => {
                                 </CardContent>
                             )}
 
-                            <CardFooter className="gap-2">
-                                <Button
-                                    variant="ghost"
-                                    onClick={() => {
-                                        setSelectedPlayerId(null);
-                                        setMrWhiteGuessing(false);
-                                        setGuessWord('');
-                                    }}
-                                    className="flex-1"
-                                >
-                                    {t('game.cancel')}
-                                </Button>
-                                {mrWhiteGuessing ? (
+                            <CardFooter className="flex-col gap-2">
+                                <div className="flex gap-2 w-full">
                                     <Button
-                                        onClick={handleMrWhiteGuess}
-                                        className="flex-1 bg-primary text-white"
-                                        disabled={!guessWord.trim()}
+                                        variant="ghost"
+                                        onClick={() => {
+                                            setSelectedPlayerId(null);
+                                            setMrWhiteGuessing(false);
+                                            setGuessWord('');
+                                        }}
+                                        className="flex-1"
                                     >
-                                        {t('game.submitGuess')}
+                                        {t('game.cancel')}
                                     </Button>
-                                ) : (
-                                    <Button variant="destructive" onClick={handleElimination} className="flex-1">
-                                        {t('game.confirm')}
-                                    </Button>
-                                )}
+
+                                    {mrWhiteGuessing ? (
+                                        <Button
+                                            onClick={handleMrWhiteGuess}
+                                            className="flex-1 bg-primary text-white"
+                                            disabled={!guessWord.trim()}
+                                        >
+                                            {t('game.submitGuess')}
+                                        </Button>
+                                    ) : (
+                                        <>
+                                            {/* Vote Button (Online only) */}
+                                            {gameMode === 'online' && !mrWhiteGuessing && (
+                                                <Button
+                                                    onClick={handleVote}
+                                                    className="flex-1 bg-secondary hover:bg-secondary/80 text-foreground"
+                                                >
+                                                    Vote
+                                                </Button>
+                                            )}
+
+                                            {/* Eliminate Button (Local OR Host) */}
+                                            {(canEliminate || mrWhiteGuessing) && (
+                                                <Button
+                                                    variant="destructive"
+                                                    onClick={handleElimination}
+                                                    className="flex-1"
+                                                >
+                                                    {gameMode === 'online' ? "Force Eliminate" : t('game.confirm')}
+                                                </Button>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
                             </CardFooter>
                         </Card>
                     </motion.div>

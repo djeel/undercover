@@ -139,6 +139,18 @@ class GameStateResponse(BaseModel):
     current_turn_player_id: Optional[str] = None
 
 
+class VoteRequest(BaseModel):
+    """Request for POST /api/game/{id}/vote."""
+    voter_id: str
+    target_player_id: str
+
+
+class VoteResponse(BaseModel):
+    """Response for POST /api/game/{id}/vote."""
+    success: bool
+    target_votes: int
+
+
 class EliminateRequest(BaseModel):
     """Request for POST /api/game/{id}/eliminate."""
     target_player_id: str

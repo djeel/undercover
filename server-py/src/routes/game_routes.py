@@ -20,6 +20,7 @@ from ..models.schemas import (
     GameHistoryResponse,
     GameHistoryItem,
     GamePhase,
+    VoteRequest,
 )
 from ..services.game_service import GameService
 
@@ -134,6 +135,42 @@ async def get_game_state(
         raise HTTPException(status_code=404, detail="Game not found")
     
     return service.get_filtered_state(game, x_player_id)
+
+
+# ============================================================================
+# Actions (Vote / Kick)
+# ============================================================================
+
+@router.delete("/{game_id}/players/{player_id}", response_model=bool)
+async def remove_player(
+    game_id: str,
+    player_id: str,
+    service: GameService = Depends(get_game_service),
+):
+    """Remove a player (Kick).
+    
+    Only permitted in LOBBY phase.
+    """
+    success = await service.remove_player(game_id, player_id)
+    if not success:
+        raise HTTPException(status_code=400, detail="Cannot kick player")
+    return True
+
+
+@router.post("/{game_id}/vote", response_model=bool)
+async def cast_vote(
+    game_id: str,
+    request: VoteRequest,
+    service: GameService = Depends(get_game_service),
+):
+    """Cast a vote against a player.
+    
+    Updates vote counts. Returns true if successful.
+    """
+    new_count = await service.cast_vote(game_id, request.voter_id, request.target_player_id)
+    if new_count is None:
+         raise HTTPException(status_code=400, detail="Invalid vote")
+    return True
 
 
 # ============================================================================

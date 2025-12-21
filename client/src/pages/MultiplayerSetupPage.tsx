@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Users, Plus, Play } from 'lucide-react';
+import { ArrowLeft, Users, Plus, Play, X, LogOut } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
@@ -25,6 +25,10 @@ const MultiplayerSetupPage = () => {
     const onlineState = useGameStore(state => state.onlineState);
     const players = useGameStore(state => state.players);
     const syncWithServer = useGameStore(state => state.syncWithServer);
+    const leaveRoom = useGameStore(state => state.leaveRoom);
+    const kickPlayer = useGameStore(state => state.kickPlayer);
+    const playerId = onlineState.playerId;
+
 
     const isHost = onlineState.isHost;
 
@@ -112,9 +116,9 @@ const MultiplayerSetupPage = () => {
             <div className="min-h-screen p-4 bg-background pb-20 flex flex-col">
                 <div className="max-w-md mx-auto w-full flex-1 flex flex-col space-y-6">
                     <header className="flex items-center justify-between py-4">
-                        <Button variant="ghost" className="text-zinc-400 hover:text-white" onClick={() => navigate('/')}>
-                            <ArrowLeft className="w-5 h-5 mr-2" />
-                            Return
+                        <Button variant="ghost" className="text-zinc-400 hover:text-white" onClick={() => { leaveRoom(); navigate('/'); }}>
+                            <LogOut className="w-5 h-5 mr-2" />
+                            Leave Room
                         </Button>
                         <h1 className="text-xl font-bold text-white tracking-wide">Lobby</h1>
                         <div className="w-16" />
@@ -140,7 +144,17 @@ const MultiplayerSetupPage = () => {
                                             <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-300 font-bold text-xs">
                                                 {p.name.charAt(0).toUpperCase()}
                                             </div>
-                                            <span className="text-zinc-200">{p.name} {p.id === onlineState.playerId && "(You)"}</span>
+                                            <span className="text-zinc-200 flex-1">{p.name} {p.id === onlineState.playerId && "(You)"}</span>
+                                            {isHost && p.id !== playerId && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => kickPlayer(p.id)}
+                                                    className="w-8 h-8 p-0 text-zinc-500 hover:text-red-500 hover:bg-red-500/10"
+                                                >
+                                                    <X className="w-4 h-4" />
+                                                </Button>
+                                            )}
                                         </div>
                                     ))}
                                 </div>

@@ -128,6 +128,25 @@ class ApiService {
         if (!response.ok) throw new Error('Failed to eliminate player');
         return response.json();
     }
+
+    async kickPlayer(gameId: string, playerId: string): Promise<boolean> {
+        const response = await fetch(`${API_URL}/game/${gameId}/players/${playerId}`, {
+            method: 'DELETE',
+        });
+        return response.ok;
+    }
+
+    async votePlayer(gameId: string, voterId: string, targetPlayerId: string): Promise<boolean> {
+        const response = await fetch(`${API_URL}/game/${gameId}/vote`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                voter_id: voterId,
+                target_player_id: targetPlayerId
+            })
+        });
+        return response.ok;
+    }
 }
 
 export const api = new ApiService();

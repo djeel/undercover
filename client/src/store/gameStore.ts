@@ -14,6 +14,7 @@ export interface Player {
     word: string;
     isEliminated: boolean;
     hasRevealed: boolean;
+    votesReceived: number;
 }
 
 export interface GameConfig {
@@ -74,6 +75,9 @@ interface GameState {
     setGameMode: (mode: 'local' | 'online') => void;
     setOnlineState: (state: Partial<GameState['onlineState']>) => void;
     syncWithServer: (serverResponse: GameStateResponse) => void;
+    leaveRoom: () => void;
+    kickPlayer: (playerId: string) => Promise<void>;
+    votePlayer: (targetId: string) => Promise<void>;
 }
 
 const generateId = () => Math.random().toString(36).substring(2, 9);
@@ -143,6 +147,7 @@ export const useGameStore = create<GameState>()(
                             word: '',
                             isEliminated: false,
                             hasRevealed: false,
+                            votesReceived: 0,
                         },
                     ],
                 }));
@@ -185,6 +190,7 @@ export const useGameStore = create<GameState>()(
                             : civilianWord,
                     hasRevealed: false,
                     isEliminated: false,
+                    votesReceived: 0,
                 }));
 
                 set({
@@ -319,7 +325,8 @@ export const useGameStore = create<GameState>()(
                     role: 'civilian' as Role, // Reset to default
                     word: '',
                     isEliminated: false,
-                    hasRevealed: false
+                    hasRevealed: false,
+                    votesReceived: 0,
                 }));
 
                 set({
@@ -379,7 +386,8 @@ export const useGameStore = create<GameState>()(
                     role: mapRole(p.role),
                     word: p.word || '',
                     isEliminated: !p.is_alive,
-                    hasRevealed: true
+                    hasRevealed: true,
+                    votesReceived: p.votes_received
                 }));
 
                 let phase: GamePhase = state.phase;
@@ -413,6 +421,41 @@ export const useGameStore = create<GameState>()(
                     } : state.config
                 });
             },
+
+            leaveRoom: () => {
+                set({
+                    onlineState: {
+                        roomId: null,
+                        playerId: null,
+                        isHost: false,
+                        lastPoll: 0
+                    },
+                    phase: 'idle',
+                    players: [],
+                    gameMode: 'local' // Fallback to local
+                });
+            },
+
+            kickPlayer: async (playerId: string) => {
+                const { onlineState } = get();
+                if (!onlineState.roomId) return;
+                try {
+                    await import('../services/api').then(m => m.api.kickPlayer(onlineState.roomId!, playerId));
+                    // Update happens via sync
+                } catch (e) {
+                    console.error("Kick failed", e);
+                }
+            },
+
+            votePlayer: async (targetId: string) => {
+                const { onlineState } = get();
+                if (!onlineState.roomId || !onlineState.playerId) return;
+                try {
+                    await import('../services/api').then(m => m.api.votePlayer(onlineState.roomId!, onlineState.playerId!, targetId));
+                } catch (e) {
+                    console.error("Vote failed", e);
+                }
+            }
         }),
         {
             name: 'undercover-game-storage',

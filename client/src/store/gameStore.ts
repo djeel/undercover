@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import i18n from '../i18n';
+import { WORD_PAIRS } from '../data/wordPairs';
 
 // Types
 export type Role = 'civilian' | 'undercover' | 'mrWhite';
@@ -45,7 +47,7 @@ interface GameState {
     history: GameResult[];
 
     // Actions
-    addPlayer: (name: string) => void;
+    addPlayer: (name: string) => boolean;
     removePlayer: (id: string) => void;
     updateConfig: (config: Partial<GameConfig>) => void;
     startGame: () => void;
@@ -58,10 +60,6 @@ interface GameState {
     clearHistory: () => void;
     setWinner: (winner: 'civilians' | 'undercovers' | 'mrWhite' | null) => void;
 }
-
-// Word pairs for the game
-import i18n from '../i18n';
-import { WORD_PAIRS } from '../data/wordPairs';
 
 const generateId = () => Math.random().toString(36).substring(2, 9);
 
@@ -103,7 +101,14 @@ export const useGameStore = create<GameState>()(
 
             addPlayer: (name: string) => {
                 const trimmedName = name.trim();
-                if (!trimmedName) return;
+                if (!trimmedName) return false;
+
+                const { players } = get();
+                const isDuplicate = players.some(
+                    (p) => p.name.toLowerCase() === trimmedName.toLowerCase()
+                );
+
+                if (isDuplicate) return false;
 
                 set((state) => ({
                     players: [
@@ -118,6 +123,7 @@ export const useGameStore = create<GameState>()(
                         },
                     ],
                 }));
+                return true;
             },
 
             removePlayer: (id: string) => {
@@ -193,7 +199,6 @@ export const useGameStore = create<GameState>()(
                     p.id === id ? { ...p, isEliminated: true } : p
                 );
 
-                // Check win conditions
                 // Check win conditions
                 const alivePlayers = updatedPlayers.filter((p) => !p.isEliminated);
                 const aliveUndercovers = alivePlayers.filter((p) => p.role === 'undercover');

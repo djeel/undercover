@@ -7,6 +7,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { useGameStore } from '../store/gameStore';
+import { cn } from '../lib/utils';
 
 const SetupPage = () => {
     const { t } = useTranslation();
@@ -21,12 +22,18 @@ const SetupPage = () => {
     } = useGameStore();
 
     const [newPlayerName, setNewPlayerName] = useState('');
+    const [error, setError] = useState('');
 
     const handleAddPlayer = (e?: React.FormEvent) => {
         e?.preventDefault();
         if (newPlayerName.trim()) {
-            addPlayer(newPlayerName);
-            setNewPlayerName('');
+            const success = addPlayer(newPlayerName);
+            if (success) {
+                setNewPlayerName('');
+                setError('');
+            } else {
+                setError(t('setup.duplicateName'));
+            }
         }
     };
 
@@ -73,17 +80,28 @@ const SetupPage = () => {
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4 flex-1 flex flex-col min-h-0">
-                        <form onSubmit={handleAddPlayer} className="flex gap-2">
-                            <Input
-                                placeholder={t('setup.playerName')}
-                                value={newPlayerName}
-                                onChange={(e) => setNewPlayerName(e.target.value)}
-                                className="bg-zinc-900 border-zinc-800 text-white focus:ring-primary focus:border-primary"
-                            />
-                            <Button type="submit" size="icon" disabled={!newPlayerName.trim()} className="bg-primary hover:bg-primary/90 rounded-xl shadow-md shadow-primary/20">
-                                <Plus className="w-5 h-5" />
-                            </Button>
-                        </form>
+                        <div className="space-y-2">
+                            <form onSubmit={handleAddPlayer} className="flex gap-2">
+                                <Input
+                                    placeholder={t('setup.playerName')}
+                                    value={newPlayerName}
+                                    onChange={(e) => {
+                                        setNewPlayerName(e.target.value);
+                                        setError('');
+                                    }}
+                                    className={cn(
+                                        "bg-zinc-900 border-zinc-800 text-white focus:ring-primary focus:border-primary",
+                                        error && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                                    )}
+                                />
+                                <Button type="submit" size="icon" disabled={!newPlayerName.trim()} className="bg-primary hover:bg-primary/90 rounded-xl shadow-md shadow-primary/20">
+                                    <Plus className="w-5 h-5" />
+                                </Button>
+                            </form>
+                            {error && (
+                                <p className="text-xs text-red-500 px-1">{error}</p>
+                            )}
+                        </div>
 
                         <div className="h-48 overflow-y-auto pr-2 custom-scrollbar grid grid-cols-2 gap-3 content-start">
                             <AnimatePresence initial={false} mode="popLayout">

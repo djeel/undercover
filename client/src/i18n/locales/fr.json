@@ -18,7 +18,8 @@
         "undercoverCount": "Agents infiltrés",
         "mrWhiteCount": "Mr. White",
         "startGame": "Démarrer",
-        "removePlayer": "Retirer le joueur"
+        "removePlayer": "Retirer le joueur",
+        "duplicateName": "Ce nom est déjà pris !"
     },
     "players": {
         "title": "Joueurs",

@@ -18,7 +18,8 @@
         "undercoverCount": "Undercover agents",
         "mrWhiteCount": "Mr. White",
         "startGame": "Start Game",
-        "removePlayer": "Remove player"
+        "removePlayer": "Remove player",
+        "duplicateName": "Name already taken!"
     },
     "players": {
         "title": "Players",

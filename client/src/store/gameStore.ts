@@ -382,7 +382,10 @@ export const useGameStore = create<GameState>()(
                     config: response.settings ? {
                         ...state.config,
                         undercoverCount: response.settings.undercover_count,
-                        mrWhiteCount: response.settings.mr_white_count
+                        mrWhiteCount: response.settings.mr_white_count,
+                        // Update words if provided (usually at game end)
+                        civilianWord: response.settings.civilian_word || state.config.civilianWord,
+                        undercoverWord: response.settings.undercover_word || state.config.undercoverWord
                     } : state.config
                 });
             },

@@ -34,6 +34,8 @@ export interface GameSettingsResponse {
     total_players: number;
     undercover_count: number;
     mr_white_count: number;
+    civilian_word?: string;
+    undercover_word?: string;
 }
 
 export interface GameStateResponse {

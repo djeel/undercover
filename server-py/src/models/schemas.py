@@ -122,6 +122,8 @@ class GameSettingsResponse(BaseModel):
     total_players: int
     undercover_count: int
     mr_white_count: int
+    civilian_word: Optional[str] = None
+    undercover_word: Optional[str] = None
 
 
 class GameStateResponse(BaseModel):

@@ -176,6 +176,8 @@ class GameService:
         """
         filtered_players: List[PlayerResponse] = []
         
+        is_finished = game.phase == GamePhase.FINISHED
+        
         for player in game.players:
             player_response = PlayerResponse(
                 id=player.id,
@@ -185,10 +187,12 @@ class GameService:
                 votes_received=player.votes_received,
             )
             
-            # Only include role/word for the requesting player
-            if requesting_player_id and player.id == requesting_player_id:
+            # Reveal if requesting player, OR if game is finished
+            should_reveal = is_finished or (requesting_player_id and player.id == requesting_player_id)
+            
+            if should_reveal:
                 player_response.role = player.role.value if player.role else None
-                # Mr. White sees their role but NOT the word
+                # Mr. White sees their role but NOT the word (even in results, they had NO word)
                 if player.role != PlayerRole.MR_WHITE:
                     player_response.word = player.word
             
@@ -200,6 +204,8 @@ class GameService:
                 total_players=len(game.players),
                 undercover_count=game.undercover_count,
                 mr_white_count=game.mr_white_count,
+                civilian_word=game.word_pair.civilian_word if is_finished and game.word_pair else None,
+                undercover_word=game.word_pair.undercover_word if is_finished and game.word_pair else None,
             )
         
         return GameStateResponse(

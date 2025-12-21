@@ -27,7 +27,7 @@ const HomePage = () => {
                     variant="ghost"
                     size="sm"
                     onClick={toggleLanguage}
-                    className="text-muted-foreground hover:text-primary font-medium"
+                    className="text-zinc-500 hover:text-white hover:bg-white/5 font-medium transition-colors"
                 >
                     {i18n.language.toUpperCase()}
                 </Button>
@@ -52,7 +52,7 @@ const HomePage = () => {
                     <Button
                         onClick={handleNewGame}
                         size="lg"
-                        className="w-full text-lg h-16 bg-primary hover:bg-primary/90 text-primary-foreground border-0 rounded-2xl shadow-lg shadow-primary/20"
+                        className="w-full text-lg h-16 bg-primary hover:bg-primary/90 text-primary-foreground border-0 rounded-2xl shadow-md shadow-primary/20"
                     >
                         {t('home.newGame')}
                     </Button>

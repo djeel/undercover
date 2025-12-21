@@ -80,7 +80,7 @@ const SetupPage = () => {
                                 onChange={(e) => setNewPlayerName(e.target.value)}
                                 className="bg-zinc-900 border-zinc-800 text-white focus:ring-primary focus:border-primary"
                             />
-                            <Button type="submit" size="icon" disabled={!newPlayerName.trim()} className="bg-primary hover:bg-primary/90 rounded-xl">
+                            <Button type="submit" size="icon" disabled={!newPlayerName.trim()} className="bg-primary hover:bg-primary/90 rounded-xl shadow-md shadow-primary/20">
                                 <Plus className="w-5 h-5" />
                             </Button>
                         </form>
@@ -158,7 +158,7 @@ const SetupPage = () => {
                                 onClick={toggleMrWhite}
                                 variant={config.mrWhiteCount > 0 ? "default" : "outline"}
                                 className={config.mrWhiteCount > 0
-                                    ? "bg-accent hover:bg-accent/90 text-white border-0"
+                                    ? "bg-accent hover:bg-accent/90 text-white border-0 shadow-md shadow-accent/20"
                                     : "border-zinc-700 bg-zinc-900 text-zinc-400 hover:text-white"
                                 }
                             >
@@ -175,7 +175,7 @@ const SetupPage = () => {
                         size="lg"
                         onClick={handleStartGame}
                         disabled={players.length < 3}
-                        className="w-full h-14 text-lg bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 rounded-full font-bold"
+                        className="w-full h-14 text-lg bg-primary hover:bg-primary/90 text-white shadow-md shadow-primary/20 rounded-full font-bold"
                     >
                         {t('setup.startGame')}
                         <ArrowRight className="ml-2 w-5 h-5" />

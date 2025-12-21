@@ -85,7 +85,7 @@ const SetupPage = () => {
                             </Button>
                         </form>
 
-                        <div className="h-[300px] overflow-y-auto pr-2 custom-scrollbar grid grid-cols-2 gap-3 content-start">
+                        <div className="h-48 overflow-y-auto pr-2 custom-scrollbar grid grid-cols-2 gap-3 content-start">
                             <AnimatePresence initial={false} mode="popLayout">
                                 {players.map((player) => (
                                     <motion.div
@@ -136,7 +136,7 @@ const SetupPage = () => {
                                 >
                                     <Minus className="w-4 h-4" />
                                 </Button>
-                                <span className="font-bold text-secondary w-6 text-center text-lg">
+                                <span className="font-bold text-white w-6 text-center text-lg">
                                     {config.undercoverCount}
                                 </span>
                                 <Button

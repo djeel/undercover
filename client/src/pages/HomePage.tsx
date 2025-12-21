@@ -40,10 +40,10 @@ const HomePage = () => {
                 className="w-full max-w-sm flex flex-col gap-12 text-center"
             >
                 <div className="space-y-4">
-                    <h1 className="text-6xl font-black tracking-tighter text-foreground">
+                    <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground text-center">
                         {t('app.title')}
                     </h1>
-                    <p className="text-lg font-medium text-muted-foreground">
+                    <p className="text-base md:text-lg font-medium text-muted-foreground text-center">
                         {t('home.subtitle')}
                     </p>
                 </div>

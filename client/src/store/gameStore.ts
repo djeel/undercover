@@ -59,23 +59,8 @@ interface GameState {
 }
 
 // Word pairs for the game
-const WORD_PAIRS = [
-    ['Coffee', 'Tea'],
-    ['Cat', 'Dog'],
-    ['Pizza', 'Burger'],
-    ['Beach', 'Mountains'],
-    ['Summer', 'Winter'],
-    ['Guitar', 'Piano'],
-    ['Apple', 'Orange'],
-    ['Movie', 'Book'],
-    ['Rain', 'Snow'],
-    ['Sunrise', 'Sunset'],
-    ['Football', 'Rugby'],
-    ['Chocolate', 'Vanilla'],
-    ['City', 'Village'],
-    ['Ocean', 'Lake'],
-    ['Train', 'Bus'],
-];
+import i18n from '../i18n';
+import { WORD_PAIRS } from '../data/wordPairs';
 
 const generateId = () => Math.random().toString(36).substring(2, 9);
 
@@ -89,7 +74,11 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 };
 
 const getRandomWordPair = (): [string, string] => {
-    const pair = WORD_PAIRS[Math.floor(Math.random() * WORD_PAIRS.length)];
+    const pairObj = WORD_PAIRS[Math.floor(Math.random() * WORD_PAIRS.length)];
+    const lang = i18n.language?.split('-')[0] || 'en';
+    // Fallback to English if the language is not available in the pair object (though all should have en/fr)
+    const pair = pairObj[lang] || pairObj['en'];
+
     return Math.random() > 0.5 ? [pair[0], pair[1]] : [pair[1], pair[0]];
 };
 

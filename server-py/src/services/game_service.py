@@ -58,23 +58,27 @@ class GameService:
     # ========================================================================
     
     async def add_player(self, game_id: str, name: str) -> Optional[PlayerDocument]:
-        """Add a player to a game.
+        """Add a new player to the game.
         
         Args:
-            game_id: Public game ID.
-            name: Player display name.
+            game_id: Public game ID
+            name: Player name
             
         Returns:
-            PlayerDocument if successful, None if game not found or not in LOBBY.
+            PlayerDocument if successful, None otherwise
         """
         game = await self.get_game(game_id)
-        if not game or game.phase != GamePhase.LOBBY:
+        if not game:
             return None
-        
+            
         player = PlayerDocument(name=name)
         game.players.append(player)
-        await self._update_game(game)
         
+        # Set first player as host
+        if len(game.players) == 1:
+            game.host_player_id = player.id
+        
+        await self._update_game(game)
         return player
     
     # ========================================================================
@@ -324,6 +328,7 @@ class GameService:
             players=filtered_players,
             settings=settings,
             winner=game.winner,
+            host_player_id=game.host_player_id,
             current_turn_player_id=game.current_turn_player_id,
         )
     

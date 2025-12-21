@@ -136,6 +136,7 @@ class GameStateResponse(BaseModel):
     players: List[PlayerResponse]
     settings: Optional[GameSettingsResponse] = None
     winner: Optional[WinnerType] = None
+    host_player_id: Optional[str] = None
     current_turn_player_id: Optional[str] = None
 
 

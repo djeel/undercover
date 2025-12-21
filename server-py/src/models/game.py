@@ -64,6 +64,9 @@ class GameDocument(BaseModel):
     undercover_count: int = 0
     mr_white_count: int = 0
     
+    # Host tracking
+    host_player_id: Optional[str] = None
+    
     # Victory state
     winner: Optional[WinnerType] = None
     

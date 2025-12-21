@@ -401,13 +401,13 @@ export const useGameStore = create<GameState>()(
                 else if (response.phase === 'VOTING') phase = 'voting';
                 else if (response.phase === 'FINISHED') phase = 'results';
 
-                const mapWinner = (serverWinner?: string) => {
-                    switch (serverWinner) {
-                        case 'CIVILIANS': return 'civilians';
-                        case 'UNDERCOVER': return 'undercovers';
-                        case 'MR_WHITE': return 'mrWhite';
-                        default: return null;
-                    }
+                // Helper to map backend winner format to frontend
+                const mapWinner = (w: string | null | undefined): 'civilians' | 'undercovers' | 'mrWhite' | null => {
+                    if (!w) return null;
+                    if (w === 'CIVILIANS' || w === 'civilians') return 'civilians';
+                    if (w === 'UNDERCOVER' || w === 'undercovers') return 'undercovers';
+                    if (w === 'MR_WHITE' || w === 'mrWhite') return 'mrWhite';
+                    return null;
                 };
 
                 set({

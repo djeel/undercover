@@ -40,10 +40,16 @@ export interface GameSettingsResponse {
 
 export interface GameStateResponse {
     game_id: string;
-    phase: GamePhase;
+    phase: 'LOBBY' | 'PLAYING' | 'FINISHED' | 'VOTING';
     players: PlayerResponse[];
-    settings?: GameSettingsResponse;
-    winner?: WinnerType;
+    settings: {
+        civilian_word: string | null;
+        undercover_word: string | null;
+        undercover_count: number;
+        mr_white_count: number;
+    };
+    winner: 'civilians' | 'undercovers' | 'mrWhite' | null;
+    host_player_id: string | null;
     current_turn_player_id?: string;
 }
 

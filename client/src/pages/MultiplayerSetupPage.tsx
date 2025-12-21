@@ -52,6 +52,15 @@ const MultiplayerSetupPage = () => {
                     return;
                 }
 
+                // Check if host left the room
+                const hostStillPresent = state.players.some(p => p.id === state.host_player_id);
+                if (!hostStillPresent && state.host_player_id) {
+                    // Host left - redirect everyone to home
+                    leaveRoom();
+                    navigate('/');
+                    return;
+                }
+
                 // Navigate to reveal if started
                 if (state.phase === 'PLAYING') {
                     navigate('/reveal');

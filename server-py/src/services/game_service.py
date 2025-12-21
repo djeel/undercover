@@ -1,14 +1,11 @@
-"""Core game logic service.
+"""Game service - core business logic for Undercover game.
 
-Handles:
-- Game creation and player management
-- Role assignment algorithm
-- Victory condition detection
-- State filtering for security
+This module handles game state management, role assignment, and victory conditions.
 """
-import random
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, List, Any
+import uuid
+import random
 
 from ..models.game import GameDocument, PlayerDocument, WordPairDocument
 from ..models.schemas import (
@@ -231,6 +228,34 @@ class GameService:
         
         target.votes_received += 1
         voter.has_voted = True
+        
+        # Check if all alive players have voted
+        alive_players = [p for p in game.players if p.is_alive]
+        all_voted = all(p.has_voted for p in alive_players)
+        
+        if all_voted:
+            # Find player(s) with most votes
+            max_votes = max(p.votes_received for p in alive_players)
+            candidates = [p for p in alive_players if p.votes_received == max_votes]
+            
+            # If tie, choose randomly; otherwise, eliminate the one with most votes
+            eliminated = random.choice(candidates)
+            
+            # Eliminate the player
+            eliminated.is_alive = False
+            
+            # Reset votes for next round
+            for p in game.players:
+                p.votes_received = 0
+                p.has_voted = False
+            
+            # Check victory conditions
+            winner = self._check_victory(game, False)  # No Mr. White guess in voting
+            
+            if winner:
+                game.phase = GamePhase.FINISHED
+                game.winner = winner
+                game.finished_at = datetime.now(timezone.utc)
         
         await self._update_game(game)
         return target.votes_received

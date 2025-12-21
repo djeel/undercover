@@ -71,7 +71,11 @@ const ResultsPage = () => {
 
     const handlePlayAgain = () => {
         restartGame();
-        navigate('/setup');
+        // For local mode, navigate to setup
+        // For online mode, polling will redirect to /reveal when game restarts
+        if (gameMode === 'local') {
+            navigate('/setup');
+        }
     };
 
     const handleHome = () => {

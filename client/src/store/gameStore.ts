@@ -310,22 +310,22 @@ export const useGameStore = create<GameState>()(
             restartGame: async () => {
                 const { gameMode, onlineState } = get();
 
-                // Online Mode
+                // Online Mode - just call API and return, polling will handle state updates
                 if (gameMode === 'online' && onlineState.roomId) {
                     try {
                         await import('../services/api').then(m => m.api.restartGame(onlineState.roomId!));
-                        // State update will happen via polling/sync
-                        return;
                     } catch (e) {
                         console.error("Failed to restart online game", e);
                     }
+                    // Don't execute local logic for online games
+                    return;
                 }
 
-                // Local Mode (or fallback)
+                // Local Mode only
                 const { players } = get();
                 const resetPlayers = players.map(p => ({
                     ...p,
-                    role: 'civilian' as Role, // Reset to default
+                    role: 'civilian' as Role,
                     word: '',
                     isEliminated: false,
                     hasRevealed: false,
@@ -335,7 +335,7 @@ export const useGameStore = create<GameState>()(
 
                 set({
                     players: resetPlayers,
-                    phase: 'setup',  // online uses 'setup' for LOBBY, local uses 'setup' or 'idle'
+                    phase: 'setup',
                     currentRevealIndex: 0,
                     round: 1,
                     winner: null,

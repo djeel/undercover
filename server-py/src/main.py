@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
-from .database import Database
+from .database import InMemoryDatabase
 from .routes import game_routes, word_routes
 
 
@@ -12,10 +12,10 @@ from .routes import game_routes, word_routes
 async def lifespan(app: FastAPI):
     """Application lifespan manager for startup/shutdown."""
     # Startup
-    await Database.connect()
+    await InMemoryDatabase.connect()
     yield
     # Shutdown
-    await Database.disconnect()
+    await InMemoryDatabase.disconnect()
 
 
 app = FastAPI(

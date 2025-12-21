@@ -2,9 +2,10 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import i18n from '../i18n';
 import { WORD_PAIRS } from '../data/wordPairs';
+import { GameStateResponse } from '../services/api';
 
 // Types
-export type Role = 'civilian' | 'undercover' | 'mrWhite';
+export type Role = 'civilian' | 'undercover' | 'mrWhite' | 'unknown';
 
 export interface Player {
     id: string;
@@ -43,6 +44,15 @@ interface GameState {
     round: number;
     winner: 'civilians' | 'undercovers' | 'mrWhite' | null;
 
+    // Multiplayer
+    gameMode: 'local' | 'online';
+    onlineState: {
+        roomId: string | null;
+        playerId: string | null;
+        isHost: boolean;
+        lastPoll: number;
+    };
+
     // History
     history: GameResult[];
 
@@ -59,6 +69,11 @@ interface GameState {
     restartGame: () => void;
     clearHistory: () => void;
     setWinner: (winner: 'civilians' | 'undercovers' | 'mrWhite' | null) => void;
+
+    // Multiplayer Actions
+    setGameMode: (mode: 'local' | 'online') => void;
+    setOnlineState: (state: Partial<GameState['onlineState']>) => void;
+    syncWithServer: (serverResponse: GameStateResponse) => void;
 }
 
 const generateId = () => Math.random().toString(36).substring(2, 9);
@@ -98,6 +113,14 @@ export const useGameStore = create<GameState>()(
             round: 1,
             winner: null,
             history: [],
+
+            gameMode: 'local',
+            onlineState: {
+                roomId: null,
+                playerId: null,
+                isHost: false,
+                lastPoll: 0
+            },
 
             addPlayer: (name: string) => {
                 const trimmedName = name.trim();
@@ -305,6 +328,62 @@ export const useGameStore = create<GameState>()(
                     winner,
                     phase: 'results',
                     history: [result, ...state.history].slice(0, 20),
+                });
+            },
+
+            setGameMode: (mode) => set({ gameMode: mode }),
+
+            setOnlineState: (onlineState) => set((state) => ({
+                onlineState: { ...state.onlineState, ...onlineState }
+            })),
+
+            syncWithServer: (response: GameStateResponse) => {
+                const state = get();
+
+                const mapRole = (serverRole?: string): Role => {
+                    switch (serverRole) {
+                        case 'CIVILIAN': return 'civilian';
+                        case 'UNDERCOVER': return 'undercover';
+                        case 'MR_WHITE': return 'mrWhite';
+                        default: return 'unknown';
+                    }
+                };
+
+                const mappedPlayers: Player[] = response.players.map(p => ({
+                    id: p.id,
+                    name: p.name,
+                    role: mapRole(p.role),
+                    word: p.word || '',
+                    isEliminated: !p.is_alive,
+                    hasRevealed: true
+                }));
+
+                let phase: GamePhase = state.phase;
+                if (response.phase === 'LOBBY') phase = 'setup';
+                else if (response.phase === 'PLAYING') phase = 'playing';
+                else if (response.phase === 'VOTING') phase = 'voting';
+                else if (response.phase === 'FINISHED') phase = 'results';
+
+                const mapWinner = (serverWinner?: string) => {
+                    switch (serverWinner) {
+                        case 'CIVILIANS': return 'civilians';
+                        case 'UNDERCOVER': return 'undercovers';
+                        case 'MR_WHITE': return 'mrWhite';
+                        default: return null;
+                    }
+                };
+
+                set({
+                    players: mappedPlayers,
+                    phase,
+                    winner: mapWinner(response.winner),
+                    onlineState: { ...state.onlineState, lastPoll: Date.now() },
+                    // If settings present, update config
+                    config: response.settings ? {
+                        ...state.config,
+                        undercoverCount: response.settings.undercover_count,
+                        mrWhiteCount: response.settings.mr_white_count
+                    } : state.config
                 });
             },
         }),

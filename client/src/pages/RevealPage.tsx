@@ -10,35 +10,54 @@ import { cn } from '../lib/utils';
 const RevealPage = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const {
-        players,
-        currentRevealIndex,
-        revealCurrentPlayer,
-        nextRevealPlayer,
-        startPlaying,
-        phase
-    } = useGameStore();
+    const players = useGameStore(state => state.players);
+    const currentRevealIndex = useGameStore(state => state.currentRevealIndex);
+    const revealCurrentPlayer = useGameStore(state => state.revealCurrentPlayer);
+    const nextRevealPlayer = useGameStore(state => state.nextRevealPlayer);
+    const startPlaying = useGameStore(state => state.startPlaying);
+    const phase = useGameStore(state => state.phase);
+    const gameMode = useGameStore(state => state.gameMode);
+    const onlineState = useGameStore(state => state.onlineState);
 
     // Steps: 'pass' (Pass to X) -> 'reveal' (Show Card)
     const [step, setStep] = useState<'pass' | 'reveal'>('pass');
 
-    const currentPlayer = players[currentRevealIndex];
-    const isLastPlayer = currentRevealIndex === players.length - 1;
+    // Determine current player based on mode
+    const currentPlayer = gameMode === 'online'
+        ? players.find(p => p.id === onlineState.playerId)
+        : players[currentRevealIndex];
+
+    const isLastPlayer = gameMode === 'online'
+        ? true
+        : currentRevealIndex === players.length - 1;
 
     useEffect(() => {
-        if (phase === 'playing') {
+        // Redirect if phase is invalid
+        if (phase === 'playing' && gameMode === 'local') {
             navigate('/game');
         } else if (phase === 'idle' || phase === 'setup') {
+            // navigate('/'); // Commented out to allow online reveal if phase is already playing
+        }
+
+        // For online, if we don't have a player ID, go home
+        if (gameMode === 'online' && !currentPlayer) {
             navigate('/');
         }
-    }, [phase, navigate]);
+    }, [phase, navigate, gameMode, currentPlayer]);
 
     const handleIdentify = () => {
         setStep('reveal');
-        revealCurrentPlayer();
+        if (gameMode === 'local') {
+            revealCurrentPlayer();
+        }
     };
 
     const handleNext = () => {
+        if (gameMode === 'online') {
+            navigate('/game');
+            return;
+        }
+
         if (isLastPlayer) {
             startPlaying();
             navigate('/game');
@@ -63,10 +82,10 @@ const RevealPage = () => {
                     >
                         <div className="space-y-4">
                             <p className="text-muted-foreground text-lg uppercase tracking-widest font-medium">
-                                {t('reveal.passPhone')}
+                                {gameMode === 'online' ? t('reveal.getReady') : t('reveal.passPhone')}
                             </p>
                             <h2 className="text-5xl font-black text-foreground tracking-tight">
-                                {currentPlayer.name}
+                                {gameMode === 'online' ? t('reveal.yourRole') : currentPlayer.name}
                             </h2>
                         </div>
 

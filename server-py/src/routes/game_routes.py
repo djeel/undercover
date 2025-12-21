@@ -3,9 +3,8 @@
 SECURITY: All endpoints that return game state filter based on
 X-Player-ID header to prevent role leakage.
 """
-from typing import Optional
+from typing import Optional, Any
 from fastapi import APIRouter, HTTPException, Header, Depends
-from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from ..database import get_database
 from ..models.schemas import (
@@ -28,7 +27,7 @@ from ..services.game_service import GameService
 router = APIRouter(prefix="/game", tags=["game"])
 
 
-def get_game_service(db: AsyncIOMotorDatabase = Depends(get_database)) -> GameService:
+def get_game_service(db: Any = Depends(get_database)) -> GameService:
     """Dependency injection for GameService."""
     return GameService(db)
 

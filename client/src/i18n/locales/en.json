@@ -4,8 +4,9 @@
     },
     "home": {
         "subtitle": "The ultimate social deduction game",
-        "newGame": "New Game",
-        "history": "Game History",
+        "newGame": "Local Game",
+        "playOnline": "Online Multiplayer",
+        "history": "History",
         "howToPlay": "How to Play"
     },
     "setup": {
@@ -33,7 +34,10 @@
         "mrWhiteHint": "You don't know the word. Listen to others to guess it!",
         "memorize": "Describe this word without saying it directly",
         "nextPlayer": "Next Player",
-        "startDiscussion": "Start Game"
+        "startDiscussion": "Start Game",
+        "getReady": "Get Ready!",
+        "yourRole": "Your Role",
+        "identify": "Tap to reveal"
     },
     "game": {
         "title": "Discussion",
@@ -82,6 +86,7 @@
     "roles": {
         "civilian": "Civilian",
         "undercover": "Undercover",
-        "mrWhite": "Mr. White"
+        "mrWhite": "Mr. White",
+        "unknown": "Unknown"
     }
 }

@@ -153,6 +153,37 @@ class GameService:
         await self._update_game(game)
         return True
     
+    
+    async def restart_game(self, game_id: str) -> bool:
+        """Restart a game, sending it back to LOBBY.
+        
+        Resets:
+        - Phase to LOBBY
+        - Winner to None
+        - Players: alive, no votes, no roles, no words, no revealed
+        - Config: remains same
+        """
+        game = await self.get_game(game_id)
+        if not game:
+            return False
+            
+        # Reset game state
+        game.phase = GamePhase.LOBBY
+        game.winner = None
+        game.finished_at = None
+        game.current_turn_player_id = None
+        
+        # Reset players
+        for player in game.players:
+            player.is_alive = True
+            player.has_voted = False
+            player.votes_received = 0
+            player.role = None
+            player.word = None
+            
+        await self._update_game(game)
+        return True
+
     # ========================================================================
     # Game State (with Security Filtering)
     # ========================================================================
@@ -271,6 +302,7 @@ class GameService:
             winner=winner,
         )
     
+    
     def _check_victory(
         self, 
         game: GameDocument, 
@@ -278,10 +310,11 @@ class GameService:
     ) -> Optional[WinnerType]:
         """Check if any victory condition is met.
         
-        Victory Conditions:
-        1. CIVILIANS WIN: All Undercovers AND Mr. White are eliminated
-        2. UNDERCOVER WINS: Undercovers >= remaining Civilians
-        3. MR_WHITE WINS: Correctly guesses civilian word when eliminated
+        Priorities:
+        1. Mr. White Instant Win (Correct Guess)
+        2. Mr. White Survival Win (1v1 against anyone)
+        3. Civilians Win (All enemies eliminated)
+        4. Undercover Win (Absolute majority or Simple majority if MW gone)
         
         Args:
             game: Current game state.
@@ -290,27 +323,40 @@ class GameService:
         Returns:
             WinnerType if game is over, None otherwise.
         """
-        # Mr. White correct guess = instant win
+        # 1. Mr. White Instant Win
         if mr_white_guessed_correctly:
             return WinnerType.MR_WHITE
         
-        alive_civilians = len(game.get_alive_by_role(PlayerRole.CIVILIAN))
-        alive_undercover = len(game.get_alive_by_role(PlayerRole.UNDERCOVER))
-        alive_mr_white = len(game.get_alive_by_role(PlayerRole.MR_WHITE))
+        alive_players = game.get_alive_players()
+        total_alive = len(alive_players)
         
-        # Civilians win: all special roles eliminated
+        alive_civilians = len([p for p in alive_players if p.role == PlayerRole.CIVILIAN])
+        alive_undercover = len([p for p in alive_players if p.role == PlayerRole.UNDERCOVER])
+        alive_mr_white = len([p for p in alive_players if p.role == PlayerRole.MR_WHITE])
+        
+        # 2. Mr. White Survival Win (1v1)
+        # If Mr. White remains with just 1 other person (total 2), chaos ensues, he wins.
+        if alive_mr_white > 0 and total_alive <= 2:
+            return WinnerType.MR_WHITE
+            
+        # 3. Civilians Win
+        # Must eliminate ALL enemies (both UC and White)
         if alive_undercover == 0 and alive_mr_white == 0:
             return WinnerType.CIVILIANS
-        
-        # Undercover wins: outnumber or equal civilians
-        # (Mr. White doesn't count for undercover team)
-        if alive_undercover >= alive_civilians and alive_civilians > 0:
+            
+        # 4. Undercover Win
+        # Condition A: No Civilians left (and Mr. White didn't win via 1v1 check above)
+        if alive_civilians == 0:
+             return WinnerType.UNDERCOVER
+             
+        # Condition B: Absolute Majority (UC >= Civ + White)
+        if alive_undercover >= (alive_civilians + alive_mr_white):
             return WinnerType.UNDERCOVER
-        
-        # Edge case: only undercover left
-        if alive_undercover > 0 and alive_civilians == 0 and alive_mr_white == 0:
+            
+        # Condition C: Simple Majority (UC >= Civ) ONLY if Mr. White is gone
+        if alive_mr_white == 0 and alive_undercover >= alive_civilians:
             return WinnerType.UNDERCOVER
-        
+            
         return None
     
     # ========================================================================

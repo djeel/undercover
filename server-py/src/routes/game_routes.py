@@ -102,6 +102,21 @@ async def assign_roles(
 # Game State
 # ============================================================================
 
+@router.post("/{game_id}/restart", response_model=bool)
+async def restart_game(
+    game_id: str,
+    service: GameService = Depends(get_game_service),
+):
+    """Restart a game.
+    
+    Transitions game back to LOBBY phase.
+    Resets all player states (alive, roles, etc).
+    """
+    success = await service.restart_game(game_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Game not found")
+    return True
+
 @router.get("/{game_id}", response_model=GameStateResponse)
 async def get_game_state(
     game_id: str,

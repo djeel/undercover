@@ -103,6 +103,15 @@ class ApiService {
         return response.ok;
     }
 
+    async restartGame(gameId: string): Promise<boolean> {
+        const response = await fetch(`${API_URL}/game/${gameId}/restart`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+        });
+        return response.ok;
+    }
+
     async eliminatePlayer(
         gameId: string,
         targetPlayerId: string,

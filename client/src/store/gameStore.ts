@@ -231,19 +231,30 @@ export const useGameStore = create<GameState>()(
                 let winner: 'civilians' | 'undercovers' | 'mrWhite' | null = null;
                 let newPhase: GamePhase = 'playing';
 
-                // Condition 1: Mr. White wins if only him + 1 other player remain
-                if (aliveMrWhite.length > 0 && alivePlayers.length === 2) {
+                // Condition 1: Mr. White wins if only him + 1 other player remain (1v1 Survival)
+                // OR checking locally if Mr. White just won via word guess is handled by backend or manual trigger in local (not handled here automatically without guess input)
+                if (aliveMrWhite.length > 0 && alivePlayers.length <= 2) {
                     winner = 'mrWhite';
                     newPhase = 'results';
                 }
-                // Condition 2: Civilians win if ALL Undercovers AND Mr. White are eliminated
+                // Condition 2: Civilians Win (All enemies eliminated)
                 else if (aliveUndercovers.length === 0 && aliveMrWhite.length === 0) {
                     winner = 'civilians';
                     newPhase = 'results';
                 }
-                // Condition 3: Undercovers win if >= Civilians (AND no Mr. White, per strict rules)
-                // If Mr. White is still alive and UC >= Civ, game continues until Mr. White wins (1v1) or is eliminated.
-                else if (aliveUndercovers.length >= aliveCivilians.length && aliveMrWhite.length === 0) {
+                // Condition 3: Undercover Win
+                // A. No Civilians left
+                else if (aliveCivilians.length === 0) {
+                    winner = 'undercovers';
+                    newPhase = 'results';
+                }
+                // B. Absolute Majority (UC >= Civ + White)
+                else if (aliveUndercovers.length >= (aliveCivilians.length + aliveMrWhite.length)) {
+                    winner = 'undercovers';
+                    newPhase = 'results';
+                }
+                // C. Simple Majority (UC >= Civ) ONLY if Mr. White is gone
+                else if (aliveMrWhite.length === 0 && aliveUndercovers.length >= aliveCivilians.length) {
                     winner = 'undercovers';
                     newPhase = 'results';
                 }
@@ -287,8 +298,21 @@ export const useGameStore = create<GameState>()(
                 });
             },
 
-            restartGame: () => {
-                // Keep players and config, just reset game state
+            restartGame: async () => {
+                const { gameMode, onlineState } = get();
+
+                // Online Mode
+                if (gameMode === 'online' && onlineState.roomId) {
+                    try {
+                        await import('../services/api').then(m => m.api.restartGame(onlineState.roomId!));
+                        // State update will happen via polling/sync
+                        return;
+                    } catch (e) {
+                        console.error("Failed to restart online game", e);
+                    }
+                }
+
+                // Local Mode (or fallback)
                 const { players } = get();
                 const resetPlayers = players.map(p => ({
                     ...p,
@@ -300,7 +324,7 @@ export const useGameStore = create<GameState>()(
 
                 set({
                     players: resetPlayers,
-                    phase: 'idle',
+                    phase: 'setup',  // online uses 'setup' for LOBBY, local uses 'setup' or 'idle'
                     currentRevealIndex: 0,
                     round: 1,
                     winner: null,

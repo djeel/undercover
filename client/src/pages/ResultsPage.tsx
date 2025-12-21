@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Trophy, Home, RotateCcw } from 'lucide-react';
@@ -10,7 +11,31 @@ import { cn } from '../lib/utils';
 const ResultsPage = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const { winner, players, config, resetGame, restartGame } = useGameStore();
+    const { winner, players, config, resetGame, restartGame, phase, onlineState, syncWithServer } = useGameStore();
+
+    // Redirect if game restarts (phase changes to 'setup'/'lobby')
+    useEffect(() => {
+        if (phase === 'setup' || phase === 'idle') {
+            navigate(onlineState.roomId ? '/lobby' : '/setup');
+        }
+    }, [phase, navigate, onlineState.roomId]);
+
+    // Polling for online games
+    useEffect(() => {
+        if (!onlineState.roomId || phase === 'idle') return;
+
+        const poll = async () => {
+            try {
+                const state = await import('../services/api').then(m => m.api.getGameState(onlineState.roomId!));
+                syncWithServer(state);
+            } catch (e) {
+                console.error("Polling error in results:", e);
+            }
+        };
+
+        const interval = setInterval(poll, 3000);
+        return () => clearInterval(interval);
+    }, [onlineState.roomId, phase, syncWithServer]);
 
     if (!winner) {
         return (
@@ -121,13 +146,17 @@ const ResultsPage = () => {
                             <Home className="mr-2 w-4 h-4" />
                             {t('results.backToHome')}
                         </Button>
-                        <Button
-                            onClick={handlePlayAgain}
-                            className="flex-1 bg-primary hover:bg-primary/90 text-white rounded-xl h-12 shadow-lg shadow-primary/20"
-                        >
-                            <RotateCcw className="mr-2 w-4 h-4" />
-                            {t('results.playAgain')}
-                        </Button>
+
+                        {/* Only Host can Play Again in Online mode, or anyone in Local mode */}
+                        {(!onlineState.roomId || onlineState.isHost) && (
+                            <Button
+                                onClick={handlePlayAgain}
+                                className="flex-1 bg-primary hover:bg-primary/90 text-white rounded-xl h-12 shadow-lg shadow-primary/20"
+                            >
+                                <RotateCcw className="mr-2 w-4 h-4" />
+                                {t('results.playAgain')}
+                            </Button>
+                        )}
                     </CardFooter>
                 </Card>
             </motion.div>

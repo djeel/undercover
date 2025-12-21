@@ -17,6 +17,10 @@ const MultiplayerSetupPage = () => {
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
+    // Game Settings State
+    const [ucCount, setUcCount] = useState(1);
+    const [whiteCount, setWhiteCount] = useState(0);
+
     const setOnlineState = useGameStore(state => state.setOnlineState);
     const onlineState = useGameStore(state => state.onlineState);
     const players = useGameStore(state => state.players);
@@ -96,8 +100,7 @@ const MultiplayerSetupPage = () => {
     const handleStartGame = async () => {
         if (!onlineState.roomId) return;
         try {
-            // Hardcoded configuration for now, could add UI for these
-            await api.assignRoles(onlineState.roomId, 1, 1);
+            await api.assignRoles(onlineState.roomId, ucCount, whiteCount);
         } catch (e) {
             setError('Failed to start game');
         }
@@ -143,15 +146,60 @@ const MultiplayerSetupPage = () => {
                                 </div>
                             </div>
 
+
+
                             {isHost ? (
-                                <Button
-                                    onClick={handleStartGame}
-                                    disabled={players.length < 3}
-                                    className="w-full h-14 text-lg bg-primary hover:bg-primary/90 text-white shadow-md shadow-primary/20"
-                                >
-                                    <Play className="w-5 h-5 mr-2" />
-                                    Start Game
-                                </Button>
+                                <>
+                                    <div className="space-y-4 border-t border-zinc-800 pt-4">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Undercovers</label>
+                                                <div className="flex items-center gap-3 bg-zinc-900 rounded-lg p-1 border border-zinc-800">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => setUcCount(Math.max(1, ucCount - 1))}
+                                                        className="h-8 w-8 p-0 text-zinc-400 hover:text-white"
+                                                    >-</Button>
+                                                    <span className="flex-1 text-center font-bold text-white">{ucCount}</span>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => setUcCount(Math.min(3, ucCount + 1))}
+                                                        className="h-8 w-8 p-0 text-zinc-400 hover:text-white"
+                                                    >+</Button>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Mr. White</label>
+                                                <div className="flex items-center gap-3 bg-zinc-900 rounded-lg p-1 border border-zinc-800">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => setWhiteCount(Math.max(0, whiteCount - 1))}
+                                                        className="h-8 w-8 p-0 text-zinc-400 hover:text-white"
+                                                    >-</Button>
+                                                    <span className="flex-1 text-center font-bold text-white">{whiteCount}</span>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => setWhiteCount(Math.min(3, whiteCount + 1))}
+                                                        className="h-8 w-8 p-0 text-zinc-400 hover:text-white"
+                                                    >+</Button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <Button
+                                            onClick={handleStartGame}
+                                            disabled={players.length < 3}
+                                            className="w-full h-14 text-lg bg-primary hover:bg-primary/90 text-white shadow-md shadow-primary/20"
+                                        >
+                                            <Play className="w-5 h-5 mr-2" />
+                                            Start Game
+                                        </Button>
+                                    </div>
+                                </>
                             ) : (
                                 <div className="text-center p-4 bg-zinc-900/50 rounded-xl text-zinc-500 animate-pulse">
                                     Waiting for host to start...

@@ -39,7 +39,7 @@ class GameService:
         game = GameDocument(word_pair=word_pair)
         
         # Store in dict
-        await self.repository.save_game(game.public_id, game.model_dump())
+        await self.repository.save_game(game.public_id, game.model_dump(mode='json'))
         return game.public_id
     
     async def get_game(self, game_id: str) -> Optional[GameDocument]:
@@ -51,7 +51,7 @@ class GameService:
     
     async def _update_game(self, game: GameDocument) -> None:
         """Save game state to database."""
-        await self.repository.save_game(game.public_id, game.model_dump())
+        await self.repository.save_game(game.public_id, game.model_dump(mode='json'))
     
     # ========================================================================
     # Player Management

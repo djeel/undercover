@@ -15,7 +15,7 @@ class SocketService {
 
         this.socket = io(SERVER_URL, {
             query: { playerId },
-            transports: ['websocket'], // Force websocket
+            // transports: ['websocket'], // Let Socket.IO decide (polling -> websocket upgrade)
             reconnection: true,
         });
 

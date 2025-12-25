@@ -5,7 +5,13 @@ from .services.game_service import GameService
 
 class SocketManager:
     def __init__(self):
-        self.sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*')
+        # Enable logger and engineio_logger for debugging
+        self.sio = socketio.AsyncServer(
+            async_mode='asgi', 
+            cors_allowed_origins='*',
+            logger=True,
+            engineio_logger=True
+        )
         # socketio_path="" because we will mount this app at /socket.io in FastAPI
         self.app = socketio.ASGIApp(self.sio, socketio_path="")
         

@@ -95,7 +95,12 @@ const SetupPage = () => {
                                         error && "border-red-500 focus:border-red-500 focus:ring-red-500"
                                     )}
                                 />
-                                <Button type="submit" size="icon" disabled={!newPlayerName.trim()} className="bg-primary hover:bg-primary/90 rounded-xl shadow-md shadow-primary/20">
+                                <Button
+                                    type="submit"
+                                    size="icon"
+                                    disabled={!newPlayerName.trim()}
+                                    className="bg-primary hover:bg-primary/90 shadow-md shadow-primary/20 shrink-0 aspect-square"
+                                >
                                     <Plus className="w-5 h-5" />
                                 </Button>
                             </form>
@@ -185,7 +190,7 @@ const SetupPage = () => {
                         size="lg"
                         onClick={handleStartGame}
                         disabled={players.length < 3}
-                        className="w-full h-14 text-lg bg-primary hover:bg-primary/90 text-white shadow-md shadow-primary/20 rounded-full font-bold"
+                        className="w-full h-14 text-lg bg-primary hover:bg-primary/90 text-white shadow-md shadow-primary/20 font-bold"
                     >
                         {t('setup.startGame')}
                         <ArrowRight className="ml-2 w-5 h-5" />

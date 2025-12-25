@@ -39,7 +39,7 @@
     /* Darker input */
     --ring: 262 83% 58%;
 
-    --radius: 1.5rem;
+    --radius: 1rem;
     /* rounded-3xl preference */
 }
 
@@ -69,10 +69,10 @@
     --color-input: hsl(var(--input));
     --color-ring: hsl(var(--ring));
 
-    --radius-xl: calc(var(--radius) + 4px);
+    --radius-xl: var(--radius);
     --radius-lg: var(--radius);
-    --radius-md: calc(var(--radius) - 2px);
-    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: var(--radius);
+    --radius-sm: var(--radius);
 
     --font-display: "Syne", system-ui, sans-serif;
     --font-heading: "Outfit", system-ui, sans-serif;

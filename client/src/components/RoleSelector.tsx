@@ -29,23 +29,24 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({
 }) => {
     const { t } = useTranslation();
 
-    const getIcon = () => {
-        switch (roleKey) {
-            case 'undercover': return <SpyIcon className="w-5 h-5 text-[#8B5CF6]" />;
-            case 'mrWhite': return <GhostIcon className="w-5 h-5 text-[#F43F5E]" />;
-            case 'jester': return <JesterIcon className="w-5 h-5 text-[#F59E0B]" />;
-            case 'bodyguard': return <ShieldIcon className="w-5 h-5 text-[#10B981]" />;
-        }
+    const roleColors = {
+        undercover: '#8B5CF6',
+        mrWhite: '#F43F5E',
+        jester: '#F59E0B',
+        bodyguard: '#10B981'
     };
 
-    const getColorClass = () => {
-        switch (roleKey) {
-            case 'undercover': return "border-[#8B5CF6]/50 shadow-[#8B5CF6]/10";
-            case 'mrWhite': return "border-[#F43F5E]/50 shadow-[#F43F5E]/10";
-            case 'jester': return "border-[#F59E0B]/50 shadow-[#F59E0B]/10";
-            case 'bodyguard': return "border-[#10B981]/50 shadow-[#10B981]/10";
-            default: return "border-zinc-800";
-        }
+    const color = roleColors[roleKey];
+
+    const getIcon = () => {
+        const Icon = {
+            undercover: SpyIcon,
+            mrWhite: GhostIcon,
+            jester: JesterIcon,
+            bodyguard: ShieldIcon
+        }[roleKey];
+
+        return <Icon className="w-5 h-5" style={{ color }} />;
     };
 
     const handleDecrement = () => {
@@ -65,14 +66,19 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({
     return (
         <div className={cn(
             "relative overflow-hidden rounded-xl border p-3 transition-all duration-300",
-            isActive ? `bg-zinc-900 ${getColorClass()} shadow-md` : "bg-zinc-900/50 border-zinc-800 opacity-80"
-        )}>
+            isActive ? `bg-zinc-900 shadow-md` : "bg-zinc-900/50 border-zinc-800 opacity-80"
+        )}
+            style={isActive ? { borderColor: `${color}80`, boxShadow: `0 4px 6px -1px ${color}1A` } : {}}
+        >
             <div className="flex items-center gap-3">
                 {/* Icon Container */}
-                <div className={cn(
-                    "w-10 h-10 rounded-lg flex items-center justify-center bg-zinc-950 border border-zinc-900",
-                    isActive && "border-opacity-100"
-                )}>
+                <div
+                    className={cn(
+                        "w-10 h-10 rounded-lg flex items-center justify-center bg-zinc-950 border transition-colors",
+                        isActive ? "border-opacity-100" : "border-zinc-900"
+                    )}
+                    style={isActive ? { borderColor: `${color}40`, color: color } : { borderColor: '#18181b' }}
+                >
                     {getIcon()}
                 </div>
 

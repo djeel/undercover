@@ -124,6 +124,17 @@ class GameService:
         indices = list(range(total_players))
         random.shuffle(indices)
         
+        # Security: Ensure Player 0 (Start Player) is NEVER Mr. White to improve game flow
+        # If 0 is in the Mr. White slot, swap it with a safe slot from the end
+        if mr_white_count > 0:
+            try:
+                idx_of_zero = indices.index(0)
+                if idx_of_zero < mr_white_count:
+                    # 0 is in the danger zone. Swap with the last element (guaranteed safe)
+                    indices[idx_of_zero], indices[-1] = indices[-1], indices[idx_of_zero]
+            except ValueError:
+                pass # Should not happen as 0 is always in range(total)
+        
         # Track role assignments
         mr_white_indices = set(indices[:mr_white_count])
         undercover_indices = set(indices[mr_white_count:mr_white_count + undercover_count])

@@ -67,7 +67,7 @@ const GamePage = () => {
         // Polling fallback (every 3 seconds) to ensure we don't get stuck if socket event is missed
         const poll = async () => {
             try {
-                const state = await api.getGameState(onlineState.roomId!, onlineState.playerId);
+                const state = await api.getGameState(onlineState.roomId!, onlineState.playerId || undefined);
                 syncWithServer(state);
             } catch (e) {
                 console.error("Polling error:", e);

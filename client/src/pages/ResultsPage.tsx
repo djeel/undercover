@@ -28,6 +28,35 @@ const ResultsPage = () => {
         navigate('/');
     };
 
+    if (!winner) {
+        return (
+            <div className="min-h-screen flex items-center justify-center p-4 text-center bg-background">
+                <Button onClick={() => navigate('/')}>{t('common.back')}</Button>
+            </div>
+        );
+    }
+
+    const winnerText = winner === 'mrWhite'
+        ? t('results.mrWhiteWins')
+        : winner === 'jester'
+            ? t('results.jesterWins')
+            : winner === 'undercovers'
+                ? t('results.undercoversWin')
+                : t('results.civiliansWin');
+
+    const getWinnerColor = (w: typeof winner) => {
+        if (w === 'mrWhite') return 'text-[#F43F5E]';
+        if (w === 'jester') return 'text-[#F59E0B]';
+        return 'text-[#8B5CF6]'; // Primary Violet for everyone else
+    };
+
+    const handlePlayAgain = () => {
+        restartGame();
+        if (gameMode === 'local') {
+            navigate('/setup');
+        }
+    };
+
     return (
         <div className="min-h-screen p-6 bg-background pb-20 flex flex-col items-center justify-center">
             <motion.div

@@ -17,22 +17,30 @@ class SocketManager:
     def setup_event_handlers(self):
         @self.sio.event
         async def connect(sid, environ):
-            # Extract player_id from query string
-            # Try to get query string from various possible keys
-            qs = environ.get('QUERY_STRING', '') or environ.get('query_string', '')
-            
-            # Handle bytes (ASGI scope)
-            if isinstance(qs, bytes):
-                qs = qs.decode('utf-8')
+            try:
+                # Extract player_id from query string
+                # Try to get query string from various possible keys
+                qs = environ.get('QUERY_STRING', '') or environ.get('query_string', '')
                 
-            parsed = parse_qs(qs)
-            player_id = parsed.get('playerId', [None])[0]
-            
-            if player_id:
-                self.active_connections[player_id] = sid
-                print(f"Player {player_id} connected (sid: {sid})")
-            else:
-                print(f"Anonymous connection (sid: {sid})")
+                # Handle bytes (ASGI scope)
+                if isinstance(qs, bytes):
+                    qs = qs.decode('utf-8')
+                    
+                parsed = parse_qs(qs)
+                player_id = parsed.get('playerId', [None])[0]
+                
+                if player_id:
+                    self.active_connections[player_id] = sid
+                    print(f"Player {player_id} connected (sid: {sid})")
+                    
+                    # Store sid -> player_id for disconnect
+                    # (You might want a reverse lookup if you track disconnects)
+                else:
+                    print(f"Anonymous connection (sid: {sid})")
+            except Exception as e:
+                import traceback
+                print(f"Error in socket connect: {e}")
+                traceback.print_exc()
 
         @self.sio.event
         async def disconnect(sid):

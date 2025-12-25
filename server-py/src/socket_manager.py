@@ -66,9 +66,11 @@ class SocketManager:
             
             if sid:
                 # Send to specific socket
+                print(f"Broadcasting state to player {player.id} on sid {sid}")
                 await self.sio.emit('UPDATE_STATE', state_dict, room=sid)
             else:
                 # Player not connected, ignore
+                print(f"Player {player.id} not connected (no SID found)")
                 pass
 
         # Optional: Broadcast a generic "watcher" state to the room for non-players?

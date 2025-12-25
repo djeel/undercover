@@ -49,7 +49,7 @@ const GamePage = () => {
         }
     }, [phase, winner, navigate, gameMode]);
 
-    // WebSocket connection for Online Mode
+    // WebSocket connection for Online Mode + Polling Fallback
     useEffect(() => {
         if (gameMode !== 'online' || !onlineState.roomId || !onlineState.playerId) return;
 
@@ -64,10 +64,21 @@ const GamePage = () => {
 
         socketService.on(SocketEvents.UPDATE_STATE, handleUpdate);
 
-        // Initial fetch to ensure sync on load (optional but safe)
-        api.getGameState(onlineState.roomId, onlineState.playerId).then(syncWithServer).catch(console.error);
+        // Polling fallback (every 3 seconds) to ensure we don't get stuck if socket event is missed
+        const poll = async () => {
+            try {
+                const state = await api.getGameState(onlineState.roomId!, onlineState.playerId || undefined);
+                syncWithServer(state);
+            } catch (e) {
+                console.error("Polling error:", e);
+            }
+        }
+
+        poll(); // Initial fetch
+        const interval = setInterval(poll, 3000);
 
         return () => {
+            clearInterval(interval);
             socketService.off(SocketEvents.UPDATE_STATE, handleUpdate);
             // We don't necessarily disconnect here to allow navigation? 
             // Better to disconnect on unmount if leaving game flow.
@@ -244,15 +255,15 @@ const GamePage = () => {
                         <Card className="border-border bg-card shadow-lg">
                             <CardHeader>
                                 <CardTitle className={mrWhiteGuessing ? "text-primary" : "text-destructive"}>
-                                    {mrWhiteGuessing ? t('game.mrWhiteFound') : (gameMode === 'online' && !canEliminate ? "Vote Player" : t('game.confirmElimination'))}
+                                    {mrWhiteGuessing ? t('game.mrWhiteFound') : (gameMode === 'online' && !canEliminate ? t('game.voteTitle') : t('game.confirmElimination'))}
                                 </CardTitle>
                                 <CardDescription className="text-muted-foreground">
                                     {mrWhiteGuessing
                                         ? t('game.mrWhiteGuessPrompt')
                                         : (gameMode === 'online'
                                             ? hasCurrentPlayerVoted
-                                                ? `You already voted this round`
-                                                : `Cast a vote against ${selectedPlayer.name}?`
+                                                ? t('game.alreadyVoted')
+                                                : t('game.voteConfirm', { name: selectedPlayer.name })
                                             : t('game.eliminatePlayer', { name: selectedPlayer.name }))
                                     }
                                 </CardDescription>
@@ -299,9 +310,14 @@ const GamePage = () => {
                                                 <Button
                                                     onClick={handleVote}
                                                     disabled={hasCurrentPlayerVoted}
-                                                    className="flex-1 bg-secondary hover:bg-secondary/80 text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    className={cn(
+                                                        "flex-1 text-foreground disabled:opacity-50 disabled:cursor-not-allowed",
+                                                        hasCurrentPlayerVoted
+                                                            ? "bg-secondary"
+                                                            : "bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
+                                                    )}
                                                 >
-                                                    {hasCurrentPlayerVoted ? "Already Voted" : "Vote"}
+                                                    {hasCurrentPlayerVoted ? t('game.alreadyVoted') : t('game.voteAction')}
                                                 </Button>
                                             )}
 

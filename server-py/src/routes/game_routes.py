@@ -48,7 +48,7 @@ async def create_game(
     Returns the public game ID for sharing.
     """
     request = request or CreateGameRequest()
-    game_id = await service.create_game(request.theme_id)
+    game_id = await service.create_game(request.theme_id, request.language)
     return CreateGameResponse(game_id=game_id)
 
 
@@ -92,6 +92,8 @@ async def assign_roles(
             game_id,
             request.undercover_count,
             request.mr_white_count,
+            request.jester_count,
+            request.bodyguard_count,
         )
         if not success:
             raise HTTPException(

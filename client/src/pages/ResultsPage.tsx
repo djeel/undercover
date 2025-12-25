@@ -15,40 +15,18 @@ const ResultsPage = () => {
     const syncWithServer = useGameStore(state => state.syncWithServer);
     const gameMode = useGameStore(state => state.gameMode);
     const onlineState = useGameStore(state => state.onlineState);
-    const { winner, players, config, resetGame, restartGame, phase } = useGameStore();
+    const { winner, players, config, resetGame, restartGame, phase, leaveRoom } = useGameStore();
 
-    // Redirect if game restarts (phase changes to 'setup'/'lobby')
-    useEffect(() => {
-        if (phase === 'setup' || phase === 'idle') {
-            navigate(onlineState.roomId ? '/lobby' : '/setup');
+    // ... (rest of code)
+
+    const handleHome = () => {
+        if (gameMode === 'online') {
+            leaveRoom();
+        } else {
+            resetGame();
         }
-    }, [phase, navigate, onlineState.roomId]);
-
-    // Polling for online games
-    useEffect(() => {
-        if (gameMode !== 'online' || !onlineState.roomId) return;
-
-        const poll = async () => {
-            try {
-                const state = await api.getGameState(
-                    onlineState.roomId!,
-                    onlineState.playerId || undefined
-                );
-                syncWithServer(state);
-
-                // If game restarted (host clicked Play Again), redirect to reveal
-                if (state.phase === 'PLAYING') {
-                    navigate('/reveal');
-                }
-            } catch (e) {
-                console.error('ResultsPage polling error:', e);
-            }
-        };
-
-        poll(); // Initial poll
-        const interval = setInterval(poll, 2000);
-        return () => clearInterval(interval);
-    }, [gameMode, onlineState.roomId, onlineState.playerId, navigate, syncWithServer]);
+        navigate('/');
+    };
 
     if (!winner) {
         return (
@@ -60,27 +38,23 @@ const ResultsPage = () => {
 
     const winnerText = winner === 'mrWhite'
         ? t('results.mrWhiteWins')
-        : winner === 'undercovers'
-            ? t('results.undercoversWin')
-            : t('results.civiliansWin');
+        : winner === 'jester'
+            ? t('results.jesterWins')
+            : winner === 'undercovers'
+                ? t('results.undercoversWin')
+                : t('results.civiliansWin');
 
     const getWinnerColor = (w: typeof winner) => {
         if (w === 'mrWhite') return 'text-[#F43F5E]';
+        if (w === 'jester') return 'text-[#F59E0B]';
         return 'text-[#8B5CF6]'; // Primary Violet for everyone else
     };
 
     const handlePlayAgain = () => {
         restartGame();
-        // For local mode, navigate to setup
-        // For online mode, polling will redirect to /reveal when game restarts
         if (gameMode === 'local') {
             navigate('/setup');
         }
-    };
-
-    const handleHome = () => {
-        resetGame();
-        navigate('/');
     };
 
     return (
@@ -144,7 +118,9 @@ const ResultsPage = () => {
                                         <span className={cn(
                                             "text-sm font-bold uppercase tracking-wide",
                                             player.role === 'mrWhite' ? 'text-[#F43F5E]' :
-                                                'text-[#8B5CF6]' // Everyone else is Primary color
+                                                player.role === 'jester' ? 'text-[#F59E0B]' :
+                                                    player.role === 'bodyguard' ? 'text-[#10B981]' :
+                                                        'text-[#8B5CF6]' // Everyone else is Primary color
                                         )}>
                                             {t(`roles.${player.role}`)}
                                         </span>

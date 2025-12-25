@@ -233,31 +233,51 @@ class GameService:
             player.role = None
             player.word = None
         
-        # Reassign roles with same configuration
-        # Reassign roles with same configuration
-        await self.assign_roles(
-            game_id, 
-            undercover_count, 
-            mr_white_count, 
-            jester_count, 
-            bodyguard_count
-        )
+        # Instead of auto-starting, we just go back to LOBBY
+        # This allows the host to wait for new players or change settings
+        game.phase = GamePhase.LOBBY
+        
+        await self._update_game(game)
+        
+        return True
         
         return True
 
     async def remove_player(self, game_id: str, player_id: str) -> bool:
-        """Remove a player from the game (Kick).
+        """Remove a player from the game (Kick or Disconnect).
         
-        Only allowed in LOBBY phase.
+        Allowed in ALL phases.
+        If in PLAYING/VOTING, this is equivalent to disappearing.
+        We must check victory conditions after removal.
         """
         game = await self.get_game(game_id)
-        if not game or game.phase != GamePhase.LOBBY:
+        if not game:
             return False
             
         initial_count = len(game.players)
+        # Remove the player
         game.players = [p for p in game.players if p.id != player_id]
         
+        if len(game.players) == 0:
+            # If no players left, delete the game
+            print(f"Game {game_id} has no players left. Deleting.")
+            await self.db.delete_game(game_id)
+            return True
+
         if len(game.players) < initial_count:
+            # If game was active, check if this removal triggered a win
+            if game.phase in (GamePhase.PLAYING, GamePhase.VOTING):
+                # Reset votes just in case the removed player had received votes
+                # (Optional: or keep them, but safer to just let the round proceed or reset?)
+                # If we remove a player, the "total players" drops.
+                
+                # Check outcome immediately
+                winner = self._check_victory(game, False)
+                if winner:
+                   game.phase = GamePhase.FINISHED
+                   game.winner = winner
+                   game.finished_at = datetime.now(timezone.utc)
+            
             await self._update_game(game)
             return True
         return False

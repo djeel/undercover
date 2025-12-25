@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import i18n from '../i18n';
 import { WORD_PAIRS } from '../data/wordPairs';
 import { GameStateResponse } from '../services/api';
+import { socketService } from '../services/socket';
 
 // Types
 export type Role = 'civilian' | 'undercover' | 'mrWhite' | 'jester' | 'bodyguard' | 'unknown';
@@ -430,6 +431,7 @@ export const useGameStore = create<GameState>()(
             },
 
             leaveRoom: () => {
+                socketService.disconnect();
                 set({
                     onlineState: {
                         roomId: null,

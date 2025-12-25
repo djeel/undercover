@@ -49,7 +49,7 @@ const GamePage = () => {
         }
     }, [phase, winner, navigate, gameMode]);
 
-    // WebSocket connection for Online Mode
+    // WebSocket connection for Online Mode + Polling Fallback
     useEffect(() => {
         if (gameMode !== 'online' || !onlineState.roomId || !onlineState.playerId) return;
 
@@ -64,10 +64,21 @@ const GamePage = () => {
 
         socketService.on(SocketEvents.UPDATE_STATE, handleUpdate);
 
-        // Initial fetch to ensure sync on load (optional but safe)
-        api.getGameState(onlineState.roomId, onlineState.playerId).then(syncWithServer).catch(console.error);
+        // Polling fallback (every 3 seconds) to ensure we don't get stuck if socket event is missed
+        const poll = async () => {
+            try {
+                const state = await api.getGameState(onlineState.roomId!, onlineState.playerId);
+                syncWithServer(state);
+            } catch (e) {
+                console.error("Polling error:", e);
+            }
+        }
+
+        poll(); // Initial fetch
+        const interval = setInterval(poll, 3000);
 
         return () => {
+            clearInterval(interval);
             socketService.off(SocketEvents.UPDATE_STATE, handleUpdate);
             // We don't necessarily disconnect here to allow navigation? 
             // Better to disconnect on unmount if leaving game flow.

@@ -7,6 +7,7 @@ import { Input } from '../components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
 import { useGameStore } from '../store/gameStore';
 import { api } from '../services/api';
+import { socketService } from '../services/socket';
 import RoleSelector from '../components/RoleSelector';
 
 const MultiplayerSetupPage = () => {
@@ -64,8 +65,15 @@ const MultiplayerSetupPage = () => {
     };
 
     // Polling effect
+    // Polling effect
     useEffect(() => {
         if (!onlineState.roomId) return;
+
+        // Establish Socket Connection for Presence (Disconnect detection)
+        if (onlineState.playerId) {
+            socketService.connect(onlineState.playerId);
+            socketService.joinGame(onlineState.roomId);
+        }
 
         const poll = async () => {
             try {

@@ -2,7 +2,9 @@ import { io, Socket } from 'socket.io-client';
 
 import { SocketEvents } from '@undercover/shared';
 
-const SERVER_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+// Strip '/api' from the end to get the base URL
+const SERVER_URL = API_URL.replace(/\/api$/, '');
 
 class SocketService {
     private socket: Socket | null = null;

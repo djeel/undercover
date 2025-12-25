@@ -1,17 +1,9 @@
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
-export enum GamePhase {
-    LOBBY = "LOBBY",
-    PLAYING = "PLAYING",
-    VOTING = "VOTING",
-    FINISHED = "FINISHED"
-}
+import { PlayerRole, GamePhase } from '@undercover/shared';
 
-export enum PlayerRole {
-    CIVILIAN = "CIVILIAN",
-    UNDERCOVER = "UNDERCOVER",
-    MR_WHITE = "MR_WHITE"
-}
+// Re-export for compatibility if needed, or just let other files import from here
+export { PlayerRole, GamePhase };
 
 export enum WinnerType {
     CIVILIANS = "CIVILIANS",

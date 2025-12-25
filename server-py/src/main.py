@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .config import settings
 from .database import InMemoryDatabase
 from .routes import game_routes, word_routes
+from .socket_manager import socket_manager
 
 
 @asynccontextmanager
@@ -37,6 +38,9 @@ app.add_middleware(
 # Register routes
 app.include_router(game_routes.router, prefix=settings.api_prefix)
 app.include_router(word_routes.router, prefix=settings.api_prefix)
+
+# Mount Socket.IO
+app.mount("/", socket_manager.app)
 
 
 @app.get("/health")

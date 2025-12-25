@@ -23,6 +23,7 @@ from ..models.schemas import (
     VoteRequest,
 )
 from ..services.game_service import GameService
+from ..socket_manager import socket_manager
 
 
 router = APIRouter(prefix="/game", tags=["game"])
@@ -69,6 +70,10 @@ async def add_player(
             status_code=404, 
             detail="Game not found or not in LOBBY phase"
         )
+    
+    # Broadcast update
+    await socket_manager.broadcast_game_state(game_id, service)
+    
     return AddPlayerResponse(player_id=player.id, name=player.name)
 
 
@@ -94,6 +99,10 @@ async def assign_roles(
                 status_code=404,
                 detail="Game not found or not in LOBBY phase"
             )
+    
+        # Broadcast update
+        await socket_manager.broadcast_game_state(game_id, service)
+        
         return AssignRolesResponse(success=True, phase=GamePhase.PLAYING)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -116,6 +125,10 @@ async def restart_game(
     success = await service.restart_game(game_id)
     if not success:
         raise HTTPException(status_code=404, detail="Game not found")
+        
+    # Broadcast update
+    await socket_manager.broadcast_game_state(game_id, service)
+        
     return True
 
 @router.get("/{game_id}", response_model=GameStateResponse)
@@ -154,6 +167,8 @@ async def remove_player(
     success = await service.remove_player(game_id, player_id)
     if not success:
         raise HTTPException(status_code=400, detail="Cannot kick player")
+        
+    await socket_manager.broadcast_game_state(game_id, service)
     return True
 
 
@@ -170,6 +185,8 @@ async def cast_vote(
     new_count = await service.cast_vote(game_id, request.voter_id, request.target_player_id)
     if new_count is None:
          raise HTTPException(status_code=400, detail="Invalid vote")
+    
+    await socket_manager.broadcast_game_state(game_id, service)
     return True
 
 
@@ -201,6 +218,7 @@ async def eliminate_player(
             status_code=400,
             detail="Invalid game state or player"
         )
+    await socket_manager.broadcast_game_state(game_id, service)
     return result
 
 

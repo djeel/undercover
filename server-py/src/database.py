@@ -1,28 +1,102 @@
-"""In-memory database implementation."""
-from typing import Dict, Any, Optional
+"""Database abstraction layer."""
+from typing import Dict, Any, Optional, List
+import json
+import aiosqlite
+import os
 
-class InMemoryDatabase:
-    """Simple in-memory storage."""
+class GameRepository:
+    """Abstract base for game storage."""
+    async def connect(self): pass
+    async def disconnect(self): pass
+    async def get_game(self, game_id: str) -> Optional[Dict[str, Any]]: pass
+    async def save_game(self, game_id: str, data: Dict[str, Any]): pass
+    async def delete_game(self, game_id: str): pass
+    async def get_all_games(self) -> List[Dict[str, Any]]: pass
+
+
+class InMemoryDatabase(GameRepository):
+    """In-memory storage implementation."""
     
-    _games: Dict[str, Any] = {}
+    def __init__(self):
+        self._games: Dict[str, Any] = {}
     
-    @classmethod
-    async def connect(cls) -> None:
-        """No-op for in-memory."""
+    async def connect(self):
         pass
     
-    @classmethod
-    async def disconnect(cls) -> None:
-        """Clear storage."""
-        cls._games.clear()
+    async def disconnect(self):
+        self._games.clear()
 
-    @classmethod
-    def get_games_collection(cls):
-        """Return the dict acting as collection."""
-        return cls._games
+    async def get_game(self, game_id: str) -> Optional[Dict[str, Any]]:
+        return self._games.get(game_id)
 
-# Convenience function for dependency injection
-async def get_database() -> InMemoryDatabase:
-    """FastAPI dependency."""
-    return InMemoryDatabase()
+    async def save_game(self, game_id: str, data: Dict[str, Any]):
+        self._games[game_id] = data
 
+    async def delete_game(self, game_id: str):
+        if game_id in self._games:
+            del self._games[game_id]
+            
+    async def get_all_games(self) -> List[Dict[str, Any]]:
+        return list(self._games.values())
+
+
+class SQLiteDatabase(GameRepository):
+    """SQLite storage implementation."""
+    
+    def __init__(self, db_path: str = "undercover.db"):
+        self.db_path = db_path
+        self.conn = None
+        
+    async def connect(self):
+        self.conn = await aiosqlite.connect(self.db_path)
+        await self.conn.execute("""
+            CREATE TABLE IF NOT EXISTS games (
+                id TEXT PRIMARY KEY,
+                data TEXT,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        await self.conn.commit()
+    
+    async def disconnect(self):
+        if self.conn:
+            await self.conn.close()
+
+    async def get_game(self, game_id: str) -> Optional[Dict[str, Any]]:
+        if not self.conn: return None
+        async with self.conn.execute("SELECT data FROM games WHERE id = ?", (game_id,)) as cursor:
+            row = await cursor.fetchone()
+            if row:
+                return json.loads(row[0])
+        return None
+
+    async def save_game(self, game_id: str, data: Dict[str, Any]):
+        if not self.conn: return
+        json_data = json.dumps(data)
+        await self.conn.execute(
+            "INSERT OR REPLACE INTO games (id, data) VALUES (?, ?)",
+            (game_id, json_data)
+        )
+        await self.conn.commit()
+
+    async def delete_game(self, game_id: str):
+        if not self.conn: return
+        await self.conn.execute("DELETE FROM games WHERE id = ?", (game_id,))
+        await self.conn.commit()
+            
+    async def get_all_games(self) -> List[Dict[str, Any]]:
+        if not self.conn: return []
+        async with self.conn.execute("SELECT data FROM games") as cursor:
+            rows = await cursor.fetchall()
+            return [json.loads(row[0]) for row in rows]
+
+# Helper for Dependency Injection
+db_instance: Optional[GameRepository] = None
+
+async def get_database() -> GameRepository:
+    global db_instance
+    if db_instance is None:
+        # Default to SQLite
+        db_instance = SQLiteDatabase()
+        await db_instance.connect()
+    return db_instance

@@ -9,6 +9,8 @@ import { Input } from '../components/ui/Input';
 import { useGameStore } from '../store/gameStore';
 import { cn } from '../lib/utils';
 import { api } from '../services/api';
+import { socketService } from '../services/socket';
+import { SocketEvents } from '@undercover/shared';
 
 
 // Simple string normalization for comparison
@@ -47,24 +49,30 @@ const GamePage = () => {
         }
     }, [phase, winner, navigate, gameMode]);
 
-    // Polling for Online Mode
+    // WebSocket connection for Online Mode
     useEffect(() => {
-        if (gameMode !== 'online' || !onlineState.roomId) return;
+        if (gameMode !== 'online' || !onlineState.roomId || !onlineState.playerId) return;
 
-        const poll = async () => {
-            try {
-                const state = await api.getGameState(
-                    onlineState.roomId!,
-                    onlineState.playerId || undefined
-                );
-                syncWithServer(state);
-            } catch (e) {
-                console.error('Polling error:', e);
-            }
+        // Connect and Join
+        socketService.connect(onlineState.playerId);
+        socketService.joinGame(onlineState.roomId);
+
+        // Listen for updates
+        const handleUpdate = (state: any) => {
+            syncWithServer(state);
         };
 
-        const interval = setInterval(poll, 2000);
-        return () => clearInterval(interval);
+        socketService.on(SocketEvents.UPDATE_STATE, handleUpdate);
+
+        // Initial fetch to ensure sync on load (optional but safe)
+        api.getGameState(onlineState.roomId, onlineState.playerId).then(syncWithServer).catch(console.error);
+
+        return () => {
+            socketService.off(SocketEvents.UPDATE_STATE, handleUpdate);
+            // We don't necessarily disconnect here to allow navigation? 
+            // Better to disconnect on unmount if leaving game flow.
+            // For now, keep connection alive or handle in store.
+        };
     }, [gameMode, onlineState.roomId, onlineState.playerId, syncWithServer]);
 
     const activePlayers = players.filter(p => !p.isEliminated);

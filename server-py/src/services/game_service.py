@@ -8,6 +8,7 @@ import uuid
 import random
 
 from ..models.game import GameDocument, PlayerDocument, WordPairDocument
+from ..database import GameRepository
 from ..models.schemas import (
     GamePhase, PlayerRole, WinnerType,
     GameStateResponse, PlayerResponse, GameSettingsResponse,
@@ -16,12 +17,11 @@ from ..models.schemas import (
 from .word_service import WordService
 
 
+
 class GameService:
-    """Service for game state management."""
-    
-    def __init__(self, db: Any):
-        # db is InMemoryDatabase access object
-        self.games = db.get_games_collection()
+    def __init__(self, db: GameRepository):
+        # db is GameRepository
+        self.repository = db
     
     # ========================================================================
     # Game Lifecycle
@@ -39,19 +39,19 @@ class GameService:
         game = GameDocument(word_pair=word_pair)
         
         # Store in dict
-        self.games[game.public_id] = game.model_dump()
+        await self.repository.save_game(game.public_id, game.model_dump())
         return game.public_id
     
     async def get_game(self, game_id: str) -> Optional[GameDocument]:
         """Get game by public ID."""
-        data = self.games.get(game_id.upper())
+        data = await self.repository.get_game(game_id.upper())
         if data:
             return GameDocument(**data)
         return None
     
     async def _update_game(self, game: GameDocument) -> None:
         """Save game state to database."""
-        self.games[game.public_id] = game.model_dump()
+        await self.repository.save_game(game.public_id, game.model_dump())
     
     # ========================================================================
     # Player Management
@@ -452,12 +452,13 @@ class GameService:
     # History
     # ========================================================================
     
-    async def get_finished_games(self, limit: int = 50) -> List[GameDocument]:
+    async def get_finished_games(self, limit: int = 10) -> List[GameDocument]:
         """Get list of finished games for history.
         
         NOTE: InMemory implementation is simple and unoptimized for sorting.
         """
-        all_games = [GameDocument(**g) for g in self.games.values()]
+        all_data = await self.repository.get_all_games()
+        all_games = [GameDocument(**g) for g in all_data]
         finished = [g for g in all_games if g.phase == GamePhase.FINISHED]
         
         # Sort by finished_at desc

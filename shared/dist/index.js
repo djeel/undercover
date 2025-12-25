@@ -1,23 +1,20 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.SocketEvents = exports.GamePhase = exports.PlayerRole = void 0;
 // Role Definitions
-var PlayerRole;
+export var PlayerRole;
 (function (PlayerRole) {
     PlayerRole["CIVILIAN"] = "CIVILIAN";
     PlayerRole["UNDERCOVER"] = "UNDERCOVER";
     PlayerRole["MR_WHITE"] = "MR_WHITE";
-})(PlayerRole || (exports.PlayerRole = PlayerRole = {}));
+})(PlayerRole || (PlayerRole = {}));
 // Game Phases
-var GamePhase;
+export var GamePhase;
 (function (GamePhase) {
     GamePhase["LOBBY"] = "LOBBY";
     GamePhase["PLAYING"] = "PLAYING";
     GamePhase["VOTING"] = "VOTING";
     GamePhase["FINISHED"] = "FINISHED";
-})(GamePhase || (exports.GamePhase = GamePhase = {}));
+})(GamePhase || (GamePhase = {}));
 // Socket Events
-var SocketEvents;
+export var SocketEvents;
 (function (SocketEvents) {
     SocketEvents["JOIN_ROOM"] = "JOIN_ROOM";
     SocketEvents["PLAYER_JOINED"] = "PLAYER_JOINED";
@@ -27,4 +24,4 @@ var SocketEvents;
     SocketEvents["SUBMIT_VOTE"] = "SUBMIT_VOTE";
     SocketEvents["UPDATE_STATE"] = "UPDATE_STATE";
     SocketEvents["ERROR"] = "ERROR";
-})(SocketEvents || (exports.SocketEvents = SocketEvents = {}));
+})(SocketEvents || (SocketEvents = {}));

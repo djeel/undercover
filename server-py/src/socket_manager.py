@@ -1,5 +1,6 @@
 from typing import Dict, Optional, Any
 import socketio
+from urllib.parse import parse_qs
 from .services.game_service import GameService
 
 class SocketManager:
@@ -16,10 +17,15 @@ class SocketManager:
         @self.sio.event
         async def connect(sid, environ):
             # Extract player_id from query string
-            # query_string is like "playerId=xyz&other=..."
-            query_string = environ.get('QUERY_STRING', '')
-            params = dict(qs.split('=') for qs in query_string.split('&') if '=' in qs)
-            player_id = params.get('playerId')
+            # Try to get query string from various possible keys
+            qs = environ.get('QUERY_STRING', '') or environ.get('query_string', '')
+            
+            # Handle bytes (ASGI scope)
+            if isinstance(qs, bytes):
+                qs = qs.decode('utf-8')
+                
+            parsed = parse_qs(qs)
+            player_id = parsed.get('playerId', [None])[0]
             
             if player_id:
                 self.active_connections[player_id] = sid

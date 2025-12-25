@@ -244,15 +244,15 @@ const GamePage = () => {
                         <Card className="border-border bg-card shadow-lg">
                             <CardHeader>
                                 <CardTitle className={mrWhiteGuessing ? "text-primary" : "text-destructive"}>
-                                    {mrWhiteGuessing ? t('game.mrWhiteFound') : (gameMode === 'online' && !canEliminate ? "Vote Player" : t('game.confirmElimination'))}
+                                    {mrWhiteGuessing ? t('game.mrWhiteFound') : (gameMode === 'online' && !canEliminate ? t('game.voteTitle') : t('game.confirmElimination'))}
                                 </CardTitle>
                                 <CardDescription className="text-muted-foreground">
                                     {mrWhiteGuessing
                                         ? t('game.mrWhiteGuessPrompt')
                                         : (gameMode === 'online'
                                             ? hasCurrentPlayerVoted
-                                                ? `You already voted this round`
-                                                : `Cast a vote against ${selectedPlayer.name}?`
+                                                ? t('game.alreadyVoted')
+                                                : t('game.voteConfirm', { name: selectedPlayer.name })
                                             : t('game.eliminatePlayer', { name: selectedPlayer.name }))
                                     }
                                 </CardDescription>
@@ -299,9 +299,14 @@ const GamePage = () => {
                                                 <Button
                                                     onClick={handleVote}
                                                     disabled={hasCurrentPlayerVoted}
-                                                    className="flex-1 bg-secondary hover:bg-secondary/80 text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    className={cn(
+                                                        "flex-1 text-foreground disabled:opacity-50 disabled:cursor-not-allowed",
+                                                        hasCurrentPlayerVoted
+                                                            ? "bg-secondary"
+                                                            : "bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
+                                                    )}
                                                 >
-                                                    {hasCurrentPlayerVoted ? "Already Voted" : "Vote"}
+                                                    {hasCurrentPlayerVoted ? t('game.alreadyVoted') : t('game.voteAction')}
                                                 </Button>
                                             )}
 

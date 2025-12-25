@@ -96,6 +96,7 @@ class PlayerResponse(BaseModel):
 class CreateGameRequest(BaseModel):
     """Request for POST /api/game/create."""
     theme_id: Optional[str] = None  # Optional theme selection
+    language: str = "en"
 
 
 class CreateGameResponse(BaseModel):

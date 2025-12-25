@@ -55,7 +55,11 @@
         "mrWhiteFound": "Mr. White Busted!",
         "mrWhiteGuessPrompt": "You're toast! Last chance: guess the Civilian word to steal the win.",
         "enterWordPlaceholder": "Take a wild guess...",
-        "submitGuess": "Final Answer"
+        "submitGuess": "Final Answer",
+        "voteTitle": "Cast Your Vote",
+        "alreadyVoted": "Vote Cast",
+        "voteConfirm": "Vote against {{name}}?",
+        "voteAction": "VOTE"
     },
     "results": {
         "title": "Final Verdict",

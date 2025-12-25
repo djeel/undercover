@@ -2,127 +2,233 @@
 
 Language-agnostic: Keys can be used for localization.
 """
-from typing import Dict, List
+from typing import Dict, List, Tuple
 from ..models.game import ThemeDocument, WordPairData
 
 # ============================================================================
 # Word Pairs by Theme
 # ============================================================================
 
-THEMES: Dict[str, ThemeDocument] = {
-    "beverages": ThemeDocument(
-        theme_id="beverages",
-        name="beverages",  # Localization key
-        pairs=[
-            WordPairData(pair_id="bev_1", civilian="Beer", undercover="Wine"),
-            WordPairData(pair_id="bev_2", civilian="Coffee", undercover="Tea"),
-            WordPairData(pair_id="bev_3", civilian="Cola", undercover="Pepsi"),
-            WordPairData(pair_id="bev_4", civilian="Juice", undercover="Smoothie"),
-            WordPairData(pair_id="bev_5", civilian="Water", undercover="Sparkling Water"),
-        ]
-    ),
-    "animals": ThemeDocument(
-        theme_id="animals",
-        name="animals",
-        pairs=[
-            WordPairData(pair_id="ani_1", civilian="Cat", undercover="Dog"),
-            WordPairData(pair_id="ani_2", civilian="Lion", undercover="Tiger"),
-            WordPairData(pair_id="ani_3", civilian="Rabbit", undercover="Hamster"),
-            WordPairData(pair_id="ani_4", civilian="Eagle", undercover="Hawk"),
-            WordPairData(pair_id="ani_5", civilian="Dolphin", undercover="Whale"),
-        ]
-    ),
-    "tech": ThemeDocument(
-        theme_id="tech",
-        name="tech",
-        pairs=[
-            WordPairData(pair_id="tech_1", civilian="Iphone", undercover="Android"),
-            WordPairData(pair_id="tech_2", civilian="Facebook", undercover="Twitter"),
-            WordPairData(pair_id="tech_3", civilian="Laptop", undercover="Tablet"),
-            WordPairData(pair_id="tech_4", civilian="Netflix", undercover="Youtube"),
-            WordPairData(pair_id="tech_5", civilian="Google", undercover="Bing"),
-        ]
-    ),
-    "nature": ThemeDocument(
-        theme_id="nature",
-        name="nature",
-        pairs=[
-            WordPairData(pair_id="nat_1", civilian="Sun", undercover="Moon"),
-            WordPairData(pair_id="nat_2", civilian="Ocean", undercover="Lake"),
-            WordPairData(pair_id="nat_3", civilian="Mountain", undercover="Hill"),
-            WordPairData(pair_id="nat_4", civilian="Forest", undercover="Jungle"),
-            WordPairData(pair_id="nat_5", civilian="River", undercover="Stream"),
-        ]
-    ),
-    "music": ThemeDocument(
-        theme_id="music",
-        name="music",
-        pairs=[
-            WordPairData(pair_id="mus_1", civilian="Guitar", undercover="Violin"),
-            WordPairData(pair_id="mus_2", civilian="Piano", undercover="Keyboard"),
-            WordPairData(pair_id="mus_3", civilian="Drums", undercover="Percussion"),
-            WordPairData(pair_id="mus_4", civilian="Rock", undercover="Metal"),
-            WordPairData(pair_id="mus_5", civilian="Jazz", undercover="Blues"),
-        ]
-    ),
-    "sports": ThemeDocument(
-        theme_id="sports",
-        name="sports",
-        pairs=[
-            WordPairData(pair_id="spo_1", civilian="Soccer", undercover="Basketball"),
-            WordPairData(pair_id="spo_2", civilian="Tennis", undercover="Badminton"),
-            WordPairData(pair_id="spo_3", civilian="Swimming", undercover="Diving"),
-            WordPairData(pair_id="spo_4", civilian="Running", undercover="Jogging"),
-            WordPairData(pair_id="spo_5", civilian="Skiing", undercover="Snowboarding"),
-        ]
-    ),
-    "food": ThemeDocument(
-        theme_id="food",
-        name="food",
-        pairs=[
-            WordPairData(pair_id="food_1", civilian="Pizza", undercover="Pasta"),
-            WordPairData(pair_id="food_2", civilian="Burger", undercover="Sandwich"),
-            WordPairData(pair_id="food_3", civilian="Sushi", undercover="Sashimi"),
-            WordPairData(pair_id="food_4", civilian="Ice Cream", undercover="Frozen Yogurt"),
-            WordPairData(pair_id="food_5", civilian="Cake", undercover="Pie"),
-        ]
-    ),
-    "movies": ThemeDocument(
-        theme_id="movies",
-        name="movies",
-        pairs=[
-            WordPairData(pair_id="mov_1", civilian="Harry Potter", undercover="Lord of the Rings"),
-            WordPairData(pair_id="mov_2", civilian="Star Wars", undercover="Star Trek"),
-            WordPairData(pair_id="mov_3", civilian="Batman", undercover="Superman"),
-            WordPairData(pair_id="mov_4", civilian="Titanic", undercover="Avatar"),
-            WordPairData(pair_id="mov_5", civilian="Matrix", undercover="Inception"),
-        ]
-    ),
-    "superheroes": ThemeDocument(
-        theme_id="superheroes",
-        name="superheroes",
-        pairs=[
-            WordPairData(pair_id="sup_1", civilian="Spider-Man", undercover="Deadpool"),
-            WordPairData(pair_id="sup_2", civilian="Thor", undercover="Loki"),
-            WordPairData(pair_id="sup_3", civilian="Iron Man", undercover="Captain America"),
-            WordPairData(pair_id="sup_4", civilian="Hulk", undercover="The Thing"),
-            WordPairData(pair_id="sup_5", civilian="Wonder Woman", undercover="Captain Marvel"),
-        ]
-    ),
-}
+# Simplified for the server: We will throw all pairs into a "general" theme for now 
+# or try to respect categories if we had them. 
+# The client list is flat, so we will create a single "general" theme 
+# but storing data in a way that supports EN/FR.
 
+class LocalizedWordPair:
+    def __init__(self, id: str, en: Tuple[str, str], fr: Tuple[str, str]):
+        self.id = id
+        self.en = en
+        self.fr = fr
 
-def get_all_themes() -> List[ThemeDocument]:
-    """Get all available themes."""
-    return list(THEMES.values())
+# Raw data from client/src/data/wordPairs.ts
+RAW_PAIRS = [
+    { "en": ('Coffee', 'Tea'), "fr": ('Café', 'Thé') },
+    { "en": ('Cat', 'Dog'), "fr": ('Chat', 'Chien') },
+    { "en": ('Pizza', 'Burger'), "fr": ('Pizza', 'Burger') },
+    { "en": ('Beach', 'Mountains'), "fr": ('Plage', 'Montagne') },
+    { "en": ('Summer', 'Winter'), "fr": ('Été', 'Hiver') },
+    { "en": ('Guitar', 'Piano'), "fr": ('Guitare', 'Piano') },
+    { "en": ('Apple', 'Orange'), "fr": ('Pomme', 'Orange') },
+    { "en": ('Movie', 'Book'), "fr": ('Film', 'Livre') },
+    { "en": ('Rain', 'Snow'), "fr": ('Pluie', 'Neige') },
+    { "en": ('Sunrise', 'Sunset'), "fr": ('Lever du soleil', 'Coucher du soleil') },
+    { "en": ('Football', 'Rugby'), "fr": ('Football', 'Rugby') },
+    { "en": ('Chocolate', 'Vanilla'), "fr": ('Chocolat', 'Vanille') },
+    { "en": ('City', 'Village'), "fr": ('Ville', 'Village') },
+    { "en": ('Ocean', 'Lake'), "fr": ('Océan', 'Lac') },
+    { "en": ('Train', 'Bus'), "fr": ('Train', 'Bus') },
+    { "en": ('Sun', 'Moon'), "fr": ('Soleil', 'Lune') },
+    { "en": ('Pen', 'Pencil'), "fr": ('Stylo', 'Crayon') },
+    { "en": ('Computer', 'Tablet'), "fr": ('Ordinateur', 'Tablette') },
+    { "en": ('Chair', 'Stool'), "fr": ('Chaise', 'Tabouret') },
+    { "en": ('Fork', 'Spoon'), "fr": ('Fourchette', 'Cuillère') },
+    { "en": ('Shirt', 'T-shirt'), "fr": ('Chemise', 'T-shirt') },
+    { "en": ('Shoe', 'Boot'), "fr": ('Chaussure', 'Botte') },
+    { "en": ('Doctor', 'Nurse'), "fr": ('Médecin', 'Infirmier') },
+    { "en": ('Police', 'Firefighter'), "fr": ('Police', 'Pompier') },
+    { "en": ('Gold', 'Silver'), "fr": ('Or', 'Argent') },
+    { "en": ('King', 'Queen'), "fr": ('Roi', 'Reine') },
+    { "en": ('Lion', 'Tiger'), "fr": ('Lion', 'Tigre') },
+    { "en": ('Beer', 'Wine'), "fr": ('Bière', 'Vin') },
+    { "en": ('Bread', 'Croissant'), "fr": ('Pain', 'Croissant') },
+    { "en": ('Milk', 'Water'), "fr": ('Lait', 'Eau') },
+    { "en": ('Salt', 'Pepper'), "fr": ('Sel', 'Poivre') },
+    { "en": ('Day', 'Night'), "fr": ('Jour', 'Nuit') },
+    { "en": ('Love', 'Friendship'), "fr": ('Amour', 'Amitié') },
+    { "en": ('Happy', 'Sad'), "fr": ('Heureux', 'Triste') },
+    { "en": ('Rich', 'Poor'), "fr": ('Riche', 'Pauvre') },
+    { "en": ('Hot', 'Cold'), "fr": ('Chaud', 'Froid') },
+    { "en": ('Fast', 'Slow'), "fr": ('Rapide', 'Lent') },
+    { "en": ('Hard', 'Soft'), "fr": ('Dur', 'Mou') },
+    { "en": ('Big', 'Small'), "fr": ('Grand', 'Petit') },
+    { "en": ('Red', 'Blue'), "fr": ('Rouge', 'Bleu') },
+    { "en": ('Batman', 'Superman'), "fr": ('Batman', 'Superman') },
+    { "en": ('London', 'Paris'), "fr": ('Londres', 'Paris') },
+    { "en": ('Facebook', 'Instagram'), "fr": ('Facebook', 'Instagram') },
+    { "en": ('Netflix', 'YouTube'), "fr": ('Netflix', 'YouTube') },
+    { "en": ('Taxi', 'Uber'), "fr": ('Taxi', 'Uber') },
+    { "en": ('Hotel', 'Airbnb'), "fr": ('Hôtel', 'Airbnb') },
+    { "en": ('Bike', 'Scooter'), "fr": ('Vélo', 'Trottinette') },
+    { "en": ('Swimming', 'Running'), "fr": ('Natation', 'Course') },
+    { "en": ('Tennis', 'Badminton'), "fr": ('Tennis', 'Badminton') },
+    { "en": ('Ski', 'Snowboard'), "fr": ('Ski', 'Snowboard') },
+    { "en": ('Rose', 'Tulip'), "fr": ('Rose', 'Tulipe') },
+    { "en": ('Shark', 'Dolphin'), "fr": ('Requin', 'Dauphin') },
+    { "en": ('Snake', 'Lizard'), "fr": ('Serpent', 'Lézard') },
+    { "en": ('Spider', 'Ant'), "fr": ('Araignée', 'Fourmi') },
+    { "en": ('Eagle', 'Owl'), "fr": ('Aigle', 'Hibou') },
+    { "en": ('Car', 'Truck'), "fr": ('Voiture', 'Camion') },
+    { "en": ('Plane', 'Helicopter'), "fr": ('Avion', 'Hélicoptère') },
+    { "en": ('Boat', 'Ship'), "fr": ('Bateau', 'Navire') },
+    { "en": ('School', 'University'), "fr": ('École', 'Université') },
+    { "en": ('Library', 'Bookstore'), "fr": ('Bibliothèque', 'Librairie') },
+    { "en": ('Museum', 'Gallery'), "fr": ('Musée', 'Galerie') },
+    { "en": ('Cinema', 'Theater'), "fr": ('Cinéma', 'Théâtre') },
+    { "en": ('Piano', 'Violin'), "fr": ('Piano', 'Violon') },
+    { "en": ('Drums', 'Bass'), "fr": ('Batterie', 'Basse') },
+    { "en": ('Rock', 'Pop'), "fr": ('Rock', 'Pop') },
+    { "en": ('Comedy', 'Drama'), "fr": ('Comédie', 'Drame') },
+    { "en": ('Horror', 'Thriller'), "fr": ('Horreur', 'Thriller') },
+    { "en": ('Action', 'Adventure'), "fr": ('Action', 'Aventure') },
+    { "en": ('Painting', 'Drawing'), "fr": ('Peinture', 'Dessin') },
+    { "en": ('Photo', 'Video'), "fr": ('Photo', 'Vidéo') },
+    { "en": ('Email', 'Letter'), "fr": ('Email', 'Lettre') },
+    { "en": ('Text', 'Call'), "fr": ('SMS', 'Appel') },
+    { "en": ('Iphone', 'Samsung'), "fr": ('Iphone', 'Samsung') },
+    { "en": ('Mac', 'PC'), "fr": ('Mac', 'PC') },
+    { "en": ('Google', 'Bing'), "fr": ('Google', 'Bing') },
+    { "en": ('Amazon', 'eBay'), "fr": ('Amazon', 'eBay') },
+    { "en": ('McDonalds', 'Burger King'), "fr": ('McDonalds', 'Burger King') },
+    { "en": ('Coke', 'Pepsi'), "fr": ('Coca', 'Pepsi') },
+    { "en": ('Ketchup', 'Mayo'), "fr": ('Ketchup', 'Mayo') },
+    { "en": ('Fork', 'Knife'), "fr": ('Fourchette', 'Couteau') },
+    { "en": ('Door', 'Window'), "fr": ('Porte', 'Fenêtre') },
+    { "en": ('Floor', 'Ceiling'), "fr": ('Sol', 'Plafond') },
+    { "en": ('Bed', 'Sofa'), "fr": ('Lit', 'Canapé') },
+    { "en": ('Kitchen', 'Bathroom'), "fr": ('Cuisine', 'Salle de bain') },
+    { "en": ('Soap', 'Shampoo'), "fr": ('Savon', 'Shampoing') },
+    { "en": ('Toothbrush', 'Toothpaste'), "fr": ('Brosse à dents', 'Dentifrice') },
+    { "en": ('Hat', 'Cap'), "fr": ('Chapeau', 'Casquette') },
+    { "en": ('Glasses', 'Sunglasses'), "fr": ('Lunettes', 'Lunettes de soleil') },
+    { "en": ('Watch', 'Bracelet'), "fr": ('Montre', 'Bracelet') },
+    { "en": ('Ring', 'Necklace'), "fr": ('Bague', 'Collier') },
+    { "en": ('Wallet', 'Purse'), "fr": ('Portefeuille', 'Sac à main') },
+    { "en": ('Money', 'Credit Card'), "fr": ('Argent', 'Carte bancaire') },
+    { "en": ('Diamond', 'Pearl'), "fr": ('Diamant', 'Perle') },
+    { "en": ('Vampire', 'Werewolf'), "fr": ('Vampire', 'Loup-garou') },
+    { "en": ('Zombie', 'Ghost'), "fr": ('Zombie', 'Fantôme') },
+    { "en": ('Angel', 'Demon'), "fr": ('Ange', 'Démon') },
+    { "en": ('Heaven', 'Hell'), "fr": ('Paradis', 'Enfer') },
+    { "en": ('God', 'Devil'), "fr": ('Dieu', 'Diable') },
+    { "en": ('Priest', 'Monk'), "fr": ('Prêtre', 'Moine') },
+    { "en": ('Church', 'Cathedral'), "fr": ('Église', 'Cathédrale') },
+    { "en": ('Mosque', 'Synagogue'), "fr": ('Mosquée', 'Synagogue') },
+    { "en": ('Bible', 'Quran'), "fr": ('Bible', 'Coran') },
+    { "en": ('Christmas', 'Easter'), "fr": ('Noël', 'Pâques') },
+    { "en": ('Halloween', 'Thanksgiving'), "fr": ('Halloween', 'Thanksgiving') },
+    { "en": ('Birthday', 'Wedding'), "fr": ('Anniversaire', 'Mariage') },
+    { "en": ('Cake', 'Pie'), "fr": ('Gâteau', 'Tarte') },
+    { "en": ('Ice Cream', 'Sorbet'), "fr": ('Glace', 'Sorbet') },
+    { "en": ('Fruit', 'Vegetable'), "fr": ('Fruit', 'Légume') },
+    { "en": ('Meat', 'Fish'), "fr": ('Viande', 'Poisson') },
+    { "en": ('Chicken', 'Duck'), "fr": ('Poulet', 'Canard') },
+    { "en": ('Cow', 'Pig'), "fr": ('Vache', 'Cochon') },
+    { "en": ('Horse', 'Donkey'), "fr": ('Cheval', 'Âne') },
+    { "en": ('Sheep', 'Goat'), "fr": ('Mouton', 'Chèvre') },
+    { "en": ('Rabbit', 'Hare'), "fr": ('Lapin', 'Lièvre') },
+    { "en": ('Mouse', 'Rat'), "fr": ('Souris', 'Rat') },
+    { "en": ('Fly', 'Mosquito'), "fr": ('Mouche', 'Moustique') },
+    { "en": ('Bee', 'Wasp'), "fr": ('Abeille', 'Guêpe') },
+    { "en": ('Butterfly', 'Moth'), "fr": ('Papillon', 'Mite') },
+    { "en": ('Tree', 'Bush'), "fr": ('Arbre', 'Buisson') },
+    { "en": ('Flower', 'Plant'), "fr": ('Fleur', 'Plante') },
+    { "en": ('Grass', 'Moss'), "fr": ('Herbe', 'Mousse') },
+    { "en": ('Forest', 'Jungle'), "fr": ('Forêt', 'Jungle') },
+    { "en": ('Desert', 'Savanna'), "fr": ('Désert', 'Savane') },
+    { "en": ('Earth', 'Mars'), "fr": ('Terre', 'Mars') },
+    { "en": ('Star', 'Planet'), "fr": ('Étoile', 'Planète') },
+    { "en": ('Galaxy', 'Universe'), "fr": ('Galaxie', 'Univers') },
+    { "en": ('Alien', 'Astronaut'), "fr": ('Alien', 'Astronaute') },
+    { "en": ('Rocket', 'Satellite'), "fr": ('Fusée', 'Satellite') },
+    { "en": ('Castle', 'Palace'), "fr": ('Château', 'Palais') },
+    { "en": ('Sword', 'Dagger'), "fr": ('Épée', 'Dague') },
+    { "en": ('Shield', 'Armor'), "fr": ('Bouclier', 'Armure') },
+    { "en": ('Bow', 'Crossbow'), "fr": ('Arc', 'Arbalète') },
+    { "en": ('King', 'Emperor'), "fr": ('Roi', 'Empereur') },
+    { "en": ('Magic', 'Spell'), "fr": ('Magie', 'Sortilège') },
+    { "en": ('Dragon', 'Monster'), "fr": ('Dragon', 'Monstre') },
+    { "en": ('Witch', 'Wizard'), "fr": ('Sorcière', 'Sorcier') },
+    { "en": ('Bridge', 'Tunnel'), "fr": ('Pont', 'Tunnel') },
+    { "en": ('Road', 'Highway'), "fr": ('Route', 'Autoroute') },
+    { "en": ('River', 'Stream'), "fr": ('Rivière', 'Ruisseau') },
+    { "en": ('Sea', 'Ocean'), "fr": ('Mer', 'Océan') },
+    { "en": ('Mountain', 'Hill'), "fr": ('Montagne', 'Colline') },
+    { "en": ('Volcano', 'Tornado'), "fr": ('Volcan', 'Tornade') },
+    { "en": ('Thunder', 'Lightning'), "fr": ('Tonnerre', 'Éclair') },
+    { "en": ('Fog', 'Mist'), "fr": ('Brouillard', 'Brume') },
+    { "en": ('Teacher', 'Professor'), "fr": ('Instituteur', 'Professeur') },
+    { "en": ('Pen', 'Marker'), "fr": ('Stylo', 'Feutre') },
+    { "en": ('Paper', 'Cardboard'), "fr": ('Papier', 'Carton') },
+    { "en": ('Table', 'Desk'), "fr": ('Table', 'Bureau') },
+    { "en": ('Carpet', 'Rug'), "fr": ('Tapis', 'Moquette') },
+    { "en": ('Window', 'Mirror'), "fr": ('Fenêtre', 'Miroir') },
+    { "en": ('Door', 'Gate'), "fr": ('Porte', 'Portail') },
+    { "en": ('Key', 'Lock'), "fr": ('Clé', 'Serrure') },
+    { "en": ('Hammer', 'Screwdriver'), "fr": ('Marteau', 'Tournevis') },
+    { "en": ('Nail', 'Screw'), "fr": ('Clou', 'Vis') },
+    { "en": ('Wood', 'Metal'), "fr": ('Bois', 'Métal') },
+    { "en": ('Cotton', 'Wool'), "fr": ('Coton', 'Laine') },
+    { "en": ('Jeans', 'Trousers'), "fr": ('Jean', 'Pantalon') },
+    { "en": ('Dress', 'Skirt'), "fr": ('Robe', 'Jupe') },
+    { "en": ('Coat', 'Jacket'), "fr": ('Manteau', 'Veste') },
+    { "en": ('Hat', 'Helmet'), "fr": ('Chapeau', 'Casque') },
+    { "en": ('Shoes', 'Sneakers'), "fr": ('Chaussures', 'Baskets') },
+    { "en": ('Socks', 'Gloves'), "fr": ('Chaussettes', 'Gants') },
+    { "en": ('Belt', 'Tie'), "fr": ('Ceinture', 'Cravate') },
+    { "en": ('Soup', 'Salad'), "fr": ('Soupe', 'Salade') },
+    { "en": ('Butter', 'Oil'), "fr": ('Beurre', 'Huile') },
+    { "en": ('Sugar', 'Salt'), "fr": ('Sucre', 'Sel') },
+    { "en": ('Lemon', 'Lime'), "fr": ('Citron', 'Citron vert') },
+    { "en": ('Onion', 'Garlic'), "fr": ('Oignon', 'Ail') },
+    { "en": ('Potato', 'Tomato'), "fr": ('Pomme de terre', 'Tomate') },
+    { "en": ('Beef', 'Pork'), "fr": ('Boeuf', 'Porc') },
+    { "en": ('Tuna', 'Salmon'), "fr": ('Thon', 'Saumon') },
+    { "en": ('Milk', 'Cream'), "fr": ('Lait', 'Crème') },
+    { "en": ('Yogurt', 'Cheese'), "fr": ('Yaourt', 'Fromage') },
+    { "en": ('Tea', 'Herbal Tea'), "fr": ('Thé', 'Tisane') },
+    { "en": ('Juice', 'Soda'), "fr": ('Jus', 'Soda') },
+    { "en": ('Wine', 'Champagne'), "fr": ('Vin', 'Champagne') },
+    { "en": ('Juice', 'Smoothie'), "fr": ('Jus', 'Smoothie') },
+    { "en": ('Water', 'Sparkling Water'), "fr": ('Eau', 'Eau gazeuse') },
+    { "en": ('Rabbit', 'Hamster'), "fr": ('Lapin', 'Hamster') },
+    { "en": ('Eagle', 'Hawk'), "fr": ('Aigle', 'Faucon') },
+    { "en": ('Dolphin', 'Whale'), "fr": ('Dauphin', 'Baleine') },
+    { "en": ('Laptop', 'Tablet'), "fr": ('Portable', 'Tablette') },
+    { "en": ('Jazz', 'Blues'), "fr": ('Jazz', 'Blues') },
+    { "en": ('Soccer', 'Basketball'), "fr": ('Football', 'Basket') },
+    { "en": ('Swimming', 'Diving'), "fr": ('Natation', 'Plongée') },
+    { "en": ('Running', 'Jogging'), "fr": ('Course', 'Jogging') },
+    { "en": ('Sushi', 'Sashimi'), "fr": ('Sushi', 'Sashimi') },
+    { "en": ('Harry Potter', 'Lord of the Rings'), "fr": ('Harry Potter', 'Seigneur des Anneaux') },
+    { "en": ('Star Wars', 'Star Trek'), "fr": ('Star Wars', 'Star Trek') },
+    { "en": ('Titanic', 'Avatar'), "fr": ('Titanic', 'Avatar') },
+    { "en": ('Matrix', 'Inception'), "fr": ('Matrix', 'Inception') },
+    { "en": ('Spider-Man', 'Deadpool'), "fr": ('Spider-Man', 'Deadpool') },
+    { "en": ('Thor', 'Loki'), "fr": ('Thor', 'Loki') },
+    { "en": ('Iron Man', 'Captain America'), "fr": ('Iron Man', 'Captain America') },
+    { "en": ('Hulk', 'The Thing'), "fr": ('Hulk', 'La Chose') },
+    { "en": ('Wonder Woman', 'Captain Marvel'), "fr": ('Wonder Woman', 'Captain Marvel') }
+]
 
+word_list: List[LocalizedWordPair] = []
+for i, item in enumerate(RAW_PAIRS):
+    word_list.append(LocalizedWordPair(
+        id=f"pair_{i}",
+        en=item["en"],
+        fr=item["fr"]
+    ))
 
-def get_theme(theme_id: str) -> ThemeDocument | None:
-    """Get a specific theme by ID."""
-    return THEMES.get(theme_id)
+# Helper to look up all
+def get_all_localized_pairs() -> List[LocalizedWordPair]:
+    return word_list
 
-
-def get_random_theme() -> ThemeDocument:
-    """Get a random theme."""
-    import random
-    return random.choice(list(THEMES.values()))

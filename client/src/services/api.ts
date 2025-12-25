@@ -67,11 +67,11 @@ export interface EliminateResponse {
 }
 
 class ApiService {
-    async createGame(): Promise<CreateGameResponse> {
+    async createGame(themeId?: string, language: string = 'en'): Promise<CreateGameResponse> {
         const response = await fetch(`${API_URL}/game/create`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({})
+            body: JSON.stringify({ theme_id: themeId, language })
         });
         if (!response.ok) throw new Error('Failed to create game');
         return response.json();

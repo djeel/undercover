@@ -10,7 +10,7 @@ import { api } from '../services/api';
 import RoleSelector from '../components/RoleSelector';
 
 const MultiplayerSetupPage = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const [name, setName] = useState('');
     const [roomCode, setRoomCode] = useState('');
@@ -112,7 +112,7 @@ const MultiplayerSetupPage = () => {
         setIsLoading(true);
         setError('');
         try {
-            const { game_id } = await api.createGame();
+            const { game_id } = await api.createGame(undefined, i18n.language);
             const player = await api.joinGame(game_id, name);
 
             setOnlineState({

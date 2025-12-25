@@ -27,16 +27,16 @@ class GameService:
     # Game Lifecycle
     # ========================================================================
     
-    async def create_game(self, theme_id: Optional[str] = None) -> str:
+    async def create_game(self, theme_id: Optional[str] = None, language: str = 'en') -> str:
         """Create a new game in LOBBY phase.
         
         Returns:
             Public game ID (UUID).
         """
         # Generate word pair upfront (can be used when roles are assigned)
-        word_pair = WordService.generate_word_pair(theme_id)
+        word_pair = WordService.generate_word_pair(theme_id, language)
         
-        game = GameDocument(word_pair=word_pair)
+        game = GameDocument(word_pair=word_pair, language=language)
         
         # Store in dict
         await self.repository.save_game(game.public_id, game.model_dump(mode='json'))

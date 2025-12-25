@@ -59,6 +59,7 @@ class GameDocument(BaseModel):
     public_id: str = Field(default_factory=generate_room_code)
     phase: GamePhase = GamePhase.LOBBY
     players: List[PlayerDocument] = Field(default_factory=list)
+    language: str = "en"
     
     # Word pair (set when roles are assigned)
     word_pair: Optional[WordPairDocument] = None

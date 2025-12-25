@@ -55,7 +55,11 @@
         "mrWhiteFound": "Mr. White s'est fait pecho !",
         "mrWhiteGuessPrompt": "T'es cramé ! Dernière chance : devine le mot des Civils pour voler la victoire.",
         "enterWordPlaceholder": "Tente un truc...",
-        "submitGuess": "C'est mon dernier mot"
+        "submitGuess": "C'est mon dernier mot",
+        "voteTitle": "Votre Vote",
+        "alreadyVoted": "A voté",
+        "voteConfirm": "Voter contre {{name}} ?",
+        "voteAction": "VOTER"
     },
     "results": {
         "title": "Verdict Final",

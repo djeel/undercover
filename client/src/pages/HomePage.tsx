@@ -1,4 +1,5 @@
-import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Button } from '../components/ui/Button';
@@ -7,8 +8,18 @@ import { useGameStore } from '../store/gameStore';
 const HomePage = () => {
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const resetGame = useGameStore((state) => state.resetGame);
     const setGameMode = useGameStore((state) => state.setGameMode);
+
+    // Deep Link Redirect: If ?code=XYZ is present, go to lobby
+    useEffect(() => {
+        const code = searchParams.get('code');
+        if (code) {
+            setGameMode('online');
+            navigate(`/lobby?code=${code}`);
+        }
+    }, [searchParams, navigate, setGameMode]);
 
     const handleNewGame = () => {
         setGameMode('local');

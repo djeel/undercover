@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Users, Plus, Play, X, LogOut } from 'lucide-react';
+import { ArrowLeft, Users, Plus, Play, X, LogOut, Copy, Check } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
@@ -16,6 +16,8 @@ const MultiplayerSetupPage = () => {
     const [isJoining, setIsJoining] = useState(false);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [searchParams] = useSearchParams();
+    const [hasCopied, setHasCopied] = useState(false);
 
     // Game Settings State
     const [ucCount, setUcCount] = useState(1);
@@ -31,6 +33,32 @@ const MultiplayerSetupPage = () => {
 
 
     const isHost = onlineState.isHost;
+    const setGameMode = useGameStore(state => state.setGameMode);
+
+    // Deep Link Handling
+    useEffect(() => {
+        const codeParam = searchParams.get('code');
+        if (codeParam) {
+            setGameMode('online');
+            setRoomCode(codeParam);
+            setIsJoining(true);
+        }
+    }, [searchParams, setGameMode]);
+
+    const handleCopyLink = () => {
+        // GitHub Pages Friendly: Link to ROOT (...) with ?code= param
+        // This ensures the user hits index.html first, then HomePage redirects to lobby.
+        // removing '/lobby' from the end of pathname if present, or just using origin + basename
+        // The safest is to use window.location.origin + '/undercover/?code=' + roomId
+
+        // Construct root URL dynamically assuming we are at /undercover/lobby
+        const baseUrl = window.location.href.split('/lobby')[0];
+        const url = `${baseUrl}/?code=${onlineState.roomId}`;
+
+        navigator.clipboard.writeText(url);
+        setHasCopied(true);
+        setTimeout(() => setHasCopied(false), 2000);
+    };
 
     // Polling effect
     useEffect(() => {
@@ -144,8 +172,17 @@ const MultiplayerSetupPage = () => {
                     <Card className="border-zinc-800 bg-[#18181B]">
                         <CardHeader className="text-center">
                             <CardTitle className="text-zinc-400 text-sm font-medium uppercase tracking-wider">{t('multiplayer.roomCode')}</CardTitle>
-                            <div className="text-4xl font-mono font-bold text-white tracking-widest mt-2">
+                            <div className="text-4xl font-mono font-bold text-white tracking-widest mt-2 flex items-center justify-center gap-3">
                                 {onlineState.roomId}
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={handleCopyLink}
+                                    className="h-8 w-8 p-0 text-zinc-500 hover:text-white"
+                                    title="Copy Invite Link"
+                                >
+                                    {hasCopied ? <Check className="w-5 h-5 text-green-500" /> : <Copy className="w-5 h-5" />}
+                                </Button>
                             </div>
                             <CardDescription>{t('multiplayer.shareCode')}</CardDescription>
                         </CardHeader>

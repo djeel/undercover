@@ -184,6 +184,7 @@ async def cast_vote(
     try:
         new_count = await service.cast_vote(game_id, request.voter_id, request.target_player_id)
     except ValueError as e:
+        print(f"Vote failed for game {game_id}: {e}")
         raise HTTPException(status_code=400, detail=str(e))
     
     await socket_manager.broadcast_game_state(game_id, service)

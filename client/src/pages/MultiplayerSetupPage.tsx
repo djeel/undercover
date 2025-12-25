@@ -91,7 +91,7 @@ const MultiplayerSetupPage = () => {
             });
             // Stay here for Lobby view
         } catch (e) {
-            setError('Failed to create room. Is the server running?');
+            setError(t('multiplayer.errorCreate'));
             console.error(e);
         } finally {
             setIsLoading(false);
@@ -111,7 +111,7 @@ const MultiplayerSetupPage = () => {
             });
             // Stay here for Lobby view
         } catch (e) {
-            setError('Failed to join room. Check code or connection.');
+            setError(t('multiplayer.errorJoin'));
             console.error(e);
         } finally {
             setIsLoading(false);
@@ -135,25 +135,25 @@ const MultiplayerSetupPage = () => {
                     <header className="flex items-center justify-between py-4">
                         <Button variant="ghost" className="text-zinc-400 hover:text-white" onClick={() => { leaveRoom(); navigate('/'); }}>
                             <LogOut className="w-5 h-5 mr-2" />
-                            Leave Room
+                            {t('multiplayer.leaveRoom')}
                         </Button>
-                        <h1 className="text-xl font-bold text-white tracking-wide">Lobby</h1>
+                        <h1 className="text-xl font-bold text-white tracking-wide">{t('multiplayer.lobby')}</h1>
                         <div className="w-16" />
                     </header>
 
                     <Card className="border-zinc-800 bg-[#18181B]">
                         <CardHeader className="text-center">
-                            <CardTitle className="text-zinc-400 text-sm font-medium uppercase tracking-wider">Room Code</CardTitle>
+                            <CardTitle className="text-zinc-400 text-sm font-medium uppercase tracking-wider">{t('multiplayer.roomCode')}</CardTitle>
                             <div className="text-4xl font-mono font-bold text-white tracking-widest mt-2">
                                 {onlineState.roomId}
                             </div>
-                            <CardDescription>Share this code with your friends</CardDescription>
+                            <CardDescription>{t('multiplayer.shareCode')}</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between text-sm text-zinc-400">
-                                    <span>Players ({players.length})</span>
-                                    {isHost && <span className="text-accent text-xs bg-accent/10 px-2 py-1 rounded">HOST</span>}
+                                    <span>{t('multiplayer.players')} ({players.length})</span>
+                                    {isHost && <span className="text-accent text-xs bg-accent/10 px-2 py-1 rounded">{t('multiplayer.host')}</span>}
                                 </div>
                                 <div className="grid gap-2">
                                     {players.map((p) => (
@@ -161,7 +161,7 @@ const MultiplayerSetupPage = () => {
                                             <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-300 font-bold text-xs">
                                                 {p.name.charAt(0).toUpperCase()}
                                             </div>
-                                            <span className="text-zinc-200 flex-1">{p.name} {p.id === onlineState.playerId && "(You)"}</span>
+                                            <span className="text-zinc-200 flex-1">{p.name} {p.id === onlineState.playerId && t('multiplayer.you')}</span>
                                             {isHost && p.id !== playerId && (
                                                 <Button
                                                     variant="ghost"
@@ -184,7 +184,7 @@ const MultiplayerSetupPage = () => {
                                     <div className="space-y-4 border-t border-zinc-800 pt-4">
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="space-y-2">
-                                                <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Undercovers</label>
+                                                <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{t('setup.undercoverCount')}</label>
                                                 <div className="flex items-center gap-3 bg-zinc-900 rounded-lg p-1 border border-zinc-800">
                                                     <Button
                                                         variant="ghost"
@@ -202,7 +202,7 @@ const MultiplayerSetupPage = () => {
                                                 </div>
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Mr. White</label>
+                                                <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{t('setup.mrWhiteCount')}</label>
                                                 <div className="flex items-center gap-3 bg-zinc-900 rounded-lg p-1 border border-zinc-800">
                                                     <Button
                                                         variant="ghost"
@@ -227,13 +227,13 @@ const MultiplayerSetupPage = () => {
                                             className="w-full h-14 text-lg bg-primary hover:bg-primary/90 text-white shadow-md shadow-primary/20"
                                         >
                                             <Play className="w-5 h-5 mr-2" />
-                                            Start Game
+                                            {t('setup.startGame')}
                                         </Button>
                                     </div>
                                 </>
                             ) : (
                                 <div className="text-center p-4 bg-zinc-900/50 rounded-xl text-zinc-500 animate-pulse">
-                                    Waiting for host to start...
+                                    {t('multiplayer.waitingForHost')}
                                 </div>
                             )}
                         </CardContent>
@@ -252,7 +252,7 @@ const MultiplayerSetupPage = () => {
                         <ArrowLeft className="w-5 h-5 mr-2" />
                         {t('common.back')}
                     </Button>
-                    <h1 className="text-xl font-bold text-white tracking-wide">Multiplayer</h1>
+                    <h1 className="text-xl font-bold text-white tracking-wide">{t('multiplayer.title')}</h1>
                     <div className="w-16" />
                 </header>
 
@@ -260,17 +260,17 @@ const MultiplayerSetupPage = () => {
                     <CardHeader>
                         <CardTitle className="text-white flex items-center gap-2">
                             <Users className="w-5 h-5 text-accent" />
-                            Join or Create
+                            {t('multiplayer.joinOrCreate')}
                         </CardTitle>
-                        <CardDescription>Enter your name to start</CardDescription>
+                        <CardDescription>{t('multiplayer.enterName')}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-zinc-300">Nickname</label>
+                            <label className="text-sm font-medium text-zinc-300">{t('multiplayer.nickname')}</label>
                             <Input
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                placeholder="Your Name"
+                                placeholder={t('multiplayer.yourName')}
                                 className="bg-zinc-900 border-zinc-800 text-white"
                             />
                         </div>
@@ -290,24 +290,24 @@ const MultiplayerSetupPage = () => {
                                         className="h-14 text-lg bg-accent hover:bg-accent/90 text-white shadow-md shadow-accent/20"
                                     >
                                         <Plus className="w-5 h-5 mr-2" />
-                                        Create Room
+                                        {t('multiplayer.createRoom')}
                                     </Button>
                                     <Button
                                         variant="outline"
                                         onClick={() => setIsJoining(true)}
                                         className="h-14 text-lg border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white hover:bg-zinc-800"
                                     >
-                                        Join Room
+                                        {t('multiplayer.joinRoom')}
                                     </Button>
                                 </>
                             ) : (
                                 <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium text-zinc-300">Room Code</label>
+                                        <label className="text-sm font-medium text-zinc-300">{t('multiplayer.roomCode')}</label>
                                         <Input
                                             value={roomCode}
                                             onChange={(e) => setRoomCode(e.target.value)}
-                                            placeholder="Enter Code"
+                                            placeholder={t('multiplayer.enterCode')}
                                             className="bg-zinc-900 border-zinc-800 text-white font-mono uppercase"
                                         />
                                     </div>
@@ -317,14 +317,14 @@ const MultiplayerSetupPage = () => {
                                             onClick={() => setIsJoining(false)}
                                             className="flex-1 text-zinc-400"
                                         >
-                                            Cancel
+                                            {t('multiplayer.cancel')}
                                         </Button>
                                         <Button
                                             onClick={handleJoinRoom}
                                             disabled={!name.trim() || !roomCode.trim() || isLoading}
                                             className="flex-[2] bg-primary hover:bg-primary/90 text-white shadow-md shadow-primary/20"
                                         >
-                                            Join Game
+                                            {t('multiplayer.joinGame')}
                                         </Button>
                                     </div>
                                 </div>

@@ -172,24 +172,53 @@ export const useGameStore = create<GameState>()(
                 const roles: Role[] = [];
                 for (let i = 0; i < config.undercoverCount; i++) roles.push('undercover');
                 for (let i = 0; i < config.mrWhiteCount; i++) roles.push('mrWhite');
+                for (let i = 0; i < config.jesterCount; i++) roles.push('jester');
+                for (let i = 0; i < config.bodyguardCount; i++) roles.push('bodyguard');
                 while (roles.length < totalPlayers) roles.push('civilian');
 
                 const shuffledRoles = shuffleArray(roles);
                 const shuffledPlayers = shuffleArray(players);
 
-                const assignedPlayers = shuffledPlayers.map((player, index) => ({
-                    ...player,
-                    role: shuffledRoles[index],
-                    word: shuffledRoles[index] === 'mrWhite'
-                        ? ''
-                        : shuffledRoles[index] === 'undercover'
-                            ? undercoverWord
-                            : civilianWord,
-                    hasRevealed: false,
-                    isEliminated: false,
-                    votesReceived: 0,
-                    hasVoted: false,
+                // Need to pre-calculate roles map to assign targets
+                const assignedInfos = shuffledPlayers.map((player, index) => ({
+                    id: player.id,
+                    role: shuffledRoles[index]
                 }));
+
+                const assignedPlayers = shuffledPlayers.map((player, index) => {
+                    const role = shuffledRoles[index];
+                    let bodyguardTargetId: string | undefined;
+
+                    if (role === 'bodyguard') {
+                        // Find potential targets (non-bodyguard players)
+                        // Preferably a civilian if possible, but for now just picking any other player
+                        // Matching backend logic: Pick a random player who is NOT the bodyguard themselves.
+                        const potentialTargets = assignedInfos.filter(p => p.id !== player.id);
+                        if (potentialTargets.length > 0) {
+                            const target = potentialTargets[Math.floor(Math.random() * potentialTargets.length)];
+                            bodyguardTargetId = target.id;
+                        }
+                    }
+
+                    return {
+                        ...player,
+                        role: role,
+                        word: role === 'mrWhite'
+                            ? ''
+                            : role === 'undercover'
+                                ? undercoverWord
+                                : role === 'jester'
+                                    ? civilianWord // Jester gets civilian word
+                                    : role === 'bodyguard'
+                                        ? civilianWord // Bodyguard gets civilian word
+                                        : civilianWord,
+                        hasRevealed: false,
+                        isEliminated: false,
+                        votesReceived: 0,
+                        hasVoted: false,
+                        bodyguardTargetId
+                    };
+                });
 
                 set({
                     players: assignedPlayers,
@@ -372,7 +401,7 @@ export const useGameStore = create<GameState>()(
                 else if (response.phase === 'FINISHED') phase = 'results';
 
                 // Helper to map backend winner format to frontend
-                const mapWinner = (w: string | null | undefined): 'civilians' | 'undercovers' | 'mrWhite' | null => {
+                const mapWinner = (w: string | null | undefined): 'civilians' | 'undercovers' | 'mrWhite' | 'jester' | null => {
                     if (!w) return null;
                     if (w === 'CIVILIANS' || w === 'civilians') return 'civilians';
                     if (w === 'UNDERCOVER' || w === 'undercovers') return 'undercovers';

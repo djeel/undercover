@@ -11,7 +11,7 @@ class GameRepository:
     async def get_game(self, game_id: str) -> Optional[Dict[str, Any]]: pass
     async def save_game(self, game_id: str, data: Dict[str, Any]): pass
     async def delete_game(self, game_id: str): pass
-    async def get_all_games(self) -> List[Dict[str, Any]]: pass
+    async def delete_game(self, game_id: str): pass
 
 
 class InMemoryDatabase(GameRepository):
@@ -36,8 +36,7 @@ class InMemoryDatabase(GameRepository):
         if game_id in self._games:
             del self._games[game_id]
             
-    async def get_all_games(self) -> List[Dict[str, Any]]:
-        return list(self._games.values())
+
 
 
 class SQLiteDatabase(GameRepository):
@@ -84,11 +83,7 @@ class SQLiteDatabase(GameRepository):
         await self.conn.execute("DELETE FROM games WHERE id = ?", (game_id,))
         await self.conn.commit()
             
-    async def get_all_games(self) -> List[Dict[str, Any]]:
-        if not self.conn: return []
-        async with self.conn.execute("SELECT data FROM games") as cursor:
-            rows = await cursor.fetchall()
-            return [json.loads(row[0]) for row in rows]
+
 
 # Helper for Dependency Injection
 db_instance: Optional[GameRepository] = None

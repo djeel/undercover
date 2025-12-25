@@ -447,21 +447,3 @@ class GameService:
             return WinnerType.UNDERCOVER
             
         return None
-    
-    # ========================================================================
-    # History
-    # ========================================================================
-    
-    async def get_finished_games(self, limit: int = 10) -> List[GameDocument]:
-        """Get list of finished games for history.
-        
-        NOTE: InMemory implementation is simple and unoptimized for sorting.
-        """
-        all_data = await self.repository.get_all_games()
-        all_games = [GameDocument(**g) for g in all_data]
-        finished = [g for g in all_games if g.phase == GamePhase.FINISHED]
-        
-        # Sort by finished_at desc
-        finished.sort(key=lambda g: g.finished_at or datetime.min, reverse=True)
-        
-        return finished[:limit]

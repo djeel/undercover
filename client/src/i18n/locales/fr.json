@@ -4,10 +4,9 @@
     },
     "home": {
         "subtitle": "Le jeu de déduction sociale ultime",
-        "newGame": "Partie Locale",
-        "playOnline": "Multijoueur en Ligne",
-        "history": "Historique",
-        "howToPlay": "Comment Jouer"
+        "newGame": "Jouer",
+        "playOnline": "Multijoueur",
+        "howToPlay": "Comment jouer"
     },
     "setup": {
         "title": "Configuration",
@@ -36,7 +35,7 @@
         "nextPlayer": "Joueur suivant",
         "startDiscussion": "Lancer la partie",
         "getReady": "Préparez-vous !",
-        "yourRole": "Votre Rôle",
+        "yourRole": "Votre rôle",
         "identify": "Touchez pour révéler"
     },
     "game": {
@@ -66,16 +65,6 @@
         "playAgain": "Rejouer",
         "backToHome": "Retour à l'Accueil",
         "roles": "Rôles des Joueurs"
-    },
-    "history": {
-        "title": "Historique",
-        "noGames": "Aucune partie jouée",
-        "playFirst": "Jouez votre première partie !",
-        "winner": "Gagnant",
-        "players": "{{count}} joueurs",
-        "rounds": "{{count}} manches",
-        "clearHistory": "Effacer l'historique",
-        "confirmClear": "Êtes-vous sûr de vouloir effacer tout l'historique ?"
     },
     "common": {
         "back": "Retour",

@@ -33,7 +33,6 @@ uvicorn src.main:app --reload --port 8000
 | POST | `/api/game/{id}/assign-roles` | Start game |
 | GET | `/api/game/{id}` | Get game state |
 | POST | `/api/game/{id}/eliminate` | Eliminate player |
-| GET | `/api/game/history/all` | Get finished games |
 
 ## Security
 

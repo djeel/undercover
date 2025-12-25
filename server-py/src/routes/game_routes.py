@@ -17,9 +17,6 @@ from ..models.schemas import (
     GameStateResponse,
     EliminateRequest,
     EliminateResponse,
-    GameHistoryResponse,
-    GameHistoryItem,
-    GamePhase,
     VoteRequest,
 )
 from ..services.game_service import GameService
@@ -220,30 +217,3 @@ async def eliminate_player(
         )
     await socket_manager.broadcast_game_state(game_id, service)
     return result
-
-
-# ============================================================================
-# History
-# ============================================================================
-
-@router.get("/history/all", response_model=GameHistoryResponse)
-async def get_game_history(
-    service: GameService = Depends(get_game_service),
-):
-    """Get list of all finished games.
-    
-    Returns basic game info without sensitive data.
-    """
-    games = await service.get_finished_games()
-    return GameHistoryResponse(
-        games=[
-            GameHistoryItem(
-                game_id=g.public_id,
-                player_count=len(g.players),
-                winner=g.winner,
-                created_at=g.created_at,
-                finished_at=g.finished_at,
-            )
-            for g in games
-        ]
-    )

@@ -4,10 +4,9 @@
     },
     "home": {
         "subtitle": "The ultimate social deduction game",
-        "newGame": "Local Game",
-        "playOnline": "Online Multiplayer",
-        "history": "History",
-        "howToPlay": "How to Play"
+        "newGame": "Play",
+        "playOnline": "Multiplayer",
+        "howToPlay": "How to play"
     },
     "setup": {
         "title": "Game Setup",
@@ -36,7 +35,7 @@
         "nextPlayer": "Next Player",
         "startDiscussion": "Start Game",
         "getReady": "Get Ready!",
-        "yourRole": "Your Role",
+        "yourRole": "Your role",
         "identify": "Tap to reveal"
     },
     "game": {
@@ -66,16 +65,6 @@
         "playAgain": "Play Again",
         "backToHome": "Back to Home",
         "roles": "Player Roles"
-    },
-    "history": {
-        "title": "Game History",
-        "noGames": "No games played yet",
-        "playFirst": "Play your first game!",
-        "winner": "Winner",
-        "players": "{{count}} players",
-        "rounds": "{{count}} rounds",
-        "clearHistory": "Clear History",
-        "confirmClear": "Are you sure you want to clear all history?"
     },
     "common": {
         "back": "Back",

@@ -166,19 +166,4 @@ class EliminateResponse(BaseModel):
     winner: Optional[WinnerType] = None
 
 
-# ============================================================================
-# History Schemas
-# ============================================================================
 
-class GameHistoryItem(BaseModel):
-    """Single game in history list."""
-    game_id: str
-    player_count: int
-    winner: Optional[WinnerType]
-    created_at: datetime
-    finished_at: Optional[datetime]
-
-
-class GameHistoryResponse(BaseModel):
-    """Response for GET /api/game/history/all."""
-    games: List[GameHistoryItem]

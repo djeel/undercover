@@ -73,14 +73,7 @@ const HomePage = () => {
                         {t('home.playOnline')}
                     </Button>
 
-                    <Button
-                        variant="ghost"
-                        onClick={() => navigate('/history')}
-                        size="lg"
-                        className="w-full text-lg h-16 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-2xl"
-                    >
-                        {t('home.history')}
-                    </Button>
+
                 </div>
             </motion.div>
         </div>

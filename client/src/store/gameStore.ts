@@ -27,15 +27,7 @@ export interface GameConfig {
 
 export type GamePhase = 'idle' | 'setup' | 'reveal' | 'playing' | 'voting' | 'results';
 
-export interface GameResult {
-    id: string;
-    date: string;
-    players: Pick<Player, 'name' | 'role'>[];
-    winner: 'civilians' | 'undercovers' | 'mrWhite';
-    civilianWord: string;
-    undercoverWord: string;
-    rounds: number;
-}
+
 
 interface GameState {
     // Game state
@@ -55,8 +47,7 @@ interface GameState {
         lastPoll: number;
     };
 
-    // History
-    history: GameResult[];
+
 
     // Actions
     addPlayer: (name: string) => boolean;
@@ -69,7 +60,6 @@ interface GameState {
     eliminatePlayer: (id: string) => void;
     resetGame: () => void;
     restartGame: () => void;
-    clearHistory: () => void;
     setWinner: (winner: 'civilians' | 'undercovers' | 'mrWhite' | null) => void;
 
     // Multiplayer Actions
@@ -117,7 +107,7 @@ export const useGameStore = create<GameState>()(
             currentRevealIndex: 0,
             round: 1,
             winner: null,
-            history: [],
+
 
             gameMode: 'local',
             onlineState: {
@@ -272,27 +262,14 @@ export const useGameStore = create<GameState>()(
                     newPhase = 'playing';
                 }
 
-                // Save to history if game ended
-                let newHistory = state.history;
-                if (newPhase === 'results' && winner) {
-                    const result: GameResult = {
-                        id: generateId(),
-                        date: new Date().toISOString(),
-                        players: updatedPlayers.map((p) => ({ name: p.name, role: p.role })),
-                        winner,
-                        civilianWord: state.config.civilianWord,
-                        undercoverWord: state.config.undercoverWord,
-                        rounds: state.round,
-                    };
-                    newHistory = [result, ...state.history].slice(0, 20); // Keep last 20 games
-                }
+
 
                 set({
                     players: updatedPlayers,
                     winner,
                     phase: newPhase,
                     round: newPhase === 'playing' ? state.round + 1 : state.round,
-                    history: newHistory,
+
                 });
             },
 
@@ -342,27 +319,12 @@ export const useGameStore = create<GameState>()(
                 });
             },
 
-            clearHistory: () => {
-                set({ history: [] });
-            },
+
 
             setWinner: (winner) => {
-                const state = get();
-                // Create game result
-                const result: GameResult = {
-                    id: generateId(),
-                    date: new Date().toISOString(),
-                    players: state.players.map((p) => ({ name: p.name, role: p.role })),
-                    winner: winner!,
-                    civilianWord: state.config.civilianWord,
-                    undercoverWord: state.config.undercoverWord,
-                    rounds: state.round,
-                };
-
                 set({
                     winner,
                     phase: 'results',
-                    history: [result, ...state.history].slice(0, 20),
                 });
             },
 
@@ -464,7 +426,7 @@ export const useGameStore = create<GameState>()(
         }),
         {
             name: 'undercover-game-storage',
-            partialize: (state) => ({ history: state.history }),
+            partialize: () => ({}),
         }
     )
 );

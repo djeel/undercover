@@ -28,6 +28,8 @@ class PlayerRole(str, Enum):
     CIVILIAN = "CIVILIAN"
     UNDERCOVER = "UNDERCOVER"
     MR_WHITE = "MR_WHITE"
+    JESTER = "JESTER"
+    BODYGUARD = "BODYGUARD"
 
 
 class WinnerType(str, Enum):
@@ -35,6 +37,7 @@ class WinnerType(str, Enum):
     CIVILIANS = "CIVILIANS"
     UNDERCOVER = "UNDERCOVER"
     MR_WHITE = "MR_WHITE"
+    JESTER = "JESTER"
 
 
 # ============================================================================
@@ -83,6 +86,7 @@ class PlayerResponse(BaseModel):
     # These are ONLY included for the requesting player
     role: Optional[str] = None
     word: Optional[str] = None
+    bodyguard_target_id: Optional[str] = None  # Only for BODYGUARD role
 
 
 # ============================================================================
@@ -109,6 +113,8 @@ class AssignRolesRequest(BaseModel):
     """Request for POST /api/game/{id}/assign-roles."""
     undercover_count: int = Field(..., ge=1)
     mr_white_count: int = Field(..., ge=0)
+    jester_count: int = Field(default=0, ge=0)
+    bodyguard_count: int = Field(default=0, ge=0)
 
 
 class AssignRolesResponse(BaseModel):
@@ -122,6 +128,8 @@ class GameSettingsResponse(BaseModel):
     total_players: int
     undercover_count: int
     mr_white_count: int
+    jester_count: int = 0
+    bodyguard_count: int = 0
     civilian_word: Optional[str] = None
     undercover_word: Optional[str] = None
 

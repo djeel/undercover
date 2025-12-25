@@ -8,7 +8,8 @@ export { PlayerRole, GamePhase };
 export enum WinnerType {
     CIVILIANS = "CIVILIANS",
     UNDERCOVER = "UNDERCOVER",
-    MR_WHITE = "MR_WHITE"
+    MR_WHITE = "MR_WHITE",
+    JESTER = "JESTER"
 }
 
 export interface PlayerResponse {
@@ -20,12 +21,15 @@ export interface PlayerResponse {
     // Only for requesting player
     role?: string;
     word?: string;
+    bodyguard_target_id?: string;
 }
 
 export interface GameSettingsResponse {
     total_players: number;
     undercover_count: number;
     mr_white_count: number;
+    jester_count: number;
+    bodyguard_count: number;
     civilian_word?: string;
     undercover_word?: string;
 }
@@ -39,8 +43,10 @@ export interface GameStateResponse {
         undercover_word: string | null;
         undercover_count: number;
         mr_white_count: number;
+        jester_count: number;
+        bodyguard_count: number;
     };
-    winner: 'civilians' | 'undercovers' | 'mrWhite' | null;
+    winner: 'civilians' | 'undercovers' | 'mrWhite' | 'jester' | null;
     host_player_id: string | null;
     current_turn_player_id?: string;
 }
@@ -92,11 +98,16 @@ class ApiService {
         return response.json();
     }
 
-    async assignRoles(gameId: string, undercoverCount: number, mrWhiteCount: number): Promise<boolean> {
+    async assignRoles(gameId: string, undercoverCount: number, mrWhiteCount: number, jesterCount: number, bodyguardCount: number): Promise<boolean> {
         const response = await fetch(`${API_URL}/game/${gameId}/assign-roles`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ undercover_count: undercoverCount, mr_white_count: mrWhiteCount })
+            body: JSON.stringify({
+                undercover_count: undercoverCount,
+                mr_white_count: mrWhiteCount,
+                jester_count: jesterCount,
+                bodyguard_count: bodyguardCount
+            })
         });
         return response.ok;
     }

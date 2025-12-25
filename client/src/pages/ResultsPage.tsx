@@ -60,12 +60,15 @@ const ResultsPage = () => {
 
     const winnerText = winner === 'mrWhite'
         ? t('results.mrWhiteWins')
-        : winner === 'undercovers'
-            ? t('results.undercoversWin')
-            : t('results.civiliansWin');
+        : winner === 'jester'
+            ? t('results.jesterWins')
+            : winner === 'undercovers'
+                ? t('results.undercoversWin')
+                : t('results.civiliansWin');
 
     const getWinnerColor = (w: typeof winner) => {
         if (w === 'mrWhite') return 'text-[#F43F5E]';
+        if (w === 'jester') return 'text-[#F59E0B]';
         return 'text-[#8B5CF6]'; // Primary Violet for everyone else
     };
 
@@ -144,7 +147,9 @@ const ResultsPage = () => {
                                         <span className={cn(
                                             "text-sm font-bold uppercase tracking-wide",
                                             player.role === 'mrWhite' ? 'text-[#F43F5E]' :
-                                                'text-[#8B5CF6]' // Everyone else is Primary color
+                                                player.role === 'jester' ? 'text-[#F59E0B]' :
+                                                    player.role === 'bodyguard' ? 'text-[#10B981]' :
+                                                        'text-[#8B5CF6]' // Everyone else is Primary color
                                         )}>
                                             {t(`roles.${player.role}`)}
                                         </span>

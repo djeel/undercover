@@ -36,7 +36,9 @@
         "startDiscussion": "Let the Lies Begin",
         "getReady": "Shhh!",
         "yourRole": "Your Identity",
-        "identify": "Tap to see your fate"
+        "identify": "Tap to see your fate",
+        "jesterHint": "Get voted out to win the game.",
+        "bodyguardHint": "Make sure your target survives (and Civilians win)."
     },
     "game": {
         "title": "Heated Debate",
@@ -62,6 +64,7 @@
         "mrWhiteWins": "Mr. White Stole It!",
         "civilianWord": "The real word was",
         "undercoverWord": "The impostor word",
+        "jesterWins": "The Jester Played You All!",
         "playAgain": "Another Round?",
         "backToHome": "Flee to Home",
         "roles": "Masks Off"
@@ -98,6 +101,15 @@
         "civilian": "Civilian (Innocent)",
         "undercover": "Undercover (Liar)",
         "mrWhite": "Mr. White (Impostor)",
-        "unknown": "???"
+        "unknown": "???",
+        "jester": "Jester (The Fool)",
+        "bodyguard": "Bodyguard (Protector)",
+        "protect": "Protect"
+    },
+    "roleDescriptions": {
+        "undercover": "Blends in with the civilians. Don't get caught!",
+        "mrWhite": "Has no word. Must guess the civilian word to win.",
+        "jester": "Wants to be voted out. Act suspicious!",
+        "bodyguard": "Protects a secret target. Wins if they survive."
     }
 }

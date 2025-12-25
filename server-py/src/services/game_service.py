@@ -88,8 +88,11 @@ class GameService:
     async def assign_roles(
         self, 
         game_id: str, 
+
         undercover_count: int, 
-        mr_white_count: int
+        mr_white_count: int,
+        jester_count: int = 0,
+        bodyguard_count: int = 0
     ) -> bool:
         """Assign roles to all players and start the game.
         
@@ -104,7 +107,11 @@ class GameService:
         Args:
             game_id: Public game ID.
             undercover_count: Number of undercover agents.
+            game_id: Public game ID.
+            undercover_count: Number of undercover agents.
             mr_white_count: Number of Mr. White players.
+            jester_count: Number of Jesters.
+            bodyguard_count: Number of Bodyguards.
             
         Returns:
             True if successful, False otherwise.
@@ -117,7 +124,7 @@ class GameService:
         if total_players < 3:
             raise ValueError("Minimum 3 players required")
         
-        if undercover_count + mr_white_count >= total_players:
+        if undercover_count + mr_white_count + jester_count + bodyguard_count >= total_players:
             raise ValueError("Too many special roles for player count")
         
         # Shuffle indices for random assignment
@@ -135,9 +142,24 @@ class GameService:
             except ValueError:
                 pass # Should not happen as 0 is always in range(total)
         
-        # Track role assignments
-        mr_white_indices = set(indices[:mr_white_count])
-        undercover_indices = set(indices[mr_white_count:mr_white_count + undercover_count])
+        # Track role assignments (using slices for simplicity)
+        current_idx = 0
+        
+        # 1. Mr. White
+        mr_white_indices = set(indices[current_idx : current_idx + mr_white_count])
+        current_idx += mr_white_count
+        
+        # 2. Undercover
+        undercover_indices = set(indices[current_idx : current_idx + undercover_count])
+        current_idx += undercover_count
+        
+        # 3. Jester
+        jester_indices = set(indices[current_idx : current_idx + jester_count])
+        current_idx += jester_count
+        
+        # 4. Bodyguard
+        bodyguard_indices = set(indices[current_idx : current_idx + bodyguard_count])
+        current_idx += bodyguard_count
         
         # Get word pair
         word_pair = game.word_pair
@@ -149,10 +171,23 @@ class GameService:
         for i, player in enumerate(game.players):
             if i in mr_white_indices:
                 player.role = PlayerRole.MR_WHITE
-                player.word = None  # Mr. White gets NO word
+                player.word = None
             elif i in undercover_indices:
                 player.role = PlayerRole.UNDERCOVER
                 player.word = word_pair.undercover_word
+            elif i in jester_indices:
+                player.role = PlayerRole.JESTER
+                player.word = word_pair.civilian_word # Jester blends with Civilians
+            elif i in bodyguard_indices:
+                player.role = PlayerRole.BODYGUARD
+                player.word = word_pair.civilian_word # Bodyguard is a Civilian
+                
+                # Assign Target for Bodyguard
+                # Target can be anyone EXCEPT self.
+                possible_targets = [p for p in game.players if p.id != player.id]
+                if possible_targets:
+                    target = random.choice(possible_targets)
+                    player.bodyguard_target_id = target.id
             else:
                 player.role = PlayerRole.CIVILIAN
                 player.word = word_pair.civilian_word
@@ -161,6 +196,8 @@ class GameService:
         game.phase = GamePhase.PLAYING
         game.undercover_count = undercover_count
         game.mr_white_count = mr_white_count
+        game.jester_count = jester_count
+        game.bodyguard_count = bodyguard_count
         
         await self._update_game(game)
         return True
@@ -179,6 +216,8 @@ class GameService:
         # Save the previous game configuration
         undercover_count = game.undercover_count
         mr_white_count = game.mr_white_count
+        jester_count = game.jester_count
+        bodyguard_count = game.bodyguard_count
         
         # Reset game state but keep players
         game.phase = GamePhase.LOBBY  # Temporarily
@@ -195,7 +234,14 @@ class GameService:
             player.word = None
         
         # Reassign roles with same configuration
-        await self.assign_roles(game_id, undercover_count, mr_white_count)
+        # Reassign roles with same configuration
+        await self.assign_roles(
+            game_id, 
+            undercover_count, 
+            mr_white_count, 
+            jester_count, 
+            bodyguard_count
+        )
         
         return True
 
@@ -324,9 +370,13 @@ class GameService:
             
             if should_reveal:
                 player_response.role = player.role.value if player.role else None
-                # Mr. White sees their role but NOT the word (even in results, they had NO word)
+                # Mr. White sees their role but NOT the word
                 if player.role != PlayerRole.MR_WHITE:
                     player_response.word = player.word
+                
+                # Reveal Bodyguard Target ONLY to Bodyguard
+                if player.role == PlayerRole.BODYGUARD and requesting_player_id == player.id:
+                    player_response.bodyguard_target_id = player.bodyguard_target_id
             
             filtered_players.append(player_response)
         
@@ -336,6 +386,8 @@ class GameService:
                 total_players=len(game.players),
                 undercover_count=game.undercover_count,
                 mr_white_count=game.mr_white_count,
+                jester_count=game.jester_count,
+                bodyguard_count=game.bodyguard_count,
                 civilian_word=game.word_pair.civilian_word if is_finished and game.word_pair else None,
                 undercover_word=game.word_pair.undercover_word if is_finished and game.word_pair else None,
             )
@@ -386,7 +438,24 @@ class GameService:
                 mr_white_wins = True
         
         # Eliminate the player
+        # Eliminate the player
         target.is_alive = False
+        
+        # check JESTER Win Condition (Instant Win on elimination)
+        if target.role == PlayerRole.JESTER:
+             # If Jester is eliminated by VOTE -> Win
+             # Note: This function is called by cast_vote.
+             # If somehow eliminated by other means, we might need a flag. 
+             # Assuming eliminate_player handles VOTE elimination primarily.
+             game.phase = GamePhase.FINISHED
+             game.winner = WinnerType.JESTER
+             game.finished_at = datetime.utcnow()
+             await self._update_game(game)
+             return EliminateResponse(
+                 eliminated_player_id=target_player_id,
+                 game_over=True,
+                 winner=WinnerType.JESTER
+             )
         
         # RESET VOTES for all active players (new round effectively)
         for p in game.players:
@@ -438,8 +507,14 @@ class GameService:
         total_alive = len(alive_players)
         
         alive_civilians = len([p for p in alive_players if p.role == PlayerRole.CIVILIAN])
+        alive_civilians = len([p for p in alive_players if p.role == PlayerRole.CIVILIAN])
         alive_undercover = len([p for p in alive_players if p.role == PlayerRole.UNDERCOVER])
         alive_mr_white = len([p for p in alive_players if p.role == PlayerRole.MR_WHITE])
+        alive_bodyguard = len([p for p in alive_players if p.role == PlayerRole.BODYGUARD])
+        alive_jester = len([p for p in alive_players if p.role == PlayerRole.JESTER])
+        
+        # Bodyguard counts as Civilian for team balance
+        alive_civilians += alive_bodyguard
         
         # 2. Mr. White Survival Win (1v1)
         # If Mr. White remains with just 1 other person (total 2), chaos ensues, he wins.
@@ -448,6 +523,10 @@ class GameService:
             
         # 3. Civilians Win
         # Must eliminate ALL enemies (both UC and White)
+        # 3. Civilians Win
+        # Must eliminate ALL enemies (Undercover + White + Jester?)
+        # Conventionally, Jester loses if he survives with Civilians.
+        # So Civilians win if UC and White are 0. Jester survival doesn't block Civilian win.
         if alive_undercover == 0 and alive_mr_white == 0:
             return WinnerType.CIVILIANS
             
@@ -457,7 +536,10 @@ class GameService:
              return WinnerType.UNDERCOVER
              
         # Condition B: Absolute Majority (UC >= Civ + White)
-        if alive_undercover >= (alive_civilians + alive_mr_white):
+        # Condition B: Absolute Majority (UC >= Civ + White + Jester)
+        # Jester counts as "non-UC" for majority
+        others_count = alive_civilians + alive_mr_white + alive_jester
+        if alive_undercover >= others_count:
             return WinnerType.UNDERCOVER
             
         # Condition C: Simple Majority (UC >= Civ) ONLY if Mr. White is gone

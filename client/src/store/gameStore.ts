@@ -5,7 +5,7 @@ import { WORD_PAIRS } from '../data/wordPairs';
 import { GameStateResponse } from '../services/api';
 
 // Types
-export type Role = 'civilian' | 'undercover' | 'mrWhite' | 'unknown';
+export type Role = 'civilian' | 'undercover' | 'mrWhite' | 'jester' | 'bodyguard' | 'unknown';
 
 export interface Player {
     id: string;
@@ -16,6 +16,7 @@ export interface Player {
     hasRevealed: boolean;
     votesReceived: number;
     hasVoted: boolean;
+    bodyguardTargetId?: string;
 }
 
 export interface GameConfig {
@@ -23,6 +24,8 @@ export interface GameConfig {
     undercoverWord: string;
     undercoverCount: number;
     mrWhiteCount: number;
+    jesterCount: number;
+    bodyguardCount: number;
 }
 
 export type GamePhase = 'idle' | 'setup' | 'reveal' | 'playing' | 'voting' | 'results';
@@ -36,7 +39,7 @@ interface GameState {
     phase: GamePhase;
     currentRevealIndex: number;
     round: number;
-    winner: 'civilians' | 'undercovers' | 'mrWhite' | null;
+    winner: 'civilians' | 'undercovers' | 'mrWhite' | 'jester' | null;
 
     // Multiplayer
     gameMode: 'local' | 'online';
@@ -60,7 +63,7 @@ interface GameState {
     eliminatePlayer: (id: string) => void;
     resetGame: () => void;
     restartGame: () => void;
-    setWinner: (winner: 'civilians' | 'undercovers' | 'mrWhite' | null) => void;
+    setWinner: (winner: 'civilians' | 'undercovers' | 'mrWhite' | 'jester' | null) => void;
 
     // Multiplayer Actions
     setGameMode: (mode: 'local' | 'online') => void;
@@ -96,6 +99,8 @@ const initialConfig: GameConfig = {
     undercoverWord: '',
     undercoverCount: 1,
     mrWhiteCount: 0,
+    jesterCount: 0,
+    bodyguardCount: 0,
 };
 
 export const useGameStore = create<GameState>()(
@@ -342,6 +347,8 @@ export const useGameStore = create<GameState>()(
                         case 'CIVILIAN': return 'civilian';
                         case 'UNDERCOVER': return 'undercover';
                         case 'MR_WHITE': return 'mrWhite';
+                        case 'JESTER': return 'jester';
+                        case 'BODYGUARD': return 'bodyguard';
                         default: return 'unknown';
                     }
                 };
@@ -354,7 +361,8 @@ export const useGameStore = create<GameState>()(
                     isEliminated: !p.is_alive,
                     hasRevealed: true,
                     votesReceived: p.votes_received,
-                    hasVoted: p.has_voted
+                    hasVoted: p.has_voted,
+                    bodyguardTargetId: p.bodyguard_target_id
                 }));
 
                 let phase: GamePhase = state.phase;
@@ -369,6 +377,7 @@ export const useGameStore = create<GameState>()(
                     if (w === 'CIVILIANS' || w === 'civilians') return 'civilians';
                     if (w === 'UNDERCOVER' || w === 'undercovers') return 'undercovers';
                     if (w === 'MR_WHITE' || w === 'mrWhite') return 'mrWhite';
+                    if (w === 'JESTER' || w === 'jester') return 'jester';
                     return null;
                 };
 
@@ -382,6 +391,8 @@ export const useGameStore = create<GameState>()(
                         ...state.config,
                         undercoverCount: response.settings.undercover_count,
                         mrWhiteCount: response.settings.mr_white_count,
+                        jesterCount: response.settings.jester_count,
+                        bodyguardCount: response.settings.bodyguard_count,
                         // Update words if provided (usually at game end)
                         civilianWord: response.settings.civilian_word || state.config.civilianWord,
                         undercoverWord: response.settings.undercover_word || state.config.undercoverWord

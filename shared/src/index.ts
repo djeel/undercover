@@ -2,7 +2,9 @@
 export enum PlayerRole {
     CIVILIAN = 'CIVILIAN',
     UNDERCOVER = 'UNDERCOVER',
-    MR_WHITE = 'MR_WHITE'
+    MR_WHITE = 'MR_WHITE',
+    JESTER = 'JESTER',
+    BODYGUARD = 'BODYGUARD'
 }
 
 // Game Phases
@@ -22,6 +24,8 @@ export interface Player {
     isAlive: boolean;
     hasVoted: boolean;
     votesReceived: number;
+    // For Bodyguard:
+    bodyguardTargetId?: string; // Private info for BG
 }
 
 // Global Game State (Server side view, filtered for Client)
@@ -35,6 +39,8 @@ export interface GameState {
         totalPlayers: number;
         undercoverCount: number;
         mrWhiteCount: number;
+        jesterCount: number;
+        bodyguardCount: number;
     };
 }
 

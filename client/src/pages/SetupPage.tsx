@@ -8,6 +8,7 @@ import { Input } from '../components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { useGameStore } from '../store/gameStore';
 import { cn } from '../lib/utils';
+import RoleSelector from '../components/RoleSelector';
 
 const SetupPage = () => {
     const { t } = useTranslation();
@@ -141,47 +142,38 @@ const SetupPage = () => {
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                        {/* Undercovers */}
-                        <div className="flex items-center justify-between">
-                            <label className="text-sm font-medium text-zinc-300">{t('setup.undercoverCount')}</label>
-                            <div className="flex items-center gap-3">
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    onClick={() => updateCount(false)}
-                                    disabled={config.undercoverCount <= 0}
-                                    className="h-8 w-8 border-zinc-700 bg-zinc-900 text-white hover:bg-zinc-800"
-                                >
-                                    <Minus className="w-4 h-4" />
-                                </Button>
-                                <span className="font-bold text-white w-6 text-center text-lg">
-                                    {config.undercoverCount}
-                                </span>
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    onClick={() => updateCount(true)}
-                                    disabled={config.undercoverCount >= maxUndercover}
-                                    className="h-8 w-8 border-zinc-700 bg-zinc-900 text-white hover:bg-zinc-800"
-                                >
-                                    <Plus className="w-4 h-4" />
-                                </Button>
-                            </div>
-                        </div>
+                        <div className="grid gap-3">
+                            <RoleSelector
+                                roleKey="undercover"
+                                count={config.undercoverCount}
+                                onChange={(val) => updateConfig({ undercoverCount: val })}
+                                min={0} // Changed to 0 so you can have 0 UC if you want (e.g. just Mr White) - logic allows at least 1 "impostor" usually, but flexible here.
+                                max={maxUndercover}
+                            />
 
-                        {/* Mr White Toggle */}
-                        <div className="flex items-center justify-between">
-                            <label className="text-sm font-medium text-zinc-300">{t('setup.mrWhiteCount')}</label>
-                            <Button
-                                onClick={toggleMrWhite}
-                                variant={config.mrWhiteCount > 0 ? "default" : "outline"}
-                                className={config.mrWhiteCount > 0
-                                    ? "bg-accent hover:bg-accent/90 text-white border-0 shadow-md shadow-accent/20"
-                                    : "border-zinc-700 bg-zinc-900 text-zinc-400 hover:text-white"
-                                }
-                            >
-                                {config.mrWhiteCount > 0 ? "ON" : "OFF"}
-                            </Button>
+                            <RoleSelector
+                                roleKey="mrWhite"
+                                count={config.mrWhiteCount}
+                                onChange={(val) => updateConfig({ mrWhiteCount: val })}
+                                min={0}
+                                max={3}
+                            />
+
+                            <RoleSelector
+                                roleKey="jester"
+                                count={config.jesterCount}
+                                onChange={(val) => updateConfig({ jesterCount: val })}
+                                min={0}
+                                max={1}
+                            />
+
+                            <RoleSelector
+                                roleKey="bodyguard"
+                                count={config.bodyguardCount}
+                                onChange={(val) => updateConfig({ bodyguardCount: val })}
+                                min={0}
+                                max={1}
+                            />
                         </div>
                     </CardContent>
                 </Card>

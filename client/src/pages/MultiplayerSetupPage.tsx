@@ -7,6 +7,7 @@ import { Input } from '../components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
 import { useGameStore } from '../store/gameStore';
 import { api } from '../services/api';
+import RoleSelector from '../components/RoleSelector';
 
 const MultiplayerSetupPage = () => {
     const { t } = useTranslation();
@@ -22,6 +23,8 @@ const MultiplayerSetupPage = () => {
     // Game Settings State
     const [ucCount, setUcCount] = useState(1);
     const [whiteCount, setWhiteCount] = useState(0);
+    const [jesterCount, setJesterCount] = useState(0);
+    const [bodyguardCount, setBodyguardCount] = useState(0);
 
     const setOnlineState = useGameStore(state => state.setOnlineState);
     const onlineState = useGameStore(state => state.onlineState);
@@ -149,7 +152,7 @@ const MultiplayerSetupPage = () => {
     const handleStartGame = async () => {
         if (!onlineState.roomId) return;
         try {
-            await api.assignRoles(onlineState.roomId, ucCount, whiteCount);
+            await api.assignRoles(onlineState.roomId, ucCount, whiteCount, jesterCount, bodyguardCount);
         } catch (e) {
             setError('Failed to start game');
         }
@@ -219,43 +222,38 @@ const MultiplayerSetupPage = () => {
                             {isHost ? (
                                 <>
                                     <div className="space-y-4 border-t border-zinc-800 pt-4">
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{t('setup.undercoverCount')}</label>
-                                                <div className="flex items-center gap-3 bg-zinc-900 rounded-lg p-1 border border-zinc-800">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() => setUcCount(Math.max(1, ucCount - 1))}
-                                                        className="h-8 w-8 p-0 text-zinc-400 hover:text-white"
-                                                    >-</Button>
-                                                    <span className="flex-1 text-center font-bold text-white">{ucCount}</span>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() => setUcCount(Math.min(3, ucCount + 1))}
-                                                        className="h-8 w-8 p-0 text-zinc-400 hover:text-white"
-                                                    >+</Button>
-                                                </div>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{t('setup.mrWhiteCount')}</label>
-                                                <div className="flex items-center gap-3 bg-zinc-900 rounded-lg p-1 border border-zinc-800">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() => setWhiteCount(Math.max(0, whiteCount - 1))}
-                                                        className="h-8 w-8 p-0 text-zinc-400 hover:text-white"
-                                                    >-</Button>
-                                                    <span className="flex-1 text-center font-bold text-white">{whiteCount}</span>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() => setWhiteCount(Math.min(3, whiteCount + 1))}
-                                                        className="h-8 w-8 p-0 text-zinc-400 hover:text-white"
-                                                    >+</Button>
-                                                </div>
-                                            </div>
+                                        <div className="grid gap-3">
+                                            <RoleSelector
+                                                roleKey="undercover"
+                                                count={ucCount}
+                                                onChange={setUcCount}
+                                                min={1}
+                                                max={3}
+                                            />
+
+                                            <RoleSelector
+                                                roleKey="mrWhite"
+                                                count={whiteCount}
+                                                onChange={setWhiteCount}
+                                                min={0}
+                                                max={3}
+                                            />
+
+                                            <RoleSelector
+                                                roleKey="jester"
+                                                count={jesterCount}
+                                                onChange={setJesterCount}
+                                                min={0}
+                                                max={1}
+                                            />
+
+                                            <RoleSelector
+                                                roleKey="bodyguard"
+                                                count={bodyguardCount}
+                                                onChange={setBodyguardCount}
+                                                min={0}
+                                                max={1}
+                                            />
                                         </div>
 
                                         <Button

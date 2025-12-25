@@ -33,7 +33,10 @@ class PlayerDocument(BaseModel):
     word: Optional[str] = None  # Empty for Mr. White
     is_alive: bool = True
     has_voted: bool = False
+    is_alive: bool = True
+    has_voted: bool = False
     votes_received: int = 0
+    bodyguard_target_id: Optional[str] = None
 
 
 class WordPairDocument(BaseModel):
@@ -63,6 +66,8 @@ class GameDocument(BaseModel):
     # Game settings (set when roles are assigned)
     undercover_count: int = 0
     mr_white_count: int = 0
+    jester_count: int = 0
+    bodyguard_count: int = 0
     
     # Host tracking
     host_player_id: Optional[str] = None

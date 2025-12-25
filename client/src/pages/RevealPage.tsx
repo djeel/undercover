@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye } from 'lucide-react';
+import { Eye, Shield, Smile } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { useGameStore } from '../store/gameStore';
 import { cn } from '../lib/utils';
@@ -117,26 +117,48 @@ const RevealPage = () => {
                             <div className="space-y-4">
                                 <h3 className={cn(
                                     "text-2xl font-bold tracking-tight text-white",
-                                    currentPlayer.role === 'mrWhite' && "text-[#F43F5E]" // Rose for Mr White
+                                    currentPlayer.role === 'mrWhite' && "text-[#F43F5E]",
+                                    currentPlayer.role === 'jester' && "text-[#F59E0B]", // Amber for Jester
+                                    currentPlayer.role === 'bodyguard' && "text-[#10B981]" // Emerald for Bodyguard
                                 )}>
-                                    {currentPlayer.role === 'mrWhite'
-                                        ? "Mr. White"
-                                        : t('reveal.yourWord') // Only show "Your Word" for others
-                                    }
+                                    {currentPlayer.role === 'mrWhite' ? "Mr. White" :
+                                        currentPlayer.role === 'jester' ? t('roles.jester') :
+                                            currentPlayer.role === 'bodyguard' ? t('roles.bodyguard') :
+                                                t('reveal.yourWord')}
                                 </h3>
 
                                 <p className={cn(
                                     "text-5xl font-black tracking-wider break-words py-4",
-                                    currentPlayer.role === 'mrWhite' ? "text-[#F43F5E]" : "text-white" // White for others (was Cyan)
+                                    currentPlayer.role === 'mrWhite' ? "text-[#F43F5E]" :
+                                        currentPlayer.role === 'jester' ? "text-[#F59E0B]" :
+                                            currentPlayer.role === 'bodyguard' ? "text-[#10B981]" : "text-white"
                                 )}>
                                     {currentPlayer.role === 'mrWhite' ? "???" : currentPlayer.word}
                                 </p>
 
+                                {currentPlayer.role === 'bodyguard' && currentPlayer.bodyguardTargetId && (
+                                    <div className="bg-zinc-900/80 p-4 rounded-xl border border-zinc-800 animate-in fade-in slide-in-from-bottom-2">
+                                        <div className="flex items-center gap-2 text-[#10B981] mb-1 justify-center">
+                                            <Shield className="w-4 h-4" />
+                                            <span className="text-xs font-bold uppercase tracking-widest">{t('roles.protect')}</span>
+                                        </div>
+                                        <p className="text-xl font-bold text-white">
+                                            {players.find(p => p.id === currentPlayer.bodyguardTargetId)?.name || "Unknown"}
+                                        </p>
+                                    </div>
+                                )}
+
+                                {currentPlayer.role === 'jester' && (
+                                    <div className="flex justify-center pb-2">
+                                        <Smile className="w-12 h-12 text-[#F59E0B] opacity-80" />
+                                    </div>
+                                )}
+
                                 <p className="text-sm font-medium text-zinc-400 max-w-[260px] mx-auto leading-relaxed">
-                                    {currentPlayer.role === 'mrWhite'
-                                        ? t('reveal.mrWhiteHint')
-                                        : t('reveal.memorize') // "Describe this word..."
-                                    }
+                                    {currentPlayer.role === 'mrWhite' ? t('reveal.mrWhiteHint') :
+                                        currentPlayer.role === 'jester' ? t('reveal.jesterHint') :
+                                            currentPlayer.role === 'bodyguard' ? t('reveal.bodyguardHint') :
+                                                t('reveal.memorize')}
                                 </p>
                             </div>
 
@@ -154,7 +176,7 @@ const RevealPage = () => {
                     </motion.div>
                 )}
             </AnimatePresence>
-        </div>
+        </div >
     );
 };
 

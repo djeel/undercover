@@ -36,7 +36,9 @@
         "startDiscussion": "Place au débat",
         "getReady": "Chut !",
         "yourRole": "Ton identité",
-        "identify": "Touche pour voir ton destin"
+        "identify": "Touche pour voir ton destin",
+        "jesterHint": "Fais-toi éliminer par le vote pour gagner.",
+        "bodyguardHint": "Assure-toi que ta cible survive (et que les Civils gagnent)."
     },
     "game": {
         "title": "Débat Houleux",
@@ -62,6 +64,7 @@
         "mrWhiteWins": "Mr. White a tout braqué !",
         "civilianWord": "Le vrai mot était",
         "undercoverWord": "Le mot des imposteurs",
+        "jesterWins": "Le Bouffon vous a bien eus !",
         "playAgain": "On remet ça ?",
         "backToHome": "Fuir à l'accueil",
         "roles": "Les masques tombent"
@@ -98,6 +101,15 @@
         "civilian": "Civil (L'innocent)",
         "undercover": "Infiltré (Le menteur)",
         "mrWhite": "Mr. White (L'imposteur)",
-        "unknown": "???"
+        "unknown": "???",
+        "jester": "Bouffon (Le Fou)",
+        "bodyguard": "Garde du Corps (Protecteur)",
+        "protect": "PROTÈGE"
+    },
+    "roleDescriptions": {
+        "undercover": "Se fond dans la masse. Ne te fais pas prendre !",
+        "mrWhite": "N'a pas de mot. Doit deviner le mot des Civils.",
+        "jester": "Veut se faire éliminer. Sois suspect !",
+        "bodyguard": "Protège une cible secrète. Gagne si elle survit."
     }
 }

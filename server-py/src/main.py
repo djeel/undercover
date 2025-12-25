@@ -13,7 +13,6 @@ from .socket_manager import socket_manager
 async def lifespan(app: FastAPI):
     """Application lifespan manager for startup/shutdown."""
     # Startup
-    print(">>> STARTING SERVER - VERSION [TIMESTAMP] <<<")
     db = await get_database()
     yield
     # Shutdown

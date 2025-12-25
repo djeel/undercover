@@ -5,14 +5,13 @@ from .services.game_service import GameService
 
 class SocketManager:
     def __init__(self):
-        # Enable logger and engineio_logger for debugging
         # Disable Socket.IO CORS (cors_allowed_origins=[]) because FastAPI CORSMiddleware handles it.
         # This prevents duplicate/invalid Access-Control-Allow-Origin headers.
         self.sio = socketio.AsyncServer(
             async_mode='asgi', 
             cors_allowed_origins=[],
-            logger=True,
-            engineio_logger=True
+            logger=False,
+            engineio_logger=False
         )
         # socketio_path="" because we will mount this app at /socket.io in FastAPI
         self.app = socketio.ASGIApp(self.sio, socketio_path="")

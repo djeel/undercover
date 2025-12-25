@@ -29,7 +29,11 @@ app = FastAPI(
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:4173",
+        "https://djeel.github.io"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -40,7 +44,9 @@ app.include_router(game_routes.router, prefix=settings.api_prefix)
 app.include_router(word_routes.router, prefix=settings.api_prefix)
 
 # Mount Socket.IO
-app.mount("/", socket_manager.app)
+# The socket_manager.app is configured with socketio_path=""
+# so mounting it at /socket.io correctly handles /socket.io/... requests
+app.mount("/socket.io", socket_manager.app)
 
 
 @app.get("/health")

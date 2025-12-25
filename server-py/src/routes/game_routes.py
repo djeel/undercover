@@ -179,9 +179,10 @@ async def cast_vote(
     
     Updates vote counts. Returns true if successful.
     """
-    new_count = await service.cast_vote(game_id, request.voter_id, request.target_player_id)
-    if new_count is None:
-         raise HTTPException(status_code=400, detail="Invalid vote")
+    try:
+        new_count = await service.cast_vote(game_id, request.voter_id, request.target_player_id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     
     await socket_manager.broadcast_game_state(game_id, service)
     return True

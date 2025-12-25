@@ -218,20 +218,27 @@ class GameService:
         """
         game = await self.get_game(game_id)
         # Allow voting in PLAYING or VOTING phase
-        if not game or game.phase not in (GamePhase.PLAYING, GamePhase.VOTING):
-            return None
+        if not game:
+            raise ValueError("Game not found")
+        if game.phase not in (GamePhase.PLAYING, GamePhase.VOTING):
+            raise ValueError(f"Invalid game phase: {game.phase}")
             
         voter = game.get_player_by_id(voter_id)
         target = game.get_player_by_id(target_id)
         
-        if not voter or not voter.is_alive:
-            return None
-        if not target or not target.is_alive:
-            return None
+        if not voter:
+            raise ValueError(f"Voter not found: {voter_id}")
+        if not voter.is_alive:
+            raise ValueError("Voter is eliminated")
+            
+        if not target:
+            raise ValueError(f"Target not found: {target_id}")
+        if not target.is_alive:
+            raise ValueError("Target is already eliminated")
             
         # Prevent double voting - one vote per player per round
         if voter.has_voted:
-            return None  # Already voted, reject
+            raise ValueError("Player has already voted")
         
         target.votes_received += 1
         voter.has_voted = True

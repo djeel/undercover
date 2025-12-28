@@ -8,9 +8,13 @@
         "build": "tsc && vite build",
         "preview": "vite preview",
         "predeploy": "npm run build",
-        "deploy": "./deploy.sh"
+        "deploy": "./deploy.sh",
+        "build:mobile": "vite build && npx cap sync"
     },
     "dependencies": {
+        "@capacitor/android": "^8.0.0",
+        "@capacitor/cli": "^8.0.0",
+        "@capacitor/core": "^8.0.0",
         "@tailwindcss/vite": "^4.1.18",
         "@undercover/shared": "*",
         "class-variance-authority": "^0.7.1",

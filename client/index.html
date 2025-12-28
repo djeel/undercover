@@ -18,6 +18,15 @@
 
 <body>
   <div id="root"></div>
+  <script>
+    window.onerror = function (msg, url, lineNo, columnNo, error) {
+      alert('Error: ' + msg + '\nURL: ' + url + '\nLine: ' + lineNo + '\nColumn: ' + columnNo + '\nStack: ' + (error ? error.stack : 'no stack'));
+      return false;
+    };
+    window.onunhandledrejection = function (event) {
+      alert('Unhandled Rejection: ' + event.reason);
+    };
+  </script>
   <script type="module" src="/src/main.tsx"></script>
 </body>
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, Minus, Info } from 'lucide-react';
+import { Plus, Minus } from 'lucide-react';
 import { Button } from './ui/Button';
 import { cn } from '../lib/utils';
 import {

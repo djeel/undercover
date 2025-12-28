@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, Users, ArrowRight, Minus, Settings2 } from 'lucide-react';
+import { Plus, Trash2, Users, ArrowRight, Settings2 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
@@ -47,17 +47,9 @@ const SetupPage = () => {
 
     const maxUndercover = Math.max(0, Math.ceil(players.length / 2) - 1);
 
-    const updateCount = (increment: boolean) => {
-        const current = config.undercoverCount;
-        let next = increment ? current + 1 : current - 1;
-        if (next < 0) next = 0;
-        if (next > maxUndercover) next = maxUndercover;
-        updateConfig({ undercoverCount: next });
-    };
 
-    const toggleMrWhite = () => {
-        updateConfig({ mrWhiteCount: config.mrWhiteCount > 0 ? 0 : 1 });
-    };
+
+
 
     return (
         <div className="min-h-screen p-4 bg-background pb-20 flex flex-col">

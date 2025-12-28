@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Trophy, Home, RotateCcw } from 'lucide-react';
@@ -7,15 +7,15 @@ import { Button } from '../components/ui/Button';
 import { Card, CardContent, CardFooter } from '../components/ui/Card';
 import { useGameStore } from '../store/gameStore';
 import { cn } from '../lib/utils';
-import { api } from '../services/api';
+
 
 const ResultsPage = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const syncWithServer = useGameStore(state => state.syncWithServer);
+
     const gameMode = useGameStore(state => state.gameMode);
     const onlineState = useGameStore(state => state.onlineState);
-    const { winner, players, config, resetGame, restartGame, phase, leaveRoom } = useGameStore();
+    const { winner, players, config, resetGame, restartGame, leaveRoom } = useGameStore();
 
     // ... (rest of code)
 

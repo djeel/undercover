@@ -41,16 +41,7 @@ const HomePage = () => {
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-background relative">
-            <div className="absolute top-6 right-6">
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={toggleLanguage}
-                    className="text-zinc-500 hover:text-white hover:bg-white/5 font-medium transition-colors"
-                >
-                    {i18n.language.toUpperCase()}
-                </Button>
-            </div>
+
 
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -85,6 +76,17 @@ const HomePage = () => {
                     </Button>
 
 
+                </div>
+
+                <div className="mt-8 flex justify-center">
+                    <Button
+                        variant="ghost"
+                        size="lg"
+                        onClick={toggleLanguage}
+                        className="text-muted-foreground hover:text-white hover:bg-white/5 font-medium transition-colors"
+                    >
+                        {i18n.language === 'en' ? 'Français' : 'English'}
+                    </Button>
                 </div>
             </motion.div>
         </div>

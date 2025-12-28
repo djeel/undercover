@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, HashRouter, Routes, Route } from 'react-router-dom';
+import { Capacitor } from '@capacitor/core';
 
 import {
     HomePage,
@@ -10,8 +11,14 @@ import {
 } from './pages';
 
 function App() {
+    const isMobile = Capacitor.isNativePlatform();
+    // Mobile apps generally use HashRouter to handle file:// protocols correctly
+    // Web app uses BrowserRouter with the /undercover/ basename
+    const Router = isMobile ? HashRouter : BrowserRouter;
+    const routerProps = isMobile ? {} : { basename: "/undercover/" };
+
     return (
-        <BrowserRouter basename="/undercover/">
+        <Router {...routerProps}>
             <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/setup" element={<SetupPage />} />
@@ -19,9 +26,8 @@ function App() {
                 <Route path="/reveal" element={<RevealPage />} />
                 <Route path="/game" element={<GamePage />} />
                 <Route path="/results" element={<ResultsPage />} />
-
             </Routes>
-        </BrowserRouter>
+        </Router>
     );
 }
 

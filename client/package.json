@@ -9,7 +9,7 @@
         "preview": "vite preview",
         "predeploy": "npm run build",
         "deploy": "./deploy.sh",
-        "build:mobile": "vite build && npx cap sync"
+        "build:mobile": "vite build --base ./ && npx cap sync"
     },
     "dependencies": {
         "@capacitor/android": "^8.0.0",

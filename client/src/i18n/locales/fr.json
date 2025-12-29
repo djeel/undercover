@@ -2,6 +2,11 @@
     "app": {
         "title": "UNDERCOVER"
     },
+    "nav": {
+        "home": "Accueil",
+        "play": "Jouer",
+        "multiplayer": "Multijoueur"
+    },
     "home": {
         "subtitle": "Le jeu où vos amis deviennent vos pires ennemis",
         "newGame": "Jouer",

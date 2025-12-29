@@ -2,6 +2,11 @@
     "app": {
         "title": "UNDERCOVER"
     },
+    "nav": {
+        "home": "Home",
+        "play": "Play",
+        "multiplayer": "Multiplayer"
+    },
     "home": {
         "subtitle": "The game that ruins friendships",
         "newGame": "Play",

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Users, Plus, Play, X, LogOut, Copy, Check } from 'lucide-react';
+import { ArrowLeft, Users, Plus, Play, X, LogOut, Copy, Check, Settings2, Trash2, ArrowRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
@@ -35,8 +36,6 @@ const MultiplayerSetupPage = () => {
     const leaveRoom = useGameStore(state => state.leaveRoom);
     const kickPlayer = useGameStore(state => state.kickPlayer);
     const playerId = onlineState.playerId;
-
-
     const isHost = onlineState.isHost;
     const setGameMode = useGameStore(state => state.setGameMode);
 
@@ -51,10 +50,8 @@ const MultiplayerSetupPage = () => {
     }, [searchParams, setGameMode]);
 
     const handleCopyLink = () => {
-        // GitHub Pages Friendly: Link to ROOT (...) with ?code= param
         const baseUrl = window.location.href.split('/lobby')[0];
         const url = `${baseUrl}/?code=${onlineState.roomId}`;
-
         navigator.clipboard.writeText(url);
         setHasCopied(true);
         setTimeout(() => setHasCopied(false), 2000);
@@ -63,8 +60,6 @@ const MultiplayerSetupPage = () => {
     // Polling effect
     useEffect(() => {
         if (!onlineState.roomId) return;
-
-        // Establish Socket Connection for Presence (Disconnect detection)
         if (onlineState.playerId) {
             socketService.connect(onlineState.playerId);
             socketService.joinGame(onlineState.roomId);
@@ -78,24 +73,20 @@ const MultiplayerSetupPage = () => {
                 );
                 syncWithServer(state);
 
-                // Check if we are still in the game (might have been kicked)
                 const me = state.players.find(p => p.id === onlineState.playerId);
                 if (!me) {
-                    leaveRoom(); // Clear state
-                    navigate('/'); // Back to home
-                    return;
-                }
-
-                // Check if host left the room
-                const hostStillPresent = state.players.some(p => p.id === state.host_player_id);
-                if (!hostStillPresent && state.host_player_id) {
-                    // Host left - redirect everyone to home
                     leaveRoom();
                     navigate('/');
                     return;
                 }
 
-                // Navigate to reveal if started
+                const hostStillPresent = state.players.some(p => p.id === state.host_player_id);
+                if (!hostStillPresent && state.host_player_id) {
+                    leaveRoom();
+                    navigate('/');
+                    return;
+                }
+
                 if (state.phase === 'PLAYING') {
                     navigate('/reveal');
                 }
@@ -104,7 +95,7 @@ const MultiplayerSetupPage = () => {
             }
         };
 
-        poll(); // Initial call
+        poll();
         const interval = setInterval(poll, 2000);
         return () => clearInterval(interval);
     }, [onlineState.roomId, onlineState.playerId, navigate, syncWithServer, leaveRoom]);
@@ -117,13 +108,7 @@ const MultiplayerSetupPage = () => {
         try {
             const { game_id } = await api.createGame(undefined, i18n.language);
             const player = await api.joinGame(game_id, name);
-
-            setOnlineState({
-                roomId: game_id,
-                playerId: player.player_id,
-                isHost: true
-            });
-            // Stay here for Lobby view
+            setOnlineState({ roomId: game_id, playerId: player.player_id, isHost: true });
         } catch (e) {
             setError(t('multiplayer.errorCreate'));
             console.error(e);
@@ -138,12 +123,7 @@ const MultiplayerSetupPage = () => {
         setError('');
         try {
             const player = await api.joinGame(roomCode, name);
-            setOnlineState({
-                roomId: roomCode,
-                playerId: player.player_id,
-                isHost: false
-            });
-            // Stay here for Lobby view
+            setOnlineState({ roomId: roomCode, playerId: player.player_id, isHost: false });
         } catch (e) {
             setError(t('multiplayer.errorJoin'));
             console.error(e);
@@ -164,203 +144,219 @@ const MultiplayerSetupPage = () => {
     // Lobby View
     if (onlineState.roomId) {
         return (
-            <div className="min-h-screen p-4 bg-background pb-20 flex flex-col animate-in fade-in duration-300">
-                <div className="max-w-md mx-auto w-full flex-1 flex flex-col space-y-6">
-                    <header className="flex items-center justify-center py-4 relative">
-                        <h1 className="text-xl font-bold text-foreground tracking-wide">{t('multiplayer.lobby')}</h1>
-                    </header>
+            <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <header className="flex flex-col items-center justify-center pt-2 relative">
+                    <h1 className="text-3xl font-black text-foreground tracking-tight">{t('multiplayer.lobby')}</h1>
+                    <div className="flex items-center gap-2 mt-2 bg-secondary/50 px-3 py-1 rounded-full border border-border/50">
+                        <span className="text-muted-foreground text-xs uppercase tracking-wider font-bold">{t('multiplayer.roomCode')}:</span>
+                        <span className="font-mono font-bold text-primary">{onlineState.roomId}</span>
+                        <button onClick={handleCopyLink} className="text-muted-foreground hover:text-foreground">
+                            {hasCopied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+                        </button>
+                    </div>
+                </header>
 
-                    <Card className="border-border bg-card shadow-xl">
-                        <CardHeader className="text-center">
-                            <CardTitle className="text-muted-foreground text-sm font-medium uppercase tracking-wider">{t('multiplayer.roomCode')}</CardTitle>
-                            <div className="text-4xl font-mono font-bold text-foreground tracking-widest mt-2 flex items-center justify-center gap-3">
-                                {onlineState.roomId}
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={handleCopyLink}
-                                    className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
-                                    title="Copy Invite Link"
-                                >
-                                    {hasCopied ? <Check className="w-5 h-5 text-emerald-500" /> : <Copy className="w-5 h-5" />}
-                                </Button>
-                            </div>
-                            <CardDescription>{t('multiplayer.shareCode')}</CardDescription>
+                <div className="grid gap-6">
+                    {/* Players Card */}
+                    <Card>
+                        <CardHeader className="pb-3">
+                            <CardTitle className="flex items-center gap-2 text-foreground">
+                                <Users className="w-5 h-5 text-primary" />
+                                {t('multiplayer.players')}
+                                <span className="ml-auto text-sm font-normal text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
+                                    {players.length}
+                                </span>
+                            </CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div className="space-y-3">
-                                <div className="flex items-center justify-between text-sm text-muted-foreground">
-                                    <span>{t('multiplayer.players')} ({players.length})</span>
-                                    {isHost && <span className="text-accent-foreground text-xs bg-accent px-2 py-1 rounded font-bold">{t('multiplayer.host')}</span>}
-                                </div>
-                                <div className="grid gap-2">
+                        <CardContent>
+                            <div className="max-h-60 overflow-y-auto pr-1 custom-scrollbar grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <AnimatePresence initial={false} mode="popLayout">
                                     {players.map((p) => (
-                                        <div key={p.id} className="bg-secondary/50 p-3 rounded-xl flex items-center gap-3 border border-border">
-                                            <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-xs">
+                                        <motion.div
+                                            key={p.id}
+                                            layout
+                                            initial={{ opacity: 0, scale: 0.9 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            exit={{ opacity: 0, scale: 0.9 }}
+                                            className="group relative flex items-center gap-3 p-3 rounded-xl bg-secondary/30 border border-transparent hover:border-border transition-all"
+                                        >
+                                            <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-xs shrink-0">
                                                 {p.name.charAt(0).toUpperCase()}
                                             </div>
-                                            <span className="text-foreground flex-1 font-medium">{p.name} {p.id === onlineState.playerId && <span className="text-muted-foreground font-normal">({t('multiplayer.you')})</span>}</span>
+                                            <span className="font-medium text-foreground truncate flex-1">
+                                                {p.name}
+                                                {p.id === onlineState.playerId && <span className="ml-2 text-xs text-muted-foreground font-normal">({t('multiplayer.you')})</span>}
+                                                {isHost && p.id === onlineState.playerId && <span className="ml-2 text-xs text-accent-foreground bg-accent/20 px-1 rounded">HOST</span>}
+                                            </span>
+
                                             {isHost && p.id !== playerId && (
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
+                                                <button
                                                     onClick={() => kickPlayer(p.id)}
-                                                    className="w-8 h-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                                    className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
                                                 >
                                                     <X className="w-4 h-4" />
-                                                </Button>
+                                                </button>
                                             )}
-                                        </div>
+                                        </motion.div>
                                     ))}
-                                </div>
+                                </AnimatePresence>
                             </div>
-
-
-
-                            {isHost ? (
-                                <>
-                                    <div className="space-y-4 border-t border-border pt-4">
-                                        <div className="grid gap-3">
-                                            <RoleSelector
-                                                roleKey="undercover"
-                                                count={ucCount}
-                                                onChange={setUcCount}
-                                                min={1}
-                                                max={3}
-                                            />
-
-                                            <RoleSelector
-                                                roleKey="mrWhite"
-                                                count={whiteCount}
-                                                onChange={setWhiteCount}
-                                                min={0}
-                                                max={3}
-                                            />
-
-                                            <RoleSelector
-                                                roleKey="jester"
-                                                count={jesterCount}
-                                                onChange={setJesterCount}
-                                                min={0}
-                                                max={1}
-                                            />
-
-                                            <RoleSelector
-                                                roleKey="bodyguard"
-                                                count={bodyguardCount}
-                                                onChange={setBodyguardCount}
-                                                min={0}
-                                                max={1}
-                                            />
-                                        </div>
-
-                                        <Button
-                                            onClick={handleStartGame}
-                                            disabled={players.length < 3}
-                                            className="w-full h-14 text-lg bg-primary hover:bg-primary/90 text-primary-foreground shadow-md shadow-primary/20 rounded-xl"
-                                        >
-                                            <Play className="w-5 h-5 mr-2" />
-                                            {t('setup.startGame')}
-                                        </Button>
-                                    </div>
-                                </>
-                            ) : (
-                                <div className="text-center p-6 bg-secondary/30 rounded-xl text-muted-foreground animate-pulse border border-dashed border-border">
-                                    {t('multiplayer.waitingForHost')}
-                                </div>
-                            )}
                         </CardContent>
                     </Card>
+
+                    {/* Settings Card */}
+                    {(isHost) && (
+                        <Card>
+                            <CardHeader className="pb-3">
+                                <CardTitle className="flex items-center gap-2 text-foreground">
+                                    <Settings2 className="w-5 h-5 text-primary" />
+                                    {t('setup.settings')}
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="grid gap-3">
+                                <RoleSelector
+                                    roleKey="undercover"
+                                    count={ucCount}
+                                    onChange={setUcCount}
+                                    min={1}
+                                    max={3}
+                                />
+                                <RoleSelector
+                                    roleKey="mrWhite"
+                                    count={whiteCount}
+                                    onChange={setWhiteCount}
+                                    min={0}
+                                    max={3}
+                                />
+                                <RoleSelector
+                                    roleKey="jester"
+                                    count={jesterCount}
+                                    onChange={setJesterCount}
+                                    min={0}
+                                    max={1}
+                                    isToggle={true}
+                                />
+                                <RoleSelector
+                                    roleKey="bodyguard"
+                                    count={bodyguardCount}
+                                    onChange={setBodyguardCount}
+                                    min={0}
+                                    max={1}
+                                    isToggle={true}
+                                />
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {!isHost && (
+                        <div className="text-center p-6 bg-secondary/20 rounded-xl text-muted-foreground animate-pulse border border-dashed border-border flex flex-col items-center gap-2">
+                            <Settings2 className="w-8 h-8 opacity-50" />
+                            <span>{t('multiplayer.waitingForHost')}</span>
+                        </div>
+                    )}
                 </div>
+
+                {/* Sticky Start Button */}
+                {isHost && (
+                    <div className="sticky bottom-4 pt-4 z-10 bg-background/0 pointer-events-none">
+                        <Button
+                            size="lg"
+                            onClick={handleStartGame}
+                            disabled={players.length < 3}
+                            className="w-full h-14 text-lg bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 font-bold rounded-2xl pointer-events-auto"
+                        >
+                            <Play className="w-5 h-5 mr-2" />
+                            {t('setup.startGame')}
+                        </Button>
+                    </div>
+                )}
             </div>
         );
     }
 
-    // Create/Join View
+    // Create/Join View - Cleaned up to match new style slightly but kept simple
     return (
-        <div className="min-h-screen p-4 bg-background pb-20 flex flex-col animate-in fade-in duration-300">
-            <div className="max-w-md mx-auto w-full flex-1 flex flex-col space-y-6">
-                <header className="flex items-center justify-center py-4 relative">
-                    <h1 className="text-xl font-bold text-foreground tracking-wide">{t('multiplayer.title')}</h1>
-                </header>
+        <div className="flex flex-col h-full justify-center animate-in fade-in duration-300">
+            <header className="flex items-center justify-center py-8 relative">
+                <h1 className="text-3xl font-black text-foreground tracking-tight">{t('multiplayer.title')}</h1>
+            </header>
 
-                <Card className="border-border bg-card shadow-lg">
-                    <CardHeader>
-                        <CardTitle className="text-foreground flex items-center gap-2">
-                            <Users className="w-5 h-5 text-primary" />
-                            {t('multiplayer.joinOrCreate')}
-                        </CardTitle>
-                        <CardDescription className="text-muted-foreground">{t('multiplayer.enterName')}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground">{t('multiplayer.nickname')}</label>
-                            <Input
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                placeholder={t('multiplayer.yourName')}
-                                className="bg-background border-border text-foreground"
-                            />
+            <Card className="border-border bg-card shadow-lg">
+                <CardHeader>
+                    <CardTitle className="text-foreground flex items-center gap-2">
+                        <Users className="w-5 h-5 text-primary" />
+                        {t('multiplayer.joinOrCreate')}
+                    </CardTitle>
+                    <CardDescription className="text-muted-foreground">{t('multiplayer.enterName')}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-foreground">{t('multiplayer.nickname')}</label>
+                        <Input
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            placeholder={t('multiplayer.yourName')}
+                            className="bg-background border-border text-foreground h-12"
+                        />
+                    </div>
+
+                    {error && (
+                        <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm font-medium">
+                            {error}
                         </div>
+                    )}
 
-                        {error && (
-                            <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm font-medium">
-                                {error}
+                    <div className="grid grid-cols-1 gap-4">
+                        {!isJoining ? (
+                            <>
+                                <Button
+                                    onClick={handleCreateRoom}
+                                    disabled={!name.trim() || isLoading}
+                                    className="h-14 text-lg bg-primary hover:bg-primary/90 text-primary-foreground shadow-md shadow-primary/20 rounded-xl"
+                                >
+                                    <Plus className="w-5 h-5 mr-2" />
+                                    {t('multiplayer.createRoom')}
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setIsJoining(true)}
+                                    className="h-14 text-lg border-border bg-card text-foreground hover:bg-muted rounded-xl"
+                                >
+                                    {t('multiplayer.joinRoom')}
+                                </Button>
+                            </>
+                        ) : (
+                            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-foreground">{t('multiplayer.roomCode')}</label>
+                                    <Input
+                                        value={roomCode}
+                                        onChange={(e) => setRoomCode(e.target.value)}
+                                        placeholder={t('multiplayer.enterCode')}
+                                        className="bg-background border-border text-foreground font-mono uppercase h-12 tracking-widest text-center text-lg"
+                                    />
+                                </div>
+                                <div className="flex gap-3">
+                                    <Button
+                                        variant="ghost"
+                                        onClick={() => setIsJoining(false)}
+                                        className="flex-1 text-muted-foreground hover:text-foreground h-12"
+                                    >
+                                        {t('multiplayer.cancel')}
+                                    </Button>
+                                    <Button
+                                        onClick={handleJoinRoom}
+                                        disabled={!name.trim() || !roomCode.trim() || isLoading}
+                                        className="flex-[2] bg-primary hover:bg-primary/90 text-primary-foreground shadow-md shadow-primary/20 rounded-xl h-12"
+                                    >
+                                        {t('multiplayer.joinGame')}
+                                    </Button>
+                                </div>
                             </div>
                         )}
-
-                        <div className="grid grid-cols-1 gap-4">
-                            {!isJoining ? (
-                                <>
-                                    <Button
-                                        onClick={handleCreateRoom}
-                                        disabled={!name.trim() || isLoading}
-                                        className="h-14 text-lg bg-primary hover:bg-primary/90 text-primary-foreground shadow-md shadow-primary/20 rounded-xl"
-                                    >
-                                        <Plus className="w-5 h-5 mr-2" />
-                                        {t('multiplayer.createRoom')}
-                                    </Button>
-                                    <Button
-                                        variant="outline"
-                                        onClick={() => setIsJoining(true)}
-                                        className="h-14 text-lg border-border bg-card text-foreground hover:bg-muted rounded-xl"
-                                    >
-                                        {t('multiplayer.joinRoom')}
-                                    </Button>
-                                </>
-                            ) : (
-                                <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium text-foreground">{t('multiplayer.roomCode')}</label>
-                                        <Input
-                                            value={roomCode}
-                                            onChange={(e) => setRoomCode(e.target.value)}
-                                            placeholder={t('multiplayer.enterCode')}
-                                            className="bg-background border-border text-foreground font-mono uppercase"
-                                        />
-                                    </div>
-                                    <div className="flex gap-3">
-                                        <Button
-                                            variant="ghost"
-                                            onClick={() => setIsJoining(false)}
-                                            className="flex-1 text-muted-foreground hover:text-foreground"
-                                        >
-                                            {t('multiplayer.cancel')}
-                                        </Button>
-                                        <Button
-                                            onClick={handleJoinRoom}
-                                            disabled={!name.trim() || !roomCode.trim() || isLoading}
-                                            className="flex-[2] bg-primary hover:bg-primary/90 text-primary-foreground shadow-md shadow-primary/20 rounded-xl"
-                                        >
-                                            {t('multiplayer.joinGame')}
-                                        </Button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
+                    </div>
+                </CardContent>
+            </Card>
         </div>
     );
 };

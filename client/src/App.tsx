@@ -10,6 +10,7 @@ import {
     GamePage,
     ResultsPage,
     MultiplayerSetupPage,
+    SettingsPage,
 } from './pages';
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
                         <Route path="/reveal" element={<RevealPage />} />
                         <Route path="/game" element={<GamePage />} />
                         <Route path="/results" element={<ResultsPage />} />
+                        <Route path="/settings" element={<SettingsPage />} />
                     </Route>
                 </Routes>
             </Router>

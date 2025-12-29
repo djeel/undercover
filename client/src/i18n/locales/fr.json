@@ -5,7 +5,8 @@
     "nav": {
         "home": "Accueil",
         "play": "Jouer",
-        "multiplayer": "Multijoueur"
+        "multiplayer": "Multijoueur",
+        "settings": "Paramètres"
     },
     "home": {
         "subtitle": "Le jeu où vos amis deviennent vos pires ennemis",

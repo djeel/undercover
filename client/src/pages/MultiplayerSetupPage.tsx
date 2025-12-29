@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Users, Plus, Play, X, LogOut, Copy, Check, Settings2, Trash2, ArrowRight } from 'lucide-react';
+import { Users, Plus, Play, X, Copy, Check, Settings2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -10,7 +10,6 @@ import { useGameStore } from '../store/gameStore';
 import { api } from '../services/api';
 import { socketService } from '../services/socket';
 import RoleSelector from '../components/RoleSelector';
-import { cn } from '../lib/utils';
 
 const MultiplayerSetupPage = () => {
     const { t, i18n } = useTranslation();
@@ -145,15 +144,8 @@ const MultiplayerSetupPage = () => {
     if (onlineState.roomId) {
         return (
             <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <header className="flex flex-col items-center justify-center pt-2 relative">
+                <header className="flex items-center justify-between">
                     <h1 className="text-3xl font-black text-foreground tracking-tight">{t('multiplayer.lobby')}</h1>
-                    <div className="flex items-center gap-2 mt-2 bg-secondary/50 px-3 py-1 rounded-full border border-border/50">
-                        <span className="text-muted-foreground text-xs uppercase tracking-wider font-bold">{t('multiplayer.roomCode')}:</span>
-                        <span className="font-mono font-bold text-primary">{onlineState.roomId}</span>
-                        <button onClick={handleCopyLink} className="text-muted-foreground hover:text-foreground">
-                            {hasCopied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
-                        </button>
-                    </div>
                 </header>
 
                 <div className="grid gap-6">
@@ -168,7 +160,20 @@ const MultiplayerSetupPage = () => {
                                 </span>
                             </CardTitle>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="space-y-4">
+                            {/* Room Code Display matching SetupPage Input style */}
+                            <div className="space-y-2">
+                                <div className="flex gap-2">
+                                    <div className="flex-1 h-10 px-3 rounded-md border border-input bg-secondary/50 text-foreground flex items-center justify-center font-mono font-bold tracking-widest select-all">
+                                        {onlineState.roomId}
+                                    </div>
+                                    <Button size="icon" onClick={handleCopyLink} className="aspect-square bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm">
+                                        {hasCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                                    </Button>
+                                </div>
+                                <p className="text-xs text-muted-foreground text-center">{t('multiplayer.shareCode')}</p>
+                            </div>
+
                             <div className="max-h-60 overflow-y-auto pr-1 custom-scrollbar grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 <AnimatePresence initial={false} mode="popLayout">
                                     {players.map((p) => (
@@ -178,21 +183,18 @@ const MultiplayerSetupPage = () => {
                                             initial={{ opacity: 0, scale: 0.9 }}
                                             animate={{ opacity: 1, scale: 1 }}
                                             exit={{ opacity: 0, scale: 0.9 }}
-                                            className="group relative flex items-center gap-3 p-3 rounded-xl bg-secondary/30 border border-transparent hover:border-border transition-all"
+                                            className="group relative flex items-center justify-between p-3 rounded-xl bg-secondary/30 border border-transparent hover:border-border transition-all"
                                         >
-                                            <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-xs shrink-0">
-                                                {p.name.charAt(0).toUpperCase()}
-                                            </div>
-                                            <span className="font-medium text-foreground truncate flex-1">
+                                            <span className="font-medium text-foreground truncate pr-8 flex items-center gap-2">
                                                 {p.name}
-                                                {p.id === onlineState.playerId && <span className="ml-2 text-xs text-muted-foreground font-normal">({t('multiplayer.you')})</span>}
-                                                {isHost && p.id === onlineState.playerId && <span className="ml-2 text-xs text-accent-foreground bg-accent/20 px-1 rounded">HOST</span>}
+                                                {p.id === onlineState.playerId && <span className="text-[10px] text-muted-foreground bg-secondary px-1.5 py-0.5 rounded">YOU</span>}
+                                                {isHost && p.id === onlineState.playerId && <span className="text-[10px] text-accent-foreground bg-accent/20 px-1.5 py-0.5 rounded">HOST</span>}
                                             </span>
 
                                             {isHost && p.id !== playerId && (
                                                 <button
                                                     onClick={() => kickPlayer(p.id)}
-                                                    className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                                    className="absolute right-2 p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
                                                 >
                                                     <X className="w-4 h-4" />
                                                 </button>
@@ -258,7 +260,7 @@ const MultiplayerSetupPage = () => {
 
                 {/* Sticky Start Button */}
                 {isHost && (
-                    <div className="sticky bottom-4 pt-4 z-10 bg-background/0 pointer-events-none">
+                    <div className="sticky bottom-20 md:bottom-4 pt-4 z-10 bg-background/0 pointer-events-none pb-4">
                         <Button
                             size="lg"
                             onClick={handleStartGame}

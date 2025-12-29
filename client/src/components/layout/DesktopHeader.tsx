@@ -1,8 +1,7 @@
-import { Home, Gamepad2, Users } from 'lucide-react';
+import { Home, Gamepad2, Users, Settings } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
-import { ThemeToggle } from '../ThemeToggle';
 
 export function DesktopHeader() {
     const { t } = useTranslation();
@@ -22,6 +21,11 @@ export function DesktopHeader() {
             label: t('nav.multiplayer'),
             icon: Users,
             path: '/lobby',
+        },
+        {
+            label: t('nav.settings'),
+            icon: Settings,
+            path: '/settings',
         }
     ];
 
@@ -50,8 +54,6 @@ export function DesktopHeader() {
                     </NavLink>
                 ))}
             </nav>
-
-            <ThemeToggle />
         </header>
     );
 }

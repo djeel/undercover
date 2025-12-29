@@ -22,6 +22,11 @@ export function MobileTabBar() {
             label: t('nav.multiplayer'),
             icon: Users,
             path: '/lobby',
+        },
+        {
+            label: t('nav.settings'),
+            icon: Settings,
+            path: '/settings',
         }
     ];
 

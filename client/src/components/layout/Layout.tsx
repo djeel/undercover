@@ -13,7 +13,7 @@ export function Layout() {
             </main>
 
             {/* Gradient Halo */}
-            <div className="pointer-events-none fixed inset-x-0 bottom-0 h-32 bg-gradient-to-t from-primary/20 via-primary/5 to-transparent z-0" />
+            <div className="pointer-events-none fixed inset-x-0 bottom-0 h-44 bg-gradient-to-t from-primary/20 via-primary/5 to-transparent z-0" />
 
             {/* Mobile Navigation - Visible only on small screens */}
             <div className="md:hidden">

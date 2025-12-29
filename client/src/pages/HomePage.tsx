@@ -39,12 +39,6 @@ const HomePage = () => {
                         {t('home.subtitle')}
                     </p>
                 </div>
-                <div className="flex gap-2">
-                    <Button variant="ghost" size="icon" onClick={toggleLanguage} className="rounded-full">
-                        <Globe className="w-5 h-5" />
-                    </Button>
-                    <ThemeToggle />
-                </div>
             </header>
 
             {/* Dashboard Content */}

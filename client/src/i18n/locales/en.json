@@ -5,7 +5,8 @@
     "nav": {
         "home": "Home",
         "play": "Play",
-        "multiplayer": "Multiplayer"
+        "multiplayer": "Multiplayer",
+        "settings": "Settings"
     },
     "home": {
         "subtitle": "The game that ruins friendships",
@@ -79,7 +80,7 @@
         "roles": "Masks Off"
     },
     "multiplayer": {
-        "title": "Multiplayer HQ",
+        "title": "Multiplayer Lobby",
         "leaveRoom": "Desert",
         "lobby": "Waiting Room",
         "roomCode": "Secret Code",
@@ -92,7 +93,7 @@
         "enterName": "Your alias",
         "nickname": "Handle",
         "yourName": "What do we call you?",
-        "createRoom": "Build a Lair",
+        "createRoom": "Create Room",
         "joinRoom": "Infiltrate Room",
         "joinGame": "Crash In",
         "cancel": "Nevermind",

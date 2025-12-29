@@ -1,0 +1,101 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600&family=Outfit:wght@400;500;700&family=Syne:wght@700;800&display=swap');
+@import "tailwindcss";
+
+@plugin "tailwindcss-animate";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+    /* Light Mode Variables */
+    --background: 240 5% 96%;
+    /* #FAFAFA - slightly off-white */
+    --foreground: 240 10% 3.9%;
+
+    /* Primary: #8B5CF6 (Violet) - Keeping accessible in light mode */
+    --primary: 262 83% 58%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary: Lighter grey for light mode */
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+
+    /* Accent: #F43F5E (Rose) */
+    --accent: 346 87% 60%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Surface: Card background */
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 262 83% 58%;
+
+    --radius: 1rem;
+}
+
+.dark {
+    /* Backround: #09090B */
+    --background: 240 10% 3.9%;
+    /* Foreground: #FAFAFA */
+    --foreground: 240 5.9% 98%;
+
+    /* Primary: #8B5CF6 (Violet) */
+    --primary: 262 83% 58%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary: Neutral or Darker Primary - No Cyan */
+    --secondary: 240 6% 15%;
+    /* Neutral dark grey for contrast */
+    --secondary-foreground: 0 0% 98%;
+
+    /* Accent: #F43F5E (Rose) - Keep for Mr. White only */
+    --accent: 346 87% 60%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Surface: #18181B */
+    --card: 240 10% 3.9%;
+    --card-foreground: 240 5.9% 98%;
+
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 240 5.9% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 262 83% 58%;
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+
+    body {
+        @apply bg-background text-foreground transition-colors duration-300;
+        font-family: 'Manrope', sans-serif;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-family: 'Syne', sans-serif;
+    }
+}

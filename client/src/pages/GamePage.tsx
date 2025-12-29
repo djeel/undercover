@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { motion } from 'framer-motion';
-import { Skull } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Skull, Vote } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter, CardContent } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
@@ -11,7 +11,6 @@ import { cn } from '../lib/utils';
 import { api } from '../services/api';
 import { socketService } from '../services/socket';
 import { SocketEvents } from '@undercover/shared';
-
 
 // Simple string normalization for comparison
 const normalize = (str: string) => str.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -80,9 +79,6 @@ const GamePage = () => {
         return () => {
             clearInterval(interval);
             socketService.off(SocketEvents.UPDATE_STATE, handleUpdate);
-            // We don't necessarily disconnect here to allow navigation? 
-            // Better to disconnect on unmount if leaving game flow.
-            // For now, keep connection alive or handle in store.
         };
     }, [gameMode, onlineState.roomId, onlineState.playerId, syncWithServer]);
 
@@ -121,10 +117,8 @@ const GamePage = () => {
     };
 
     const handleMrWhiteGuess = async () => {
-        // ... (keep existing handleMrWhiteGuess)
         if (!selectedPlayerId) return;
 
-        // Common logic for guess normalization
         const guess = normalize(guessWord);
 
         if (gameMode === 'online') {
@@ -148,22 +142,21 @@ const GamePage = () => {
         setGuessWord('');
     };
 
-    // Find current player for online mode
     const currentPlayer = gameMode === 'online'
         ? players.find(p => p.id === onlineState.playerId)
         : null;
     const hasCurrentPlayerVoted = currentPlayer?.hasVoted || false;
 
     return (
-        <div className="min-h-screen p-4 bg-background pb-24">
-            <header className="flex items-center justify-between py-4 max-w-2xl mx-auto mb-6">
+        <div className="flex flex-col gap-6 animate-in fade-in duration-500">
+            <header className="flex items-center justify-between">
                 <div className="space-y-1">
-                    <h1 className="text-2xl font-bold flex items-center gap-2 text-foreground">
+                    <h1 className="text-2xl font-black flex items-center gap-2 text-foreground tracking-tight">
                         {t('game.title')}
-                        {gameMode === 'online' && <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded ml-2">ONLINE</span>}
+                        {gameMode === 'online' && <span className="text-[10px] bg-primary/20 text-primary px-2 py-0.5 rounded-full font-bold tracking-wide">ONLINE</span>}
                     </h1>
-                    <p className="text-sm text-muted-foreground flex items-center gap-2">
-                        <span className="bg-primary/20 text-primary px-2 py-0.5 rounded text-xs font-bold uppercase">
+                    <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                        <span className="bg-muted text-foreground px-2 py-0.5 rounded-md text-xs font-bold uppercase border border-border">
                             {t('game.round', { round })}
                         </span>
                         <span>•</span>
@@ -171,7 +164,10 @@ const GamePage = () => {
                         {gameMode === 'online' && (
                             <>
                                 <span>•</span>
-                                <span className={hasCurrentPlayerVoted ? "text-green-500" : "text-yellow-500"}>
+                                <span className={cn(
+                                    "font-bold",
+                                    hasCurrentPlayerVoted ? "text-green-500" : "text-amber-500"
+                                )}>
                                     {hasCurrentPlayerVoted ? "✓ Voted" : "Voting..."}
                                 </span>
                             </>
@@ -180,165 +176,183 @@ const GamePage = () => {
                 </div>
             </header>
 
-            <div className="max-w-2xl mx-auto grid grid-cols-2 md:grid-cols-3 gap-4">
-                {players.map((player) => (
-                    <motion.button
-                        key={player.id}
-                        layout
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{
-                            opacity: player.isEliminated ? 0.5 : 1,
-                            scale: 1,
-                            filter: player.isEliminated ? 'grayscale(1)' : 'grayscale(0)'
-                        }}
-                        whileHover={!player.isEliminated && canAction ? { scale: 1.05 } : {}}
-                        whileTap={!player.isEliminated && canAction ? { scale: 0.95 } : {}}
-                        onClick={() => !player.isEliminated && canAction && setSelectedPlayerId(player.id)}
-                        disabled={player.isEliminated || !canAction}
-                        className={cn(
-                            "relative aspect-square rounded-2xl p-4 flex flex-col items-center justify-center transition-all duration-300",
-                            player.isEliminated
-                                ? "bg-card border border-border cursor-not-allowed"
-                                : "bg-card border border-border hover:border-primary/50 hover:bg-secondary cursor-pointer"
-                        )}
-                    >
-                        <div className={cn(
-                            "w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold mb-3 transition-colors relative",
-                            player.isEliminated
-                                ? "bg-secondary text-muted-foreground"
-                                : "bg-primary text-primary-foreground"
-                        )}>
-                            {player.name.charAt(0).toUpperCase()}
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                <AnimatePresence>
+                    {players.map((player) => (
+                        <motion.button
+                            key={player.id}
+                            layout
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{
+                                opacity: player.isEliminated ? 0.6 : 1,
+                                scale: 1,
+                                filter: player.isEliminated ? 'grayscale(1)' : 'grayscale(0)'
+                            }}
+                            whileHover={!player.isEliminated && canAction ? { scale: 1.02 } : {}}
+                            whileTap={!player.isEliminated && canAction ? { scale: 0.98 } : {}}
+                            onClick={() => !player.isEliminated && canAction && setSelectedPlayerId(player.id)}
+                            disabled={player.isEliminated || !canAction}
+                            className={cn(
+                                "relative aspect-[4/5] sm:aspect-square rounded-3xl p-4 flex flex-col items-center justify-center transition-all duration-300 group",
+                                player.isEliminated
+                                    ? "bg-muted border border-transparent"
+                                    : "bg-card border border-border hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10"
+                            )}
+                        >
+                            <div className={cn(
+                                "w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black mb-4 transition-colors relative shadow-sm",
+                                player.isEliminated
+                                    ? "bg-muted-foreground/20 text-muted-foreground"
+                                    : "bg-primary/20 text-primary"
+                            )}>
+                                {player.name.charAt(0).toUpperCase()}
 
-                            {/* Vote Badge */}
-                            {!player.isEliminated && player.votesReceived > 0 && (
-                                <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center border-2 border-card font-bold">
-                                    {player.votesReceived}
+                                {/* Vote Badge */}
+                                {!player.isEliminated && player.votesReceived > 0 && (
+                                    <div className="absolute -top-2 -right-2 min-w-[24px] h-6 bg-destructive text-destructive-foreground rounded-full text-xs flex items-center justify-center border-2 border-card font-bold px-1.5 shadow-sm z-10">
+                                        {player.votesReceived}
+                                    </div>
+                                )}
+                            </div>
+                            <span className={cn(
+                                "font-bold truncate w-full text-center px-1",
+                                player.isEliminated ? "text-muted-foreground" : "text-foreground"
+                            )}>
+                                {player.name}
+                            </span>
+
+                            {player.isEliminated && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-background/20 backdrop-blur-[1px] rounded-3xl">
+                                    <Skull className="w-16 h-16 text-destructive/50 rotate-12" />
                                 </div>
                             )}
-                        </div>
-                        <span className="font-medium truncate w-full text-center px-2 text-foreground">
-                            {player.name}
-                        </span>
-                        {player.isEliminated && (
-                            <span className="absolute inset-0 flex items-center justify-center">
-                                <Skull className="w-16 h-16 text-destructive/40 rotate-12" />
-                            </span>
-                        )}
 
-                        {/* Show roles for self */}
-                        {gameMode === 'online' && player.id === onlineState.playerId && player.word && !player.isEliminated && (
-                            <div className="absolute bottom-2 left-0 right-0 text-center">
-                                <span className="text-xs bg-black/50 text-white px-2 py-0.5 rounded-full backdrop-blur-sm">
-                                    {player.role === 'mrWhite' ? 'Mr. White' : player.word}
-                                </span>
-                            </div>
-                        )}
-                        {gameMode === 'online' && player.id === onlineState.playerId && player.role === 'mrWhite' && !player.isEliminated && (
-                            <div className="absolute bottom-2 left-0 right-0 text-center">
-                                <span className="text-xs bg-black/50 text-white px-2 py-0.5 rounded-full backdrop-blur-sm">
-                                    Mr. White
-                                </span>
-                            </div>
-                        )}
-                    </motion.button>
-                ))}
+                            {/* Show roles/words for self */}
+                            {gameMode === 'online' && player.id === onlineState.playerId && player.word && !player.isEliminated && (
+                                <div className="absolute bottom-3 left-0 right-0 text-center">
+                                    <span className="text-[10px] font-bold uppercase tracking-wider bg-foreground/90 text-background px-2 py-1 rounded-full shadow-sm">
+                                        {player.role === 'mrWhite' ? 'Mr. White' : player.word}
+                                    </span>
+                                </div>
+                            )}
+                            {gameMode === 'online' && player.id === onlineState.playerId && player.role === 'mrWhite' && !player.isEliminated && (
+                                <div className="absolute bottom-3 left-0 right-0 text-center">
+                                    <span className="text-[10px] font-bold uppercase tracking-wider bg-accent text-accent-foreground px-2 py-1 rounded-full shadow-sm">
+                                        Mr. White
+                                    </span>
+                                </div>
+                            )}
+                        </motion.button>
+                    ))}
+                </AnimatePresence>
             </div>
 
-            {selectedPlayer && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="w-full max-w-md"
-                    >
-                        <Card className="border-border bg-card shadow-lg">
-                            <CardHeader>
-                                <CardTitle className={mrWhiteGuessing ? "text-primary" : "text-destructive"}>
-                                    {mrWhiteGuessing ? t('game.mrWhiteFound') : (gameMode === 'online' && !canEliminate ? t('game.voteTitle') : t('game.confirmElimination'))}
-                                </CardTitle>
-                                <CardDescription className="text-muted-foreground">
-                                    {mrWhiteGuessing
-                                        ? t('game.mrWhiteGuessPrompt')
-                                        : (gameMode === 'online'
-                                            ? hasCurrentPlayerVoted
-                                                ? t('game.alreadyVoted')
-                                                : t('game.voteConfirm', { name: selectedPlayer.name })
-                                            : t('game.eliminatePlayer', { name: selectedPlayer.name }))
-                                    }
-                                </CardDescription>
-                            </CardHeader>
+            <AnimatePresence>
+                {selectedPlayer && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="w-full max-w-sm"
+                        >
+                            <Card className="border-border shadow-2xl">
+                                <CardHeader className="text-center pb-2">
+                                    <CardTitle className={cn("text-2xl", mrWhiteGuessing ? "text-primary" : "text-foreground")}>
+                                        {mrWhiteGuessing ? t('game.mrWhiteFound') : (gameMode === 'online' && !canEliminate ? t('game.voteTitle') : t('game.confirmElimination'))}
+                                    </CardTitle>
+                                    <CardDescription className="text-base">
+                                        {mrWhiteGuessing
+                                            ? t('game.mrWhiteGuessPrompt')
+                                            : (gameMode === 'online'
+                                                ? hasCurrentPlayerVoted
+                                                    ? t('game.alreadyVoted')
+                                                    : t('game.voteConfirm', { name: selectedPlayer.name })
+                                                : t('game.eliminatePlayer', { name: selectedPlayer.name }))
+                                        }
+                                    </CardDescription>
+                                </CardHeader>
 
-                            {mrWhiteGuessing && (
-                                <CardContent>
-                                    <Input
-                                        value={guessWord}
-                                        onChange={(e) => setGuessWord(e.target.value)}
-                                        placeholder={t('game.enterWordPlaceholder')}
-                                        className="text-center text-lg py-6"
-                                        autoFocus
-                                    />
-                                </CardContent>
-                            )}
+                                {mrWhiteGuessing && (
+                                    <CardContent className="pb-2">
+                                        <Input
+                                            value={guessWord}
+                                            onChange={(e) => setGuessWord(e.target.value)}
+                                            placeholder={t('game.enterWordPlaceholder')}
+                                            className="text-center text-xl py-6 rounded-xl border-2 focus-visible:ring-0 focus-visible:border-primary"
+                                            autoFocus
+                                        />
+                                    </CardContent>
+                                )}
 
-                            <CardFooter className="flex-col gap-2">
-                                <div className="flex gap-2 w-full">
-                                    <Button
-                                        variant="ghost"
-                                        onClick={() => {
-                                            setSelectedPlayerId(null);
-                                            setMrWhiteGuessing(false);
-                                            setGuessWord('');
-                                        }}
-                                        className="flex-1"
-                                    >
-                                        {t('game.cancel')}
-                                    </Button>
-
-                                    {mrWhiteGuessing ? (
+                                <CardFooter className="flex-col gap-3 pt-4">
+                                    <div className="flex gap-3 w-full">
                                         <Button
-                                            onClick={handleMrWhiteGuess}
-                                            className="flex-1 bg-primary text-white"
-                                            disabled={!guessWord.trim()}
+                                            variant="outline"
+                                            size="lg"
+                                            onClick={() => {
+                                                setSelectedPlayerId(null);
+                                                setMrWhiteGuessing(false);
+                                                setGuessWord('');
+                                            }}
+                                            className="flex-1 rounded-xl h-12 border-2 hover:bg-muted"
                                         >
-                                            {t('game.submitGuess')}
+                                            {t('game.cancel')}
                                         </Button>
-                                    ) : (
-                                        <>
-                                            {/* Vote Button (Online only) */}
-                                            {gameMode === 'online' && !mrWhiteGuessing && (
-                                                <Button
-                                                    onClick={handleVote}
-                                                    disabled={hasCurrentPlayerVoted}
-                                                    className={cn(
-                                                        "flex-1 text-foreground disabled:opacity-50 disabled:cursor-not-allowed",
-                                                        hasCurrentPlayerVoted
-                                                            ? "bg-secondary"
-                                                            : "bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
-                                                    )}
-                                                >
-                                                    {hasCurrentPlayerVoted ? t('game.alreadyVoted') : t('game.voteAction')}
-                                                </Button>
-                                            )}
 
-                                            {/* Eliminate Button (Local OR Host) */}
-                                            {(canEliminate || mrWhiteGuessing) && (
-                                                <Button
-                                                    variant="destructive"
-                                                    onClick={handleElimination}
-                                                    className="flex-1"
-                                                >
-                                                    {gameMode === 'online' ? "Force Eliminate" : t('game.confirm')}
-                                                </Button>
-                                            )}
-                                        </>
-                                    )}
-                                </div>
-                            </CardFooter>
-                        </Card>
-                    </motion.div>
-                </div>
-            )}
+                                        {mrWhiteGuessing ? (
+                                            <Button
+                                                onClick={handleMrWhiteGuess}
+                                                size="lg"
+                                                className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-12 font-bold shadow-lg shadow-primary/20"
+                                                disabled={!guessWord.trim()}
+                                            >
+                                                {t('game.submitGuess')}
+                                            </Button>
+                                        ) : (
+                                            <>
+                                                {/* Vote Button (Online only) */}
+                                                {gameMode === 'online' && !mrWhiteGuessing && (
+                                                    <Button
+                                                        onClick={handleVote}
+                                                        size="lg"
+                                                        disabled={hasCurrentPlayerVoted}
+                                                        className={cn(
+                                                            "flex-1 rounded-xl h-12 font-bold shadow-lg",
+                                                            hasCurrentPlayerVoted
+                                                                ? "bg-muted text-muted-foreground shadow-none"
+                                                                : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/20"
+                                                        )}
+                                                    >
+                                                        {hasCurrentPlayerVoted ? t('game.alreadyVoted') : (
+                                                            <>
+                                                                <Vote className="w-5 h-5 mr-2" />
+                                                                {t('game.voteAction')}
+                                                            </>
+                                                        )}
+                                                    </Button>
+                                                )}
+
+                                                {/* Eliminate Button (Local OR Host) */}
+                                                {(canEliminate || mrWhiteGuessing) && (
+                                                    <Button
+                                                        variant="destructive"
+                                                        size="lg"
+                                                        onClick={handleElimination}
+                                                        className="flex-1 rounded-xl h-12 font-bold shadow-lg shadow-destructive/20"
+                                                    >
+                                                        {gameMode === 'online' ? "Force Eliminate" : t('game.confirm')}
+                                                    </Button>
+                                                )}
+                                            </>
+                                        )}
+                                    </div>
+                                </CardFooter>
+                            </Card>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

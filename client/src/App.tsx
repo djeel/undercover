@@ -1,5 +1,7 @@
 import { BrowserRouter, HashRouter, Routes, Route } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
+import { ThemeProvider } from './components/theme-provider';
+import { Layout } from './components/layout';
 
 import {
     HomePage,
@@ -18,16 +20,20 @@ function App() {
     const routerProps = isMobile ? {} : { basename: "/undercover/" };
 
     return (
-        <Router {...routerProps}>
-            <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/setup" element={<SetupPage />} />
-                <Route path="/lobby" element={<MultiplayerSetupPage />} />
-                <Route path="/reveal" element={<RevealPage />} />
-                <Route path="/game" element={<GamePage />} />
-                <Route path="/results" element={<ResultsPage />} />
-            </Routes>
-        </Router>
+        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+            <Router {...routerProps}>
+                <Routes>
+                    <Route element={<Layout />}>
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/setup" element={<SetupPage />} />
+                        <Route path="/lobby" element={<MultiplayerSetupPage />} />
+                        <Route path="/reveal" element={<RevealPage />} />
+                        <Route path="/game" element={<GamePage />} />
+                        <Route path="/results" element={<ResultsPage />} />
+                    </Route>
+                </Routes>
+            </Router>
+        </ThemeProvider>
     );
 }
 

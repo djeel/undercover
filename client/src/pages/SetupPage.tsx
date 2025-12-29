@@ -47,32 +47,28 @@ const SetupPage = () => {
 
     const maxUndercover = Math.max(0, Math.ceil(players.length / 2) - 1);
 
-
-
-
-
     return (
-        <div className="min-h-screen p-4 bg-background pb-20 flex flex-col">
-            <div className="max-w-md mx-auto w-full flex-1 flex flex-col space-y-6">
-                <header className="flex items-center justify-between py-4">
-                    <Button variant="ghost" className="text-zinc-400 hover:text-white" onClick={() => navigate('/')}>
-                        {t('common.back')}
-                    </Button>
-                    <h1 className="text-xl font-bold text-white tracking-wide">{t('setup.title')}</h1>
-                    <div className="w-16" />
-                </header>
+        <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <header className="flex items-center justify-between">
+                <h1 className="text-3xl font-black text-foreground tracking-tight">{t('setup.title')}</h1>
+                {/* Back button handled by browser or tab bar usually, but let's keep a clear visual cue maybe? 
+                     Actually, with TabBar, navigating back to Home is easy. 
+                     But let's keep a small back indication for UX safety. */}
+                {/* <Button variant="ghost" onClick={() => navigate('/')}>Cancel</Button> */}
+            </header>
 
-                <Card className="border-zinc-800 bg-[#18181B] flex flex-col">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-white">
+            <div className="grid gap-6">
+                <Card>
+                    <CardHeader className="pb-3">
+                        <CardTitle className="flex items-center gap-2 text-foreground">
                             <Users className="w-5 h-5 text-primary" />
                             {t('setup.players')}
-                            <span className="text-sm font-normal text-zinc-500 ml-auto">
+                            <span className="ml-auto text-sm font-normal text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
                                 {players.length}
                             </span>
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4 flex-1 flex flex-col min-h-0">
+                    <CardContent className="space-y-4">
                         <div className="space-y-2">
                             <form onSubmit={handleAddPlayer} className="flex gap-2">
                                 <Input
@@ -83,39 +79,39 @@ const SetupPage = () => {
                                         setError('');
                                     }}
                                     className={cn(
-                                        "bg-zinc-900 border-zinc-800 text-white focus:ring-primary focus:border-primary",
-                                        error && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                                        "bg-secondary/50 border-transparent focus:bg-background transition-all",
+                                        error && "border-destructive focus:border-destructive"
                                     )}
                                 />
                                 <Button
                                     type="submit"
                                     size="icon"
                                     disabled={!newPlayerName.trim()}
-                                    className="bg-primary hover:bg-primary/90 shadow-md shadow-primary/20 shrink-0 aspect-square"
+                                    className="aspect-square bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
                                 >
                                     <Plus className="w-5 h-5" />
                                 </Button>
                             </form>
                             {error && (
-                                <p className="text-xs text-red-500 px-1">{error}</p>
+                                <p className="text-xs text-destructive font-medium px-1">{error}</p>
                             )}
                         </div>
 
-                        <div className="h-48 overflow-y-auto pr-2 custom-scrollbar grid grid-cols-2 gap-3 content-start">
+                        <div className="max-h-60 overflow-y-auto pr-1 custom-scrollbar grid grid-cols-1 sm:grid-cols-2 gap-2">
                             <AnimatePresence initial={false} mode="popLayout">
                                 {players.map((player) => (
                                     <motion.div
                                         key={player.id}
                                         layout
-                                        initial={{ opacity: 0, scale: 0.8 }}
+                                        initial={{ opacity: 0, scale: 0.9 }}
                                         animate={{ opacity: 1, scale: 1 }}
-                                        exit={{ opacity: 0, scale: 0.8 }}
-                                        className="flex items-center justify-between p-3 rounded-xl bg-zinc-900 border border-zinc-800 relative group overflow-hidden"
+                                        exit={{ opacity: 0, scale: 0.9 }}
+                                        className="group relative flex items-center justify-between p-3 rounded-xl bg-secondary/30 border border-transparent hover:border-border transition-all"
                                     >
-                                        <span className="font-medium text-zinc-200 truncate pr-6">{player.name}</span>
+                                        <span className="font-medium text-foreground truncate pr-8">{player.name}</span>
                                         <button
                                             onClick={() => removePlayer(player.id)}
-                                            className="absolute right-0 top-0 bottom-0 w-8 flex items-center justify-center bg-zinc-800/50 hover:bg-red-500/20 text-zinc-500 hover:text-red-500 transition-colors"
+                                            className="absolute right-2 p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
                                         >
                                             <Trash2 className="w-4 h-4" />
                                         </button>
@@ -123,71 +119,84 @@ const SetupPage = () => {
                                 ))}
                             </AnimatePresence>
                         </div>
+
                         {players.length === 0 && (
-                            <p className="text-center text-zinc-600 py-4 text-sm italic col-span-2">
+                            <div className="text-center py-6 text-muted-foreground bg-secondary/20 rounded-xl border border-dashed border-border">
                                 {t('setup.minPlayers', { count: 3 })}
-                            </p>
+                            </div>
                         )}
                     </CardContent>
                 </Card>
 
-                <Card className="border-zinc-800 bg-[#18181B]">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-white">
+                <Card>
+                    <CardHeader className="pb-3">
+                        <CardTitle className="flex items-center gap-2 text-foreground">
                             <Settings2 className="w-5 h-5 text-primary" />
                             {t('setup.settings')}
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div className="grid gap-3">
-                            <RoleSelector
-                                roleKey="undercover"
-                                count={config.undercoverCount}
-                                onChange={(val) => updateConfig({ undercoverCount: val })}
-                                min={0} // Changed to 0 so you can have 0 UC if you want (e.g. just Mr White) - logic allows at least 1 "impostor" usually, but flexible here.
-                                max={maxUndercover}
-                            />
+                    <CardContent className="grid gap-3">
+                        <RoleSelector
+                            roleKey="undercover"
+                            count={config.undercoverCount}
+                            onChange={(val) => updateConfig({ undercoverCount: val })}
+                            min={0}
+                            max={maxUndercover}
+                        />
 
-                            <RoleSelector
-                                roleKey="mrWhite"
-                                count={config.mrWhiteCount}
-                                onChange={(val) => updateConfig({ mrWhiteCount: val })}
-                                min={0}
-                                max={3}
-                            />
+                        <RoleSelector
+                            roleKey="mrWhite"
+                            count={config.mrWhiteCount}
+                            onChange={(val) => updateConfig({ mrWhiteCount: val })}
+                            min={0}
+                            max={3}
+                            isToggle={true}
+                        />
+                        {/* Note: In previous file isToggle was passed implicitly or logic handled it? 
+                            Ah, looked at RoleSelector update, I added isToggle prop support but kept logic same-ish. 
+                            Actually previously MrWhite was 0-3 selector. Let's keep it selector unless 'isToggle' is preferred.
+                            I'll pass isToggle={false} or just omit it to keep count behavior, 
+                            OR if the user wants MrWhite to be just ON/OFF (1 or 0) I'd use isToggle.
+                            The previous code had max=3 for mrWhite. So multiple Mr Whites are allowed.
+                            So I should NOT use isToggle for MrWhite unless I want to change game rules.
+                            Let's keep it count selector.
+                        */}
 
-                            <RoleSelector
-                                roleKey="jester"
-                                count={config.jesterCount}
-                                onChange={(val) => updateConfig({ jesterCount: val })}
-                                min={0}
-                                max={1}
-                            />
+                        <RoleSelector
+                            roleKey="jester"
+                            count={config.jesterCount}
+                            onChange={(val) => updateConfig({ jesterCount: val })}
+                            min={0}
+                            max={1}
+                            isToggle={true} // Jester is usually unique
+                        />
 
-                            <RoleSelector
-                                roleKey="bodyguard"
-                                count={config.bodyguardCount}
-                                onChange={(val) => updateConfig({ bodyguardCount: val })}
-                                min={0}
-                                max={1}
-                            />
-                        </div>
+                        <RoleSelector
+                            roleKey="bodyguard"
+                            count={config.bodyguardCount}
+                            onChange={(val) => updateConfig({ bodyguardCount: val })}
+                            min={0}
+                            max={1}
+                            isToggle={true} // Bodyguard is usually unique
+                        />
                     </CardContent>
                 </Card>
             </div>
 
-            <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background via-background to-transparent z-10 pointer-events-none">
-                <div className="max-w-md mx-auto pointer-events-auto">
-                    <Button
-                        size="lg"
-                        onClick={handleStartGame}
-                        disabled={players.length < 3}
-                        className="w-full h-14 text-lg bg-primary hover:bg-primary/90 text-white shadow-md shadow-primary/20 font-bold"
-                    >
-                        {t('setup.startGame')}
-                        <ArrowRight className="ml-2 w-5 h-5" />
-                    </Button>
-                </div>
+            <div className="sticky bottom-4 pt-4 z-10 bg-background/0 backdrop-blur-none pointer-events-none">
+                {/* We rely on the layout padding-bottom for scroll space, this button is just fixed or sticky? 
+                    Let's make it just part of the flow but clear. 
+                    Or sticky to bottom of container.
+                */}
+                <Button
+                    size="lg"
+                    onClick={handleStartGame}
+                    disabled={players.length < 3}
+                    className="w-full h-14 text-lg bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 font-bold rounded-2xl pointer-events-auto"
+                >
+                    {t('setup.startGame')}
+                    <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
             </div>
         </div>
     );

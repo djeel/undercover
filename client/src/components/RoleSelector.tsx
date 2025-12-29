@@ -30,8 +30,8 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({
     const { t } = useTranslation();
 
     const roleColors = {
-        undercover: '#8B5CF6',
-        mrWhite: '#F43F5E',
+        undercover: 'hsl(var(--primary))',
+        mrWhite: 'hsl(var(--accent))',
         jester: '#F59E0B',
         bodyguard: '#10B981'
     };
@@ -66,18 +66,20 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({
     return (
         <div className={cn(
             "relative overflow-hidden rounded-xl border p-3 transition-all duration-300",
-            isActive ? `bg-zinc-900 shadow-md` : "bg-zinc-900/50 border-zinc-800 opacity-80"
+            isActive
+                ? "bg-card shadow-md border-border"
+                : "bg-muted/50 border-input opacity-70"
         )}
-            style={isActive ? { borderColor: `${color}80`, boxShadow: `0 4px 6px -1px ${color}1A` } : {}}
+            style={isActive ? { borderColor: color, boxShadow: `0 4px 12px -3px ${color}33` } : {}}
         >
             <div className="flex items-center gap-3">
                 {/* Icon Container */}
                 <div
                     className={cn(
-                        "w-10 h-10 rounded-lg flex items-center justify-center bg-zinc-950 border transition-colors",
-                        isActive ? "border-opacity-100" : "border-zinc-900"
+                        "w-10 h-10 rounded-lg flex items-center justify-center border transition-colors bg-background",
+                        isActive ? "border-opacity-100" : "border-border"
                     )}
-                    style={isActive ? { borderColor: `${color}40`, color: color } : { borderColor: '#18181b' }}
+                    style={isActive ? { borderColor: `${color}40`, color: color } : {}}
                 >
                     {getIcon()}
                 </div>
@@ -86,11 +88,11 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({
                 <div className="flex-1 min-w-0">
                     <h3 className={cn(
                         "text-sm font-bold uppercase tracking-wider truncate",
-                        isActive ? "text-white" : "text-zinc-500"
+                        isActive ? "text-foreground" : "text-muted-foreground"
                     )}>
                         {t(`roles.${roleKey}`)}
                     </h3>
-                    <p className="text-[10px] text-zinc-400 line-clamp-1">
+                    <p className="text-[10px] text-muted-foreground line-clamp-1">
                         {t(`roleDescriptions.${roleKey}`)}
                     </p>
                 </div>
@@ -104,8 +106,8 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({
                             className={cn(
                                 "h-8 px-3 font-bold text-xs uppercase transition-colors",
                                 count > 0
-                                    ? "bg-white text-black hover:bg-zinc-200"
-                                    : "bg-zinc-800 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-700"
+                                    ? "bg-foreground text-background hover:bg-foreground/90"
+                                    : "bg-muted text-muted-foreground hover:bg-muted/80"
                             )}
                         >
                             {count > 0 ? "ON" : "OFF"}
@@ -117,13 +119,13 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({
                                 size="icon"
                                 onClick={handleDecrement}
                                 disabled={count <= min}
-                                className="h-8 w-8 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-full"
+                                className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-accent/10 rounded-full"
                             >
                                 <Minus className="w-4 h-4" />
                             </Button>
                             <span className={cn(
                                 "w-6 text-center font-bold text-lg",
-                                isActive ? "text-white" : "text-zinc-500"
+                                isActive ? "text-foreground" : "text-muted-foreground"
                             )}>
                                 {count}
                             </span>
@@ -132,7 +134,7 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({
                                 size="icon"
                                 onClick={handleIncrement}
                                 disabled={count >= max}
-                                className="h-8 w-8 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-full"
+                                className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-accent/10 rounded-full"
                             >
                                 <Plus className="w-4 h-4" />
                             </Button>

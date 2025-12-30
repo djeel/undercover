@@ -7,7 +7,7 @@ export function Layout() {
     return (
         <div className="min-h-screen bg-background text-foreground flex flex-col">
             {/* Main Content Area */}
-            <main className="flex-1 w-full max-w-md mx-auto p-4 pb-24 md:pb-8 md:max-w-4xl relative z-10">
+            <main className="flex-1 w-full max-w-md mx-auto px-4 pt-14 pb-24 md:p-8 md:pb-12 md:max-w-4xl relative z-10">
                 <DesktopHeader />
                 <Outlet />
             </main>

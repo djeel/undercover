@@ -24,12 +24,15 @@ const HomePage = () => {
     return (
         <div className="flex flex-col h-full py-8 animate-in fade-in duration-500">
             {/* Header Area */}
-            <header className="flex justify-between items-center mb-12">
-                <div>
+            {/* Header Area */}
+            <header className="flex flex-col gap-4 mb-6 md:mb-12 md:items-start md:text-left">
+                <div className="md:hidden">
                     <h1 className="text-3xl font-black tracking-tighter text-foreground">
                         {t('app.title')}
                     </h1>
-                    <p className="text-muted-foreground font-medium">
+                </div>
+                <div className="text-muted-foreground font-medium bg-secondary/20 p-6 rounded-2xl border border-secondary/30 w-full text-left">
+                    <p className="whitespace-pre-line leading-relaxed">
                         {t('home.subtitle')}
                     </p>
                 </div>

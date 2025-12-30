@@ -9,7 +9,7 @@
         "settings": "Paramètres"
     },
     "home": {
-        "subtitle": "Le jeu où vos amis deviennent vos pires ennemis",
+        "subtitle": "Bienvenue dans Undercover, le jeu de déduction sociale ultime.\nLe but ? Démasquer les imposteurs avant qu'ils ne vous éliminent.\n\nLes Rôles :\n- Civils : Vous recevez tous le même mot secret. Trouvez qui a un mot différent !\n- Infiltrés : Vous avez un mot légèrement différent. Bluffez pour vous fondre dans la masse.\n- Mr. White : Vous n'avez AUCUN mot. Écoutez, déduisez et devinez le mot des Civils pour voler la victoire.\n\nÀ chaque tour, donnez un indice, débattez, et votez pour éliminer un suspect.\nFaites attention : vos amis ne sont peut-être pas ceux que vous croyez...",
         "newGame": "Jouer",
         "playOnline": "Multijoueur",
         "howToPlay": "Règles (pour les nuls)"

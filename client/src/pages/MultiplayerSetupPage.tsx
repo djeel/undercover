@@ -1,16 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Users, Plus, Play, X, Copy, Check, Settings2, User, Gamepad2 } from 'lucide-react';
+import { Users, Play, X, Copy, Check, Settings2, User, Gamepad2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { useGameStore } from '../store/gameStore';
 import { api } from '../services/api';
 import { socketService } from '../services/socket';
 import RoleSelector from '../components/RoleSelector';
-import { cn } from '../lib/utils';
 
 const MultiplayerSetupPage = () => {
     const { t, i18n } = useTranslation();

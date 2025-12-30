@@ -5,7 +5,7 @@ import { useGameStore } from '../store/gameStore';
 import { ShieldAlert } from 'lucide-react';
 
 const HomePage = () => {
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const setGameMode = useGameStore((state) => state.setGameMode);

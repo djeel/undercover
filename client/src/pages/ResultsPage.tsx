@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom';
-
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Trophy, Home, RotateCcw } from 'lucide-react';
@@ -17,8 +16,6 @@ const ResultsPage = () => {
     const onlineState = useGameStore(state => state.onlineState);
     const { winner, players, config, resetGame, restartGame, leaveRoom } = useGameStore();
 
-    // ... (rest of code)
-
     const handleHome = () => {
         if (gameMode === 'online') {
             leaveRoom();
@@ -30,7 +27,7 @@ const ResultsPage = () => {
 
     if (!winner) {
         return (
-            <div className="min-h-screen flex items-center justify-center p-4 text-center bg-background">
+            <div className="min-h-[50vh] flex items-center justify-center p-4 text-center">
                 <Button onClick={() => navigate('/')}>{t('common.back')}</Button>
             </div>
         );
@@ -45,7 +42,7 @@ const ResultsPage = () => {
                 : t('results.civiliansWin');
 
     const getWinnerColor = (w: typeof winner) => {
-        if (w === 'mrWhite') return 'text-accent'; // Role color semantic mapping
+        if (w === 'mrWhite') return 'text-accent';
         if (w === 'jester') return 'text-amber-500';
         return 'text-primary';
     };
@@ -58,7 +55,7 @@ const ResultsPage = () => {
     };
 
     return (
-        <div className="flex flex-col items-center justify-center animate-in fade-in zoom-in duration-500">
+        <div className="flex flex-col items-center justify-center animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
             <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -69,7 +66,7 @@ const ResultsPage = () => {
                         initial={{ y: -20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.2 }}
-                        className="mx-auto w-24 h-24 rounded-full bg-card border border-border flex items-center justify-center shadow-2xl"
+                        className="mx-auto w-24 h-24 rounded-full bg-secondary border border-border flex items-center justify-center shadow-xl"
                     >
                         <Trophy className={cn("w-12 h-12", getWinnerColor(winner))} />
                     </motion.div>

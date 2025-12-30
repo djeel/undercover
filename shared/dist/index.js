@@ -4,6 +4,8 @@ export var PlayerRole;
     PlayerRole["CIVILIAN"] = "CIVILIAN";
     PlayerRole["UNDERCOVER"] = "UNDERCOVER";
     PlayerRole["MR_WHITE"] = "MR_WHITE";
+    PlayerRole["JESTER"] = "JESTER";
+    PlayerRole["BODYGUARD"] = "BODYGUARD";
 })(PlayerRole || (PlayerRole = {}));
 // Game Phases
 export var GamePhase;

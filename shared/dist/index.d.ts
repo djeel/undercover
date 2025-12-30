@@ -1,7 +1,9 @@
 export declare enum PlayerRole {
     CIVILIAN = "CIVILIAN",
     UNDERCOVER = "UNDERCOVER",
-    MR_WHITE = "MR_WHITE"
+    MR_WHITE = "MR_WHITE",
+    JESTER = "JESTER",
+    BODYGUARD = "BODYGUARD"
 }
 export declare enum GamePhase {
     LOBBY = "LOBBY",
@@ -17,6 +19,7 @@ export interface Player {
     isAlive: boolean;
     hasVoted: boolean;
     votesReceived: number;
+    bodyguardTargetId?: string;
 }
 export interface GameState {
     roomId: string;
@@ -28,6 +31,8 @@ export interface GameState {
         totalPlayers: number;
         undercoverCount: number;
         mrWhiteCount: number;
+        jesterCount: number;
+        bodyguardCount: number;
     };
 }
 export declare enum SocketEvents {

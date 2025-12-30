@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Users, Plus, Play, X, Copy, Check, Settings2 } from 'lucide-react';
+import { Users, Plus, Play, X, Copy, Check, Settings2, User, Gamepad2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -10,6 +10,7 @@ import { useGameStore } from '../store/gameStore';
 import { api } from '../services/api';
 import { socketService } from '../services/socket';
 import RoleSelector from '../components/RoleSelector';
+import { cn } from '../lib/utils';
 
 const MultiplayerSetupPage = () => {
     const { t, i18n } = useTranslation();
@@ -161,7 +162,7 @@ const MultiplayerSetupPage = () => {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            {/* Room Code Display matching SetupPage Input style */}
+                            {/* Room Code Display */}
                             <div className="space-y-2">
                                 <div className="flex gap-2">
                                     <div className="flex-1 h-10 px-3 rounded-md border border-input bg-secondary/50 text-foreground flex items-center justify-center font-mono font-bold tracking-widest select-all">
@@ -276,45 +277,50 @@ const MultiplayerSetupPage = () => {
         );
     }
 
-    // Create/Join View - Cleaned up to match new style slightly but kept simple
+    // Create/Join View
     return (
-        <div className="flex flex-col h-full justify-center animate-in fade-in duration-300">
-            <header className="flex items-center justify-center py-8 relative">
+        <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <header className="flex items-center justify-between">
                 <h1 className="text-3xl font-black text-foreground tracking-tight">{t('multiplayer.title')}</h1>
             </header>
 
-            <Card className="border-border bg-card shadow-lg">
-                <CardHeader>
-                    <CardTitle className="text-foreground flex items-center gap-2">
-                        <Users className="w-5 h-5 text-primary" />
-                        {t('multiplayer.joinOrCreate')}
-                    </CardTitle>
-                    <CardDescription className="text-muted-foreground">{t('multiplayer.enterName')}</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-foreground">{t('multiplayer.nickname')}</label>
+            <div className="grid gap-6">
+                <Card>
+                    <CardHeader className="pb-3">
+                        <CardTitle className="flex items-center gap-2 text-foreground">
+                            <User className="w-5 h-5 text-primary" />
+                            {t('multiplayer.identity')}
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
                         <Input
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             placeholder={t('multiplayer.yourName')}
-                            className="bg-background border-border text-foreground h-12"
+                            className="bg-secondary/50 border-transparent focus:bg-background transition-all h-12"
                         />
-                    </div>
+                    </CardContent>
+                </Card>
 
-                    {error && (
-                        <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm font-medium">
-                            {error}
-                        </div>
-                    )}
+                <Card>
+                    <CardHeader className="pb-3">
+                        <CardTitle className="flex items-center gap-2 text-foreground">
+                            <Gamepad2 className="w-5 h-5 text-primary" />
+                            {t('multiplayer.joinOrCreate')}
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {error && (
+                            <p className="text-sm text-destructive font-medium px-1 bg-destructive/10 p-2 rounded-lg">{error}</p>
+                        )}
 
-                    <div className="grid grid-cols-1 gap-4">
                         {!isJoining ? (
-                            <>
+                            <div className="grid gap-3">
                                 <Button
                                     onClick={handleCreateRoom}
                                     disabled={!name.trim() || isLoading}
-                                    className="h-14 text-lg bg-primary hover:bg-primary/90 text-primary-foreground shadow-md shadow-primary/20 rounded-xl"
+                                    size="lg"
+                                    className="w-full h-14 text-lg bg-primary hover:bg-primary/90 text-primary-foreground shadow-md shadow-primary/20 rounded-xl"
                                 >
                                     <Plus className="w-5 h-5 mr-2" />
                                     {t('multiplayer.createRoom')}
@@ -322,11 +328,11 @@ const MultiplayerSetupPage = () => {
                                 <Button
                                     variant="outline"
                                     onClick={() => setIsJoining(true)}
-                                    className="h-14 text-lg border-border bg-card text-foreground hover:bg-muted rounded-xl"
+                                    className="w-full h-14 text-lg border-border bg-card text-foreground hover:bg-muted rounded-xl"
                                 >
                                     {t('multiplayer.joinRoom')}
                                 </Button>
-                            </>
+                            </div>
                         ) : (
                             <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
                                 <div className="space-y-2">
@@ -335,7 +341,7 @@ const MultiplayerSetupPage = () => {
                                         value={roomCode}
                                         onChange={(e) => setRoomCode(e.target.value)}
                                         placeholder={t('multiplayer.enterCode')}
-                                        className="bg-background border-border text-foreground font-mono uppercase h-12 tracking-widest text-center text-lg"
+                                        className="bg-secondary/50 border-transparent focus:bg-background font-mono uppercase h-12 tracking-widest text-center text-lg"
                                     />
                                 </div>
                                 <div className="flex gap-3">
@@ -356,9 +362,9 @@ const MultiplayerSetupPage = () => {
                                 </div>
                             </div>
                         )}
-                    </div>
-                </CardContent>
-            </Card>
+                    </CardContent>
+                </Card>
+            </div>
         </div>
     );
 };

@@ -1,10 +1,4 @@
-import { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { Button } from '../components/ui/Button';
-import { useGameStore } from '../store/gameStore';
-import { ThemeToggle } from '../components/ThemeToggle';
-import { Globe, ShieldAlert } from 'lucide-react';
+import { ShieldAlert } from 'lucide-react';
 
 const HomePage = () => {
     const { t, i18n } = useTranslation();
@@ -21,11 +15,7 @@ const HomePage = () => {
         }
     }, [searchParams, navigate, setGameMode]);
 
-    const toggleLanguage = () => {
-        const newLang = i18n.language === 'en' ? 'fr' : 'en';
-        i18n.changeLanguage(newLang);
-        localStorage.setItem('language', newLang);
-    };
+
 
     return (
         <div className="flex flex-col h-full py-8 animate-in fade-in duration-500">

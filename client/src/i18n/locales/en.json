@@ -81,6 +81,7 @@
     },
     "multiplayer": {
         "title": "Multiplayer Lobby",
+        "identity": "Identity",
         "leaveRoom": "Desert",
         "lobby": "Waiting Room",
         "roomCode": "Secret Code",

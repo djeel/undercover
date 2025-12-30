@@ -322,7 +322,6 @@ const MultiplayerSetupPage = () => {
                                     size="lg"
                                     className="w-full h-14 text-lg bg-primary hover:bg-primary/90 text-primary-foreground shadow-md shadow-primary/20 rounded-xl"
                                 >
-                                    <Plus className="w-5 h-5 mr-2" />
                                     {t('multiplayer.createRoom')}
                                 </Button>
                                 <Button

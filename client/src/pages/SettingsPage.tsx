@@ -1,8 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { ThemeToggle } from '../components/ThemeToggle';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { Globe, Moon, Sun, Monitor, Languages, Settings as SettingsIcon } from 'lucide-react';
+import { Moon, Sun, Monitor, Languages, Settings as SettingsIcon } from 'lucide-react';
 import { useTheme } from '../components/theme-provider';
 
 const SettingsPage = () => {

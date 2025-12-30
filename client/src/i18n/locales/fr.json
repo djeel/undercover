@@ -81,6 +81,7 @@
     },
     "multiplayer": {
         "title": "QG Multijoueur",
+        "identity": "Identité",
         "leaveRoom": "Déserter",
         "lobby": "Salle d'attente",
         "roomCode": "Code Secret",

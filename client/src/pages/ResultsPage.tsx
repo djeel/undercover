@@ -42,8 +42,10 @@ const ResultsPage = () => {
                 : t('results.civiliansWin');
 
     const getWinnerColor = (w: typeof winner) => {
-        if (w === 'mrWhite') return 'text-accent';
-        if (w === 'jester') return 'text-amber-500';
+        if (w === 'mrWhite') return 'text-cyan-500';
+        if (w === 'jester') return 'text-orange-500';
+        if (w === 'undercovers') return 'text-pink-600';
+        if (w === 'civilians') return 'text-emerald-500';
         return 'text-primary';
     };
 

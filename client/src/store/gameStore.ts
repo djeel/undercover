@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import i18n from '../i18n';
 import { WORD_PAIRS } from '../data/wordPairs';
-import { GameStateResponse } from '../services/api';
+import { api, GameStateResponse } from '../services/api';
 import { socketService } from '../services/socket';
 
 // Types
@@ -325,7 +325,7 @@ export const useGameStore = create<GameState>()(
                 // Online Mode - just call API and return, polling will handle state updates
                 if (gameMode === 'online' && onlineState.roomId) {
                     try {
-                        await import('../services/api').then(m => m.api.restartGame(onlineState.roomId!));
+                        await api.restartGame(onlineState.roomId!);
                     } catch (e) {
                         console.error("Failed to restart online game", e);
                     }
@@ -449,7 +449,7 @@ export const useGameStore = create<GameState>()(
                 const { onlineState } = get();
                 if (!onlineState.roomId) return;
                 try {
-                    await import('../services/api').then(m => m.api.kickPlayer(onlineState.roomId!, playerId));
+                    await api.kickPlayer(onlineState.roomId!, playerId);
                     // Update happens via sync
                 } catch (e) {
                     console.error("Kick failed", e);
@@ -460,7 +460,7 @@ export const useGameStore = create<GameState>()(
                 const { onlineState } = get();
                 if (!onlineState.roomId || !onlineState.playerId) return;
                 try {
-                    await import('../services/api').then(m => m.api.votePlayer(onlineState.roomId!, onlineState.playerId!, targetId));
+                    await api.votePlayer(onlineState.roomId!, onlineState.playerId!, targetId);
                 } catch (e) {
                     console.error("Vote failed", e);
                 }

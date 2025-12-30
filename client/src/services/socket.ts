@@ -20,11 +20,11 @@ class SocketService {
         });
 
         this.socket.on('connect', () => {
-            console.log('Socket connected:', this.socket?.id);
+            // Removed console.log
         });
 
         this.socket.on('disconnect', () => {
-            console.log('Socket disconnected');
+            // Removed console.log
         });
 
         // Generic event dispatcher

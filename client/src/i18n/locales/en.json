@@ -15,6 +15,18 @@
         "howToPlay": "Rules (Concept)",
         "selectMode": "Select a mode from the bottom menu to start playing."
     },
+    "tutorial": {
+        "welcome": "Welcome!",
+        "conceptTitle": "The Concept",
+        "conceptDesc": "Find the intruder among you. Everyone has the same secret word, except the Undercovers and Mr. White.",
+        "rolesTitle": "The Roles",
+        "rolesDesc": "Civilian: Has the secret word.\nUndercover: Has a similar word.\nMr. White: Has NO word.",
+        "gameTitle": "The Game",
+        "gameDesc": "Describe your word, debate, and vote to eliminate suspects. Trust no one!",
+        "next": "Next",
+        "finish": "Got it!",
+        "skip": "Skip"
+    },
     "settings": {
         "language": "Language",
         "languageDesc": "Choose your preferred language",

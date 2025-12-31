@@ -15,6 +15,18 @@
         "howToPlay": "Règles du jeu",
         "selectMode": "Sélectionnez un mode dans le menu du bas pour commencer."
     },
+    "tutorial": {
+        "welcome": "Bienvenue !",
+        "conceptTitle": "Le Concept",
+        "conceptDesc": "Trouvez l'intrus parmi vous. Tout le monde a le même mot secret, sauf les Infiltrés et Mr. White.",
+        "rolesTitle": "Les Rôles",
+        "rolesDesc": "Civil : A le mot secret.\nInfiltré : A un mot similaire.\nMr. White : N'a aucun mot.",
+        "gameTitle": "Le Jeu",
+        "gameDesc": "Décrivez votre mot, débattez, et votez pour éliminer les suspects. Ne faites confiance à personne !",
+        "next": "Suivant",
+        "finish": "Compris !",
+        "skip": "Passer"
+    },
     "settings": {
         "language": "Langue",
         "languageDesc": "Choisissez votre langue préférée",

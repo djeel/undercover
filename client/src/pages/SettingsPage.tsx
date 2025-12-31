@@ -1,16 +1,23 @@
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { Moon, Sun, Monitor, Languages, Settings as SettingsIcon } from 'lucide-react';
+import { Moon, Sun, Monitor, Languages, Settings as SettingsIcon, BookOpen } from 'lucide-react';
 import { useTheme } from '../components/theme-provider';
+import { useNavigate } from 'react-router-dom';
 
 const SettingsPage = () => {
     const { t, i18n } = useTranslation();
     const { setTheme, theme } = useTheme();
+    const navigate = useNavigate();
 
     const changeLanguage = (lang: string) => {
         i18n.changeLanguage(lang);
         localStorage.setItem('language', lang);
+    };
+
+    const handleResetTutorial = () => {
+        localStorage.removeItem('hasSeenTutorial');
+        navigate('/?tutorial=true');
     };
 
     return (
@@ -83,6 +90,26 @@ const SettingsPage = () => {
                         >
                             <Monitor className="w-6 h-6" />
                             {t('settings.system')}
+                        </Button>
+                    </CardContent>
+                </Card>
+
+                {/* Help / Tutorial */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <BookOpen className="w-5 h-5 text-primary" />
+                            {t('tutorial.welcome')}
+                        </CardTitle>
+                        <CardDescription>{t('home.howToPlay')}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Button
+                            variant="secondary"
+                            className="w-full h-12"
+                            onClick={handleResetTutorial}
+                        >
+                            {t('home.howToPlay')}
                         </Button>
                     </CardContent>
                 </Card>

@@ -1,10 +1,11 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../store/gameStore';
-import { ShieldAlert, User, drama, VenetianMask, UserX, Ghost, Shield } from 'lucide-react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { ShieldAlert, User, VenetianMask, UserX, Ghost, Shield } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { Card, CardContent } from '../components/ui/Card';
+import OnboardingModal from '../components/OnboardingModal';
 
 const roles = [
     { id: 'civilian', icon: User, color: 'text-blue-500', bg: 'bg-blue-500/10' },
@@ -20,6 +21,7 @@ const HomePage = () => {
     const [searchParams] = useSearchParams();
     const setGameMode = useGameStore((state) => state.setGameMode);
     const scrollRef = useRef<HTMLDivElement>(null);
+    const [showTutorial, setShowTutorial] = useState(false);
 
     // Deep Link Redirect
     useEffect(() => {
@@ -30,8 +32,28 @@ const HomePage = () => {
         }
     }, [searchParams, navigate, setGameMode]);
 
+    // Check for tutorial
+    useEffect(() => {
+        const hasSeen = localStorage.getItem('hasSeenTutorial');
+        const forceTutorial = searchParams.get('tutorial');
+
+        if (!hasSeen || forceTutorial) {
+            // Small delay to let app load visually first
+            const timer = setTimeout(() => setShowTutorial(true), 500);
+            return () => clearTimeout(timer);
+        }
+    }, [searchParams]);
+
+    const handleCloseTutorial = () => {
+        setShowTutorial(false);
+        localStorage.setItem('hasSeenTutorial', 'true');
+        // If we were forced by URL, maybe clean url? but optional
+    };
+
     return (
         <div className="flex flex-col h-full py-6 gap-8 animate-in fade-in duration-500">
+            <OnboardingModal open={showTutorial} onClose={handleCloseTutorial} />
+
             {/* Header Area */}
             <header className="flex flex-col gap-2 md:items-start md:text-left px-1">
                 <div className="md:hidden">

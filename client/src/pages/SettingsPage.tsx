@@ -26,9 +26,9 @@ const SettingsPage = () => {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Languages className="w-5 h-5 text-primary" />
-                            Language
+                            {t('settings.language')}
                         </CardTitle>
-                        <CardDescription>Choose your preferred language</CardDescription>
+                        <CardDescription>{t('settings.languageDesc')}</CardDescription>
                     </CardHeader>
                     <CardContent className="grid grid-cols-2 gap-4">
                         <Button
@@ -55,9 +55,9 @@ const SettingsPage = () => {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Monitor className="w-5 h-5 text-primary" />
-                            Theme
+                            {t('settings.theme')}
                         </CardTitle>
-                        <CardDescription>Customize interface appearance</CardDescription>
+                        <CardDescription>{t('settings.themeDesc')}</CardDescription>
                     </CardHeader>
                     <CardContent className="grid grid-cols-3 gap-3">
                         <Button
@@ -66,7 +66,7 @@ const SettingsPage = () => {
                             className="h-20 flex flex-col gap-2"
                         >
                             <Sun className="w-6 h-6" />
-                            Light
+                            {t('settings.light')}
                         </Button>
                         <Button
                             variant={theme === 'dark' ? 'default' : 'outline'}
@@ -74,7 +74,7 @@ const SettingsPage = () => {
                             className="h-20 flex flex-col gap-2"
                         >
                             <Moon className="w-6 h-6" />
-                            Dark
+                            {t('settings.dark')}
                         </Button>
                         <Button
                             variant={theme === 'system' ? 'default' : 'outline'}
@@ -82,7 +82,7 @@ const SettingsPage = () => {
                             className="h-20 flex flex-col gap-2"
                         >
                             <Monitor className="w-6 h-6" />
-                            System
+                            {t('settings.system')}
                         </Button>
                     </CardContent>
                 </Card>

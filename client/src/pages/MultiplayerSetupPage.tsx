@@ -194,7 +194,7 @@ const MultiplayerSetupPage = () => {
                                             {isHost && p.id !== playerId && (
                                                 <button
                                                     onClick={() => kickPlayer(p.id)}
-                                                    className="absolute right-2 p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                                    className="absolute right-2 p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                                                 >
                                                     <X className="w-4 h-4" />
                                                 </button>

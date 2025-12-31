@@ -12,7 +12,17 @@
         "subtitle": "Welcome to Undercover, the ultimate social deduction game.\nYour goal? Unmask the impostors before they eliminate you.\n\nThe Roles:\n- Civilians: You all share the same secret word. Find out who has a different one!\n- Undercovers: You have a slightly different word. Bluff your way to survival.\n- Mr. White: You have NO word. Listen, deduce, and guess the Civilian word to steal the win.\n\nEach round, give a clue, debate, and vote to eliminate a suspect.\nTrust no one. Your friends might not be who you think they are...",
         "newGame": "Play",
         "playOnline": "Multiplayer",
-        "howToPlay": "Rules (Concept)"
+        "howToPlay": "Rules (Concept)",
+        "selectMode": "Select a mode from the bottom menu to start playing."
+    },
+    "settings": {
+        "language": "Language",
+        "languageDesc": "Choose your preferred language",
+        "theme": "Theme",
+        "themeDesc": "Customize interface appearance",
+        "light": "Light",
+        "dark": "Dark",
+        "system": "System"
     },
     "setup": {
         "title": "Plotting the Crime",
@@ -118,6 +128,7 @@
         "protect": "Protect"
     },
     "roleDescriptions": {
+        "civilian": "You are part of the majority. Find the intruders!",
         "undercover": "Blends in with the civilians. Don't get caught!",
         "mrWhite": "Has no word. Must guess the civilian word to win.",
         "jester": "Wants to be voted out. Act suspicious!",

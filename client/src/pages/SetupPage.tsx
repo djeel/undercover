@@ -111,7 +111,7 @@ const SetupPage = () => {
                                         <span className="font-medium text-foreground truncate pr-8">{player.name}</span>
                                         <button
                                             onClick={() => removePlayer(player.id)}
-                                            className="absolute right-2 p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                            className="absolute right-2 p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                                         >
                                             <Trash2 className="w-4 h-4" />
                                         </button>

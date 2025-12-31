@@ -17,7 +17,7 @@ const SettingsPage = () => {
 
     const handleResetTutorial = () => {
         localStorage.removeItem('hasSeenTutorial');
-        navigate('/?tutorial=true');
+        navigate('/onboarding');
     };
 
     return (
@@ -105,10 +105,11 @@ const SettingsPage = () => {
                     </CardHeader>
                     <CardContent>
                         <Button
-                            variant="secondary"
-                            className="w-full h-12"
+                            variant="outline"
+                            className="w-full h-20 flex flex-col gap-2 font-bold text-lg"
                             onClick={handleResetTutorial}
                         >
+                            <BookOpen className="w-8 h-8" />
                             {t('home.howToPlay')}
                         </Button>
                     </CardContent>

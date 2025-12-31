@@ -11,6 +11,7 @@ import {
     ResultsPage,
     MultiplayerSetupPage,
     SettingsPage,
+    OnboardingPage,
 } from './pages';
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
         <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
             <Router {...routerProps}>
                 <Routes>
+                    <Route path="/onboarding" element={<OnboardingPage />} />
                     <Route element={<Layout />}>
                         <Route path="/" element={<HomePage />} />
                         <Route path="/setup" element={<SetupPage />} />

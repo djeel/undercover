@@ -45,7 +45,7 @@ const HomePage = () => {
             {/* Header Area */}
             <header className="flex flex-col gap-2 md:items-start md:text-left px-1">
                 <div className="md:hidden">
-                    <h1 className="text-4xl font-black tracking-tighter text-foreground bg-gradient-to-br from-foreground to-muted-foreground bg-clip-text text-transparent">
+                    <h1 className="text-3xl md:text-4xl break-words font-black tracking-tighter text-foreground bg-gradient-to-br from-foreground to-muted-foreground bg-clip-text text-transparent">
                         {t('app.title')}
                     </h1>
                 </div>
@@ -55,7 +55,7 @@ const HomePage = () => {
             </header>
 
             {/* Role Gallery */}
-            <div className="flex-1 overflow-y-auto px-1 -mx-4 md:mx-0 scrollbar-hide py-2">
+            <div className="flex-1 overflow-y-auto px-5 -mx-4 md:mx-0 scrollbar-hide py-2">
                 <div className="flex flex-col gap-4 pb-20 md:grid md:grid-cols-2 lg:grid-cols-3">
                     {roles.map((role, index) => (
                         <motion.div

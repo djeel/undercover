@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useGameStore } from '../store/gameStore';
 import { User, VenetianMask, UserX, Ghost, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '../components/ui/Card';
@@ -18,16 +17,6 @@ const HomePage = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const setGameMode = useGameStore((state) => state.setGameMode);
-
-    // Deep Link Redirect
-    useEffect(() => {
-        const code = searchParams.get('code');
-        if (code) {
-            setGameMode('online');
-            navigate(`/lobby?code=${code}`);
-        }
-    }, [searchParams, navigate, setGameMode]);
 
     // Check for tutorial
     useEffect(() => {

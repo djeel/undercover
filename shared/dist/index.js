@@ -1,29 +1,25 @@
-// Role Definitions
-export var PlayerRole;
-(function (PlayerRole) {
-    PlayerRole["CIVILIAN"] = "CIVILIAN";
-    PlayerRole["UNDERCOVER"] = "UNDERCOVER";
-    PlayerRole["MR_WHITE"] = "MR_WHITE";
-    PlayerRole["JESTER"] = "JESTER";
-    PlayerRole["BODYGUARD"] = "BODYGUARD";
-})(PlayerRole || (PlayerRole = {}));
-// Game Phases
-export var GamePhase;
-(function (GamePhase) {
-    GamePhase["LOBBY"] = "LOBBY";
-    GamePhase["PLAYING"] = "PLAYING";
-    GamePhase["VOTING"] = "VOTING";
-    GamePhase["FINISHED"] = "FINISHED";
-})(GamePhase || (GamePhase = {}));
-// Socket Events
-export var SocketEvents;
-(function (SocketEvents) {
-    SocketEvents["JOIN_ROOM"] = "JOIN_ROOM";
-    SocketEvents["PLAYER_JOINED"] = "PLAYER_JOINED";
-    SocketEvents["START_GAME"] = "START_GAME";
-    SocketEvents["GAME_STARTED"] = "GAME_STARTED";
-    SocketEvents["SUBMIT_WORD"] = "SUBMIT_WORD";
-    SocketEvents["SUBMIT_VOTE"] = "SUBMIT_VOTE";
-    SocketEvents["UPDATE_STATE"] = "UPDATE_STATE";
-    SocketEvents["ERROR"] = "ERROR";
-})(SocketEvents || (SocketEvents = {}));
+export const PlayerRole = {
+    CIVILIAN: 'civilian',
+    UNDERCOVER: 'undercover',
+    MR_WHITE: 'mr_white',
+    JESTER: 'jester',
+    BODYGUARD: 'bodyguard',
+};
+export const GamePhase = {
+    LOBBY: 'lobby',
+    PLAYING: 'playing',
+    VOTING: 'voting',
+    MR_WHITE_GUESS: 'mr_white_guess',
+    FINISHED: 'finished',
+};
+export const WinnerType = {
+    CIVILIANS: 'civilians',
+    UNDERCOVERS: 'undercovers',
+    MR_WHITE: 'mr_white',
+    JESTER: 'jester',
+};
+export const CompositionMode = {
+    VISIBLE_MANUAL: 'visible_manual',
+    HIDDEN_MANUAL: 'hidden_manual',
+    HIDDEN_RANDOM: 'hidden_random',
+};

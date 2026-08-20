@@ -6,6 +6,7 @@
     "scripts": {
         "dev": "vite",
         "build": "tsc && vite build",
+        "test": "vitest",
         "preview": "vite preview",
         "predeploy": "npm run build",
         "deploy": "./deploy.sh",
@@ -26,7 +27,6 @@
         "react-dom": "^18.2.0",
         "react-i18next": "^16.5.0",
         "react-router-dom": "^7.10.1",
-        "socket.io-client": "^4.8.3",
         "tailwind-merge": "^3.4.0",
         "tailwindcss": "^4.1.18",
         "tailwindcss-animate": "^1.0.7",
@@ -39,6 +39,7 @@
         "@vitejs/plugin-react": "^4.2.1",
         "gh-pages": "^6.3.0",
         "typescript": "^5.2.2",
-        "vite": "^5.0.8"
+        "vite": "^5.0.8",
+        "vitest": "^3.2.4"
     }
 }

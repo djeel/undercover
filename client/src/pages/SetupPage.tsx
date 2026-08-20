@@ -6,7 +6,7 @@ import { Plus, Trash2, Users, ArrowRight, Settings2 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { useGameStore } from '../store/gameStore';
+import { useLocalGameStore } from '../features/local-game/local-game-store';
 import { cn } from '../lib/utils';
 import RoleSelector from '../components/RoleSelector';
 
@@ -20,7 +20,7 @@ const SetupPage = () => {
         removePlayer,
         updateConfig,
         startGame
-    } = useGameStore();
+    } = useLocalGameStore();
 
     const [newPlayerName, setNewPlayerName] = useState('');
     const [error, setError] = useState('');
@@ -108,7 +108,7 @@ const SetupPage = () => {
                                         exit={{ opacity: 0, scale: 0.9 }}
                                         className="group relative flex items-center justify-between p-3 rounded-xl bg-secondary/30 border border-transparent hover:border-border transition-all"
                                     >
-                                        <span className="font-medium text-foreground truncate pr-8">{player.name}</span>
+                                        <span className="font-medium text-foreground truncate pr-8">{player.displayName}</span>
                                         <button
                                             onClick={() => removePlayer(player.id)}
                                             className="absolute right-2 p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"

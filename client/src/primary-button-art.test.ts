@@ -7,11 +7,13 @@ const homePage = readFileSync(resolve(process.cwd(), 'src/pages/HomePage.tsx'), 
 
 describe('primary button artwork', () => {
   test('limits the ornamental asset to the large primary Local launch CTA', () => {
+    expect(homePage).toContain("import buttonArt from '../assets/button.png'")
+    expect(homePage).toContain("'--local-play-button-art': `url(${buttonArt})`")
     expect(homePage).toContain('<Button variant="primary" size="lg" className="local-play-card__start"')
 
     const primaryRule = css.match(/\.local-play-card \.astryx-button\.local-play-card__start\[data-variant='primary'\]\[data-size='lg'\]\s*\{([^}]*)\}/s)?.[1]
 
-    expect(primaryRule).toContain("url('../assets/button.png')")
+    expect(primaryRule).toContain('var(--local-play-button-art)')
     expect(primaryRule).toContain('background-size: cover')
     expect(primaryRule).toContain('background-repeat: no-repeat')
     expect(primaryRule).toContain('color: var(--color-on-accent)')
@@ -28,7 +30,7 @@ describe('primary button artwork', () => {
 
 
   test('does not give secondary, tertiary, destructive, or icon buttons the ornamental asset', () => {
-    const artRules = [...css.matchAll(/([^{}]+)\{[^{}]*button\.png[^{}]*\}/gs)].map((match) => match[1].trim())
+    const artRules = [...css.matchAll(/([^{}]+)\{[^{}]*--local-play-button-art[^{}]*\}/gs)].map((match) => match[1].trim())
 
     expect(artRules).toEqual([
       '.local-play-card .astryx-button.local-play-card__start[data-variant=\'primary\'][data-size=\'lg\']',

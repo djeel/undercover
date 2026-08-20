@@ -197,7 +197,7 @@
 
     .local-play-card .astryx-button.local-play-card__start[data-variant='primary'][data-size='lg'] {
         background-color: var(--color-accent);
-        background-image: linear-gradient(rgb(0 0 0 / 0.52), rgb(0 0 0 / 0.52)), url('../assets/button.png');
+        background-image: linear-gradient(rgb(0 0 0 / 0.52), rgb(0 0 0 / 0.52)), var(--local-play-button-art);
         background-position: center;
         background-repeat: no-repeat;
         background-size: cover;

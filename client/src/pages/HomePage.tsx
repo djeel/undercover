@@ -2,7 +2,7 @@ import { Button } from '@astryxdesign/core/Button'
 import { Card } from '@astryxdesign/core/Card'
 import { Text } from '@astryxdesign/core/Text'
 import { Clock3, DoorOpen, Play, Plus, UsersRound } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import type { FriendshipView, PlayerResultView, PlayerStatsView } from '@undercover/shared'
@@ -14,6 +14,7 @@ import { useLocalGameStore } from '../features/local-game/local-game-store'
 import { api } from '../lib/api-client'
 import localArt from '../assets/local.png'
 import multiplayerArt from '../assets/multiplayer.png'
+import buttonArt from '../assets/button.png'
 
 const HomePage = () => {
 
@@ -87,7 +88,7 @@ const HomePage = () => {
         <p className="eyebrow">{t('dashboard.localEyebrow')}</p>
         <h2 id="local-play-title" className="text-2xl font-bold">{t('dashboard.localTitle')}</h2>
         <Text as="p" type="large">{t('dashboard.localDescription')}</Text>
-        <Button variant="primary" size="lg" className="local-play-card__start" label={t('dashboard.startLocal')} onClick={() => navigate('/setup')} />
+        <Button variant="primary" size="lg" className="local-play-card__start" style={{ '--local-play-button-art': `url(${buttonArt})` } as CSSProperties} label={t('dashboard.startLocal')} onClick={() => navigate('/setup')} />
       </div>
     </section>
     <section aria-labelledby="online-play-title" className="dashboard-online-play relative space-y-3 overflow-hidden p-5">

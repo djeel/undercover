@@ -17,9 +17,8 @@ import {
 function App() {
     const isMobile = Capacitor.isNativePlatform();
     // Mobile apps generally use HashRouter to handle file:// protocols correctly
-    // Web app uses BrowserRouter with the /undercover/ basename
     const Router = isMobile ? HashRouter : BrowserRouter;
-    const routerProps = isMobile ? {} : { basename: "/undercover/" };
+    const routerProps = isMobile ? {} : { basename: import.meta.env.BASE_URL };
 
     return (
         <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">

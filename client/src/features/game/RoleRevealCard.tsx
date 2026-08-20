@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type PointerEvent } from 'react'
+import { useRef, useState, type KeyboardEvent, type PointerEvent } from 'react'
 import { Text } from '@astryxdesign/core/Text'
 import type { PlayerRole } from '@undercover/shared'
 
@@ -17,11 +17,16 @@ export interface RoleRevealCardProps {
 export function RoleRevealCard({ open, identity, roleLabel, roleArt, roleLabelCaption, wordLabelCaption, noWordLabel, revealLabel, protectLabel }: RoleRevealCardProps) {
   const [revealed, setRevealed] = useState(false)
   const identityKey = `${identity.role}:${identity.word ?? ''}:${identity.bodyguardTargetName ?? ''}`
+  const lifecycleKey = `${open}:${identityKey}`
+  const [previousLifecycleKey, setPreviousLifecycleKey] = useState(lifecycleKey)
   const cardRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
+  if (previousLifecycleKey !== lifecycleKey) {
+    setPreviousLifecycleKey(lifecycleKey)
     setRevealed(false)
-  }, [open, identityKey])
+  }
+
+  const isRevealed = open && revealed && previousLifecycleKey === lifecycleKey
 
   const resetTilt = () => {
     cardRef.current?.style.setProperty('--identity-card-rotate-x', '0deg')
@@ -31,7 +36,7 @@ export function RoleRevealCard({ open, identity, roleLabel, roleArt, roleLabelCa
   }
 
   const trackPointer = (event: PointerEvent<HTMLDivElement>) => {
-    if (!revealed || event.pointerType !== 'mouse') return
+    if (!isRevealed || event.pointerType !== 'mouse') return
 
     const bounds = event.currentTarget.getBoundingClientRect()
     const horizontal = Math.max(-.5, Math.min(.5, (event.clientX - bounds.left) / bounds.width - .5))
@@ -44,13 +49,18 @@ export function RoleRevealCard({ open, identity, roleLabel, roleArt, roleLabelCa
   }
 
   return (
-    <div ref={cardRef} className={`identity-reveal-card${revealed ? ' is-revealed' : ''}`} onPointerMove={trackPointer} onPointerLeave={resetTilt}>
+    <div ref={cardRef} className={`identity-reveal-card${isRevealed ? ' is-revealed' : ''}`} onPointerMove={trackPointer} onPointerLeave={resetTilt}>
       <div className="identity-reveal-card__inner">
-        <button className="identity-reveal-card__back" type="button" aria-label={revealLabel} onClick={() => setRevealed(true)}>
+        <button className="identity-reveal-card__back" type="button" aria-label={revealLabel} onClick={() => setRevealed(true)} onKeyDown={(event: KeyboardEvent<HTMLButtonElement>) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault()
+            setRevealed(true)
+          }
+        }}>
           <span aria-hidden="true">UNDERCOVER</span>
           <span>{revealLabel}</span>
         </button>
-        {revealed && (
+        {isRevealed && (
           <div className="identity-reveal-card__front">
             <img className="identity-dialog-role-art" src={roleArt} alt="" aria-hidden="true" />
             <Text as="p" type="supporting">{roleLabelCaption}</Text>

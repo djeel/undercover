@@ -75,6 +75,7 @@ describe('noir asset presentation', () => {
     await act(async () => { reveal?.click() })
     const image = container.querySelector<HTMLImageElement>('.identity-dialog-role-art')
     expect(image?.getAttribute('alt')).toBe('')
+    expect(image?.getAttribute('aria-hidden')).toBe('true')
     expect(image?.getAttribute('src')).toContain(asset)
   })
 })

@@ -1,4 +1,4 @@
-import { act } from 'react'
+import { act, useLayoutEffect } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 
@@ -20,6 +20,11 @@ const props = {
   noWordLabel: 'No word',
   revealLabel: 'Reveal private identity',
   protectLabel: (name: string) => `Protect ${name}`,
+}
+
+function CommitProbe({ onCommit }: { onCommit: () => void }) {
+  useLayoutEffect(() => { onCommit() })
+  return null
 }
 
 describe('RoleRevealCard', () => {
@@ -49,7 +54,7 @@ describe('RoleRevealCard', () => {
     expect(container.querySelector<HTMLImageElement>('.identity-dialog-role-art')?.src).toContain('undercover.png')
   })
 
-  test('reveals from the keyboard and resets when closed or identity changes', async () => {
+  test('activates from Enter without a programmatic click', async () => {
     container = document.createElement('div')
     document.body.append(container)
     root = createRoot(container)
@@ -57,12 +62,34 @@ describe('RoleRevealCard', () => {
 
     const reveal = container.querySelector<HTMLButtonElement>('button')
     await act(async () => { reveal?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })) })
-    await act(async () => { reveal?.click() })
+    expect(container.textContent).toContain('Harbor')
+  })
+
+  test('removes private content before lifecycle changes commit', async () => {
+    container = document.createElement('div')
+    document.body.append(container)
+    root = createRoot(container)
+    await act(async () => { root.render(<RoleRevealCard {...props} />) })
+
+    await act(async () => { container.querySelector<HTMLButtonElement>('button')?.click() })
     expect(container.textContent).toContain('Harbor')
 
-    await act(async () => { root.render(<RoleRevealCard {...props} open={false} />) })
-    await act(async () => { root.render(<RoleRevealCard {...props} identity={{ role: 'civilian', word: 'Lantern' }} />) })
-    expect(container.textContent).not.toContain('Lantern')
+    let commitText = ''
+    const captureCommit = () => { commitText = container.textContent ?? '' }
+
+    await act(async () => { root.render(<><RoleRevealCard {...props} open={false} /><CommitProbe onCommit={captureCommit} /></>) })
+    expect(commitText).not.toContain('Harbor')
+    expect(container.querySelector('.identity-dialog-role-art')).toBeNull()
+
+    await act(async () => { root.render(<><RoleRevealCard {...props} /><CommitProbe onCommit={captureCommit} /></>) })
+    expect(commitText).not.toContain('Harbor')
+    expect(container.querySelector('.identity-dialog-role-art')).toBeNull()
+
+    await act(async () => { container.querySelector<HTMLButtonElement>('button')?.click() })
+    await act(async () => { root.render(<><RoleRevealCard {...props} identity={{ role: 'civilian', word: 'Lantern' }} roleLabel="Civilian" /><CommitProbe onCommit={captureCommit} /></>) })
+    expect(commitText).not.toContain('Harbor')
+    expect(commitText).not.toContain('Civilian')
+    expect(commitText).not.toContain('Lantern')
     expect(container.querySelector('.identity-dialog-role-art')).toBeNull()
   })
 })

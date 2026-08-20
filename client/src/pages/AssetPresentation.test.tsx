@@ -96,4 +96,17 @@ describe('noir asset presentation', () => {
     expect(image?.getAttribute('aria-hidden')).toBe('true')
     expect(image?.getAttribute('src')).toContain(asset)
   })
+
+  test('uses the supplied concealed card artwork without exposing role art', async () => {
+    container = document.createElement('div')
+    document.body.append(container)
+    root = createRoot(container)
+
+    await act(async () => {
+      root.render(<IdentityDialog open onClose={() => undefined} identity={{ role: 'undercover', word: 'word' }} />)
+    })
+
+    expect(container.querySelector<HTMLImageElement>('.identity-reveal-card__back-art')?.src).toContain('card.png')
+    expect(container.querySelector('.identity-dialog-role-art')).toBeNull()
+  })
 })

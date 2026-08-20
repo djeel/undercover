@@ -7,6 +7,7 @@ import undercoverArt from '../../assets/roles/undercover.png';
 import mrWhiteArt from '../../assets/roles/mrwhite.png';
 import jesterArt from '../../assets/roles/jester.png';
 import bodyguardArt from '../../assets/roles/bodyguard.png';
+import cardBackArt from '../../assets/roles/card.png';
 import { RoleRevealCard } from './RoleRevealCard';
 
 export interface IdentityDialogProps {
@@ -39,7 +40,7 @@ export function IdentityDialog({ open, onClose, identity }: IdentityDialogProps)
     const { t } = useTranslation();
 
     return (
-        <Dialog isOpen={open} onOpenChange={(isOpen) => { if (!isOpen) onClose(); }} purpose="info" width="min(92vw, 420px)">
+        <Dialog isOpen={open} onOpenChange={(isOpen) => { if (!isOpen) onClose(); }} purpose="info" width="min(94vw, 32rem)">
             <Layout
                 header={<DialogHeader title={t('identity.title', 'Your identity')} onOpenChange={(isOpen) => { if (!isOpen) onClose(); }} />}
                 content={(
@@ -49,10 +50,13 @@ export function IdentityDialog({ open, onClose, identity }: IdentityDialogProps)
                             identity={identity}
                             roleLabel={t(roleKey[identity.role])}
                             roleArt={roleArt[identity.role]}
+                            backArt={cardBackArt}
                             roleLabelCaption={t('identity.role', 'Role')}
                             wordLabelCaption={t('identity.word', 'Word')}
                             noWordLabel={t('identity.noWord', 'No word')}
                             revealLabel={t('identity.revealCard')}
+                            holdLabel={t('identity.holdCard')}
+                            instructionLabel={t('identity.memorize')}
                             protectLabel={(name) => t('identity.protect', 'Protect {{name}}', { name })}
                         />
                     </LayoutContent>

@@ -16,27 +16,30 @@ const renderDialog = (role: 'civilian' | 'undercover' | 'mr_white' | 'jester' | 
 };
 
 describe('IdentityDialog', () => {
-    it('shows only the current player role and word', () => {
+    it('keeps the current player role and word private until reveal', () => {
         const markup = renderDialog('undercover', 'Cappuccino');
 
-        expect(markup).toContain('Undercover');
-        expect(markup).toContain('Cappuccino');
+        expect(markup).toContain('Reveal private identity');
+        expect(markup).not.toContain('Undercover');
+        expect(markup).not.toContain('Cappuccino');
         expect(markup).not.toContain('Civilian');
         expect(markup).not.toContain('Composition');
     });
 
-    it('explains that Mr. White has no word', () => {
+    it('keeps Mr. White role details private until reveal', () => {
         const markup = renderDialog('mr_white', null);
 
-        expect(markup).toContain('Mr. White');
-        expect(markup).toContain('No word');
+        expect(markup).toContain('Reveal private identity');
+        expect(markup).not.toContain('Mr. White');
+        expect(markup).not.toContain('No word');
         expect(markup).not.toContain('Cappuccino');
     });
 
-    it('shows a Bodyguard target only to the Bodyguard', () => {
+    it('keeps a Bodyguard target private until reveal', () => {
         const markup = renderDialog('bodyguard', 'Cappuccino', 'Mina');
 
-        expect(markup).toContain('Bodyguard');
-        expect(markup).toContain('Protect Mina');
+        expect(markup).toContain('Reveal private identity');
+        expect(markup).not.toContain('Bodyguard');
+        expect(markup).not.toContain('Protect Mina');
     });
 });

@@ -7,7 +7,7 @@ import warnings
 
 warnings.filterwarnings("ignore", category=DeprecationWarning, module="fastapi.testclient")
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from uuid import UUID, uuid4
 
 import httpx
@@ -17,10 +17,13 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from fastapi.testclient import TestClient
 
 from src.auth import AuthenticatedUser, current_user
-from src.config import Settings
+from src.config import Settings as ServerSettings
 from src.game.types import GamePhase, transition
 from src.main import create_app
-from src.repositories.games import PostgresGameRepository
+from src.repositories.games import PostgresGameRepository, serialize_game
+from src.data.seed_words import get_all_localized_pairs
+from src.game.types import GameState, Player, PlayerRole, Settings, WordPair
+from src.repositories.social import SocialRepository
 from src.repositories.testing import TestingGameRepository
 
 
@@ -30,8 +33,14 @@ class User:
     anonymous: bool = False
 
 
-def client_for(user: User, repository: TestingGameRepository, *, realtime_service: object | None = None) -> TestClient:
-    app = create_app(repository=repository, realtime_service=realtime_service)
+def client_for(
+    user: User,
+    repository: TestingGameRepository,
+    *,
+    realtime_service: object | None = None,
+    social_repository: object | None = None,
+) -> TestClient:
+    app = create_app(repository=repository, social_repository=social_repository, realtime_service=realtime_service)
     app.dependency_overrides[current_user] = lambda: AuthenticatedUser(user.id, user.anonymous)
     return TestClient(app)
 
@@ -42,10 +51,12 @@ def create_members(repository: TestingGameRepository, count: int = 6) -> tuple[U
     game = client.post("/api/games", json={"language": "en"}).json()
     player_ids = [game["hostPlayerId"]]
     for number in range(1, count):
-        user = User(uuid4())
+        user = User(uuid4(), anonymous=True)
         response = client_for(user, repository).post(f"/api/games/{game['roomCode']}/join", json={"displayName": f"Player {number}"})
-        assert response.status_code == 200
-        player_ids.append(next(player["id"] for player in response.json()["players"] if player["displayName"] == f"Player {number}"))
+        joined = response.json()
+        assert joined["playerId"]
+        assert "playerId" not in joined["game"]
+        player_ids.append(joined["playerId"])
     return host, [game["roomCode"], *player_ids]
 
 
@@ -114,7 +125,7 @@ def test_current_user_verifies_jwks_jwt_once_and_reuses_cached_key() -> None:
         requests.append(str(request.url))
         return httpx.Response(200, json={"keys": [public_jwk]})
 
-    config = Settings(SUPABASE_URL="https://project.supabase.co", SUPABASE_JWT_AUDIENCE="authenticated")
+    config = ServerSettings(SUPABASE_URL="https://project.supabase.co", SUPABASE_JWT_AUDIENCE="authenticated")
     repository = TestingGameRepository()
     app = create_app(
         repository=repository,
@@ -123,7 +134,7 @@ def test_current_user_verifies_jwks_jwt_once_and_reuses_cached_key() -> None:
     )
     headers = {"Authorization": f"Bearer {token}"}
     with TestClient(app) as client:
-        created = client.post("/api/games", json={"language": "en"}, headers=headers)
+        created = client.post("/api/games", json={"language": "en", "displayName": "Anonymous Host"}, headers=headers)
         assert created.status_code == 200
         assert client.get(f"/api/games/{created.json()['roomCode']}", headers=headers).status_code == 200
     assert requests == ["https://project.supabase.co/auth/v1/.well-known/jwks.json"]
@@ -146,7 +157,7 @@ def test_current_user_rejects_an_expired_but_correctly_signed_jwt() -> None:
         algorithm="RS256",
         headers={"kid": "current"},
     )
-    configuration = Settings(SUPABASE_URL="https://project.supabase.co", SUPABASE_JWT_AUDIENCE="authenticated")
+    configuration = ServerSettings(SUPABASE_URL="https://project.supabase.co", SUPABASE_JWT_AUDIENCE="authenticated")
     app = create_app(
         repository=TestingGameRepository(),
         configuration=configuration,
@@ -172,7 +183,7 @@ def test_lifespan_registers_and_closes_shared_postgres_pool() -> None:
         calls.append(dsn)
         return pool
 
-    config = Settings(DATABASE_URL="postgresql://undercover", SUPABASE_URL="https://project.supabase.co")
+    config = ServerSettings(DATABASE_URL="postgresql://undercover", SUPABASE_URL="https://project.supabase.co")
     app = create_app(configuration=config, pool_factory=pool_factory)
     with TestClient(app):
         assert calls == ["postgresql://undercover"]
@@ -333,7 +344,9 @@ def test_postgres_finish_writes_result_and_stat_rows_in_the_same_transaction() -
         def __init__(self): self.executed: list[str] = []
         def transaction(self): return Transaction()
         async def fetchrow(self, *_): return {"id": game_id, "state": state, "version": 3, "player_id": "host"}
-        async def execute(self, query: str, *_): self.executed.append(query); return "UPDATE 1"
+        async def execute(self, query: str, *_):
+            self.executed.append(query)
+            return "INSERT 0 1" if "INSERT INTO game_results" in query else "UPDATE 1"
 
     connection = Connection()
 
@@ -439,4 +452,382 @@ def test_join_uses_the_authenticated_profile_display_name_when_omitted() -> None
     assert member_client.patch("/api/me", json={"handle": "member", "displayName": "Member Name"}).status_code == 200
     joined = member_client.post(f"/api/games/{room_code}/join", json={})
     assert joined.status_code == 200
-    assert any(player["displayName"] == "Member Name" for player in joined.json()["players"])
+    assert any(player["displayName"] == "Member Name" for player in joined.json()["game"]["players"])
+
+
+
+def test_authenticated_join_snapshots_profile_avatar_on_canonical_player() -> None:
+    repository = TestingGameRepository()
+    host, values = create_members(repository, 1)
+    room_code = values[0]
+    member = User(uuid4())
+    repository.profiles[member.id] = {
+        "id": str(member.id),
+        "handle": "member",
+        "displayName": "Member Name",
+        "avatarUrl": "https://example.test/member-avatar.png",
+    }
+
+    joined = client_for(member, repository).post(f"/api/games/{room_code}/join", json={})
+
+    assert joined.status_code == 200
+    joined_player = next(player for player in joined.json()["game"]["players"] if player["displayName"] == "Member Name")
+    assert joined_player["avatarUrl"] == "https://example.test/member-avatar.png"
+    canonical = next(player for player in repository.games[room_code].players if player.id == joined_player["id"])
+    assert canonical.avatar_url == "https://example.test/member-avatar.png"
+
+def test_join_returns_authoritative_caller_player_id_outside_the_member_filtered_view() -> None:
+    repository = TestingGameRepository()
+    host, values = create_members(repository, 1)
+    room_code = values[0]
+    member = User(uuid4(), anonymous=True)
+
+    joined = client_for(member, repository).post(f"/api/games/{room_code}/join", json={"displayName": "Member"})
+
+    assert joined.status_code == 200
+    payload = joined.json()
+    assert payload["playerId"] == repository.members[(room_code, member.id)]
+    assert "playerId" not in payload["game"]
+    assert any(player["id"] == payload["playerId"] for player in payload["game"]["players"])
+
+
+def test_restart_excludes_departed_members_before_resolving_the_next_vote() -> None:
+    repository = TestingGameRepository()
+    host, values = create_members(repository, 4)
+    room_code, host_player_id, departed_player_id, active_player_id, second_active_player_id = values
+    host_client = client_for(host, repository)
+    departed_user_id = repository.user_for_player(room_code, departed_player_id)
+
+    assert host_client.post(f"/api/games/{room_code}/start").status_code == 200
+    assert client_for(User(departed_user_id), repository).post(f"/api/games/{room_code}/leave").status_code == 200
+    repository.games[room_code] = transition(repository.games[room_code], phase=GamePhase.FINISHED)
+
+    restarted = host_client.post(f"/api/games/{room_code}/restart")
+    assert restarted.status_code == 200
+    assert {player["id"] for player in restarted.json()["players"]} == {host_player_id, active_player_id, second_active_player_id}
+    assert client_for(User(departed_user_id), repository).get(f"/api/games/{room_code}").status_code == 403
+
+    assert host_client.post(f"/api/games/{room_code}/start").status_code == 200
+    assert host_client.post(f"/api/games/{room_code}/voting").status_code == 200
+    assert host_client.post(f"/api/games/{room_code}/vote", json={"targetPlayerId": active_player_id}).status_code == 200
+    active_user_id = repository.user_for_player(room_code, active_player_id)
+    assert client_for(User(active_user_id, anonymous=True), repository).post(
+        f"/api/games/{room_code}/vote", json={"targetPlayerId": host_player_id}
+    ).status_code == 200
+    second_active_user_id = repository.user_for_player(room_code, second_active_player_id)
+    resolved = client_for(User(second_active_user_id, anonymous=True), repository).post(
+        f"/api/games/{room_code}/vote", json={"targetPlayerId": host_player_id}
+    )
+    assert resolved.status_code == 200
+    assert resolved.json()["phase"] != "voting"
+
+
+def test_anonymous_create_requires_and_snapshots_an_explicit_display_name() -> None:
+    repository = TestingGameRepository()
+    anonymous = User(uuid4(), anonymous=True)
+    client = client_for(anonymous, repository)
+
+    assert client.post("/api/games", json={"language": "en"}).status_code == 422
+    created = client.post("/api/games", json={"language": "en", "displayName": "Table Host"})
+
+    assert created.status_code == 200
+    game = repository.games[created.json()["roomCode"]]
+    assert game.players[0].display_name == "Table Host"
+    assert game.players[0].avatar_url is None
+
+
+def test_authenticated_create_rejects_a_client_supplied_display_name() -> None:
+    response = client_for(User(uuid4()), TestingGameRepository()).post(
+        "/api/games", json={"language": "en", "displayName": "Spoofed Name"}
+    )
+
+    assert response.status_code == 422
+
+
+def test_postgres_join_snapshots_profile_avatar_in_state_and_membership() -> None:
+    host_id, member_id = uuid4(), uuid4()
+    game = GameState(
+        id=str(uuid4()), room_code="ABC123", host_player_id="host", phase=GamePhase.LOBBY,
+        players=(Player("host", "Host", user_id=str(host_id)),), settings=Settings(), word_pair=WordPair("cat", "dog"),
+    )
+
+    class Transaction:
+        async def __aenter__(self): return self
+        async def __aexit__(self, *_): return False
+
+    class Connection:
+        def __init__(self) -> None:
+            self.executed: list[tuple[str, tuple[object, ...]]] = []
+
+        def transaction(self) -> Transaction:
+            return Transaction()
+
+        async def fetchrow(self, query: str, *_args: object):
+            return {"id": UUID(game.id), "state": json.dumps(serialize_game(game)), "version": game.version}
+
+        async def fetchval(self, *_args: object):
+            return None
+
+        async def execute(self, query: str, *args: object) -> str:
+            self.executed.append((query, args))
+            return "INSERT 0 1"
+
+    class Acquire:
+        async def __aenter__(self): return connection
+        async def __aexit__(self, *_): return False
+
+    class Pool:
+        def acquire(self): return Acquire()
+
+    connection = Connection()
+    joined = asyncio.run(
+        PostgresGameRepository(Pool()).join_game("ABC123", member_id, "Member Name", "https://example.test/member-avatar.png")
+    )
+
+    player = joined.players[-1]
+    assert player.avatar_url == "https://example.test/member-avatar.png"
+    member_args = next(args for query, args in connection.executed if "INSERT INTO game_members" in query)
+    assert member_args[-1] == "https://example.test/member-avatar.png"
+
+
+
+def test_postgres_join_rejects_a_departed_member_before_insert() -> None:
+    host_id, departed_user_id = uuid4(), uuid4()
+    game = GameState(
+        id=str(uuid4()), room_code="ABC123", host_player_id="host", phase=GamePhase.LOBBY,
+        players=(Player("host", "Host", user_id=str(host_id)),), settings=Settings(), word_pair=WordPair("cat", "dog"),
+    )
+
+    class Transaction:
+        async def __aenter__(self): return self
+        async def __aexit__(self, *_): return False
+
+    class Connection:
+        def __init__(self) -> None:
+            self.inserted_member = False
+
+        def transaction(self) -> Transaction:
+            return Transaction()
+
+        async def fetchrow(self, _query: str, *_args: object):
+            return {"id": UUID(game.id), "state": json.dumps(serialize_game(game)), "version": game.version}
+
+        async def fetchval(self, query: str, *_args: object):
+            assert "left_at" not in query
+            return 1  # The matching membership row is departed (left_at is set).
+
+        async def execute(self, query: str, *_args: object) -> str:
+            if "INSERT INTO game_members" in query:
+                self.inserted_member = True
+            return "INSERT 0 1"
+
+    class Acquire:
+        async def __aenter__(self): return connection
+        async def __aexit__(self, *_): return False
+
+    class Pool:
+        def acquire(self): return Acquire()
+
+    connection = Connection()
+    with pytest.raises(ValueError, match="Already a game member"):
+        asyncio.run(PostgresGameRepository(Pool()).join_game("ABC123", departed_user_id, "Returned Member"))
+
+    assert not connection.inserted_member
+
+
+def test_postgres_restart_prunes_only_inactive_members_inside_the_mutation() -> None:
+    host_id = uuid4()
+    game = GameState(
+        id=str(uuid4()), room_code="ABC123", host_player_id="host", phase=GamePhase.FINISHED,
+        players=(Player("host", "Host", user_id=str(host_id), alive=False), Player("departed", "Departed", alive=False)),
+        settings=Settings(), word_pair=WordPair("cat", "dog"),
+    )
+
+    class Transaction:
+        async def __aenter__(self): return self
+        async def __aexit__(self, *_): return False
+
+    class Connection:
+        def transaction(self) -> Transaction:
+            return Transaction()
+
+        async def fetchrow(self, *_args: object):
+            return {"id": UUID(game.id), "room_code": game.room_code, "state": json.dumps(serialize_game(game)), "version": game.version, "player_id": "host"}
+
+        async def fetch(self, query: str, *_args: object):
+            if "SELECT player_id::text" in query:
+                return [{"player_id": "host"}]
+            return []
+
+        async def execute(self, *_args: object) -> str:
+            return "UPDATE 1"
+
+    class Acquire:
+        async def __aenter__(self): return connection
+        async def __aexit__(self, *_): return False
+
+    class Pool:
+        def acquire(self): return Acquire()
+
+    connection = Connection()
+    restarted = asyncio.run(
+        PostgresGameRepository(Pool()).mutate_game(
+            "ABC123", host_id,
+            lambda state, _: transition(state, phase=GamePhase.LOBBY, players=tuple(replace(player, alive=True) for player in state.players)),
+            retain_active_players=True,
+        )
+    )
+
+    assert restarted.players == (Player("host", "Host", user_id=str(host_id)),)
+
+def test_postgres_create_game_snapshots_creator_profile_and_uses_a_localized_seed_pair() -> None:
+    user_id = uuid4()
+
+    class Transaction:
+        async def __aenter__(self): return self
+        async def __aexit__(self, *_): return False
+
+    class Connection:
+        def __init__(self) -> None:
+            self.executed: list[tuple[str, tuple[object, ...]]] = []
+
+        def transaction(self) -> Transaction:
+            return Transaction()
+
+        async def fetchrow(self, query: str, *_args: object):
+            assert "FROM profiles" in query
+            return {"display_name": "Créatrice", "avatar_url": "https://example.test/avatar.png"}
+
+        async def execute(self, query: str, *args: object) -> str:
+            self.executed.append((query, args))
+            return "INSERT 0 1"
+
+    class Acquire:
+        async def __aenter__(self): return connection
+        async def __aexit__(self, *_): return False
+
+    class Pool:
+        def acquire(self): return Acquire()
+
+    connection = Connection()
+    game = asyncio.run(PostgresGameRepository(Pool()).create_game(user_id, "fr"))
+
+    assert game.players[0].display_name == "Créatrice"
+    assert game.players[0].avatar_url == "https://example.test/avatar.png"
+    assert (game.word_pair.civilian, game.word_pair.undercover) in [pair.fr for pair in get_all_localized_pairs()]
+    game_state = json.loads(next(args[6] for query, args in connection.executed if "INSERT INTO games" in query))
+    member_args = next(args for query, args in connection.executed if "INSERT INTO game_members" in query)
+    assert game_state["players"][0] == {
+        "id": game.host_player_id,
+        "displayName": "Créatrice",
+        "role": None,
+        "alive": True,
+        "userId": str(user_id),
+        "bodyguardTargetId": None,
+        "avatarUrl": "https://example.test/avatar.png",
+    }
+    assert member_args[-1] == "https://example.test/avatar.png"
+
+def test_postgres_create_game_snapshots_anonymous_name_without_profile_avatar() -> None:
+    user_id = uuid4()
+
+    class Transaction:
+        async def __aenter__(self): return self
+        async def __aexit__(self, *_): return False
+
+    class Connection:
+        def __init__(self) -> None:
+            self.executed: list[tuple[str, tuple[object, ...]]] = []
+            self.profile_reads = 0
+
+        def transaction(self) -> Transaction:
+            return Transaction()
+
+        async def fetchrow(self, query: str, *_args: object):
+            self.profile_reads += 1
+            assert "FROM profiles" in query
+            return {"display_name": "Profile Host", "avatar_url": "https://example.test/profile-avatar.png"}
+
+        async def execute(self, query: str, *args: object) -> str:
+            self.executed.append((query, args))
+            return "INSERT 0 1"
+
+    class Acquire:
+        async def __aenter__(self): return connection
+        async def __aexit__(self, *_): return False
+
+    class Pool:
+        def acquire(self): return Acquire()
+
+    connection = Connection()
+    game = asyncio.run(PostgresGameRepository(Pool()).create_game(user_id, "en", "Anonymous Host"))
+
+    assert game.players[0].display_name == "Anonymous Host"
+    assert game.players[0].avatar_url is None
+    game_state = json.loads(next(args[6] for query, args in connection.executed if "INSERT INTO games" in query))
+    member_args = next(args for query, args in connection.executed if "INSERT INTO game_members" in query)
+    assert game_state["players"][0]["displayName"] == "Anonymous Host"
+    assert game_state["players"][0]["avatarUrl"] is None
+    assert member_args[-2:] == ("Anonymous Host", None)
+    assert connection.profile_reads == 0
+
+
+def test_postgres_results_aggregate_only_when_the_result_row_is_new() -> None:
+    user_id = uuid4()
+    game = GameState(
+        id=str(uuid4()), room_code="ABC123", host_player_id="host", phase=GamePhase.FINISHED,
+        players=(Player("host", "Host", role=PlayerRole.CIVILIAN, user_id=str(user_id)),),
+        settings=Settings(), word_pair=WordPair("cat", "dog"), winner="civilians",
+    )
+
+    class Connection:
+        def __init__(self) -> None:
+            self.result_inserts = 0
+            self.aggregates: list[str] = []
+
+        async def execute(self, query: str, *_args: object) -> str:
+            if "INSERT INTO game_results" in query:
+                self.result_inserts += 1
+                return "INSERT 0 1" if self.result_inserts == 1 else "INSERT 0 0"
+            self.aggregates.append(query)
+            return "INSERT 0 1"
+
+    connection = Connection()
+    repository = PostgresGameRepository(object())
+    asyncio.run(repository._record_results(connection, UUID(game.id), game))
+    asyncio.run(repository._record_results(connection, UUID(game.id), game))
+
+    assert connection.result_inserts == 2
+    assert len([query for query in connection.aggregates if "INSERT INTO player_stats" in query]) == 1
+    assert len([query for query in connection.aggregates if "INSERT INTO player_role_stats" in query]) == 1
+
+
+@pytest.mark.parametrize(
+    ("operation", "expected_message"),
+    [
+        (lambda client, profile_id: client.patch("/api/me", json={"handle": "duplicate", "displayName": "Player"}), "Handle is already taken"),
+        (lambda client, profile_id: client.post(f"/api/friends/{profile_id}"), "Friendship already exists"),
+    ],
+)
+def test_postgres_unique_conflicts_become_social_route_conflicts(operation, expected_message: str) -> None:
+    class UniqueViolation(Exception):
+        sqlstate = "23505"
+
+    class Connection:
+        async def fetchrow(self, *_args: object):
+            raise UniqueViolation()
+
+    class Acquire:
+        async def __aenter__(self): return Connection()
+        async def __aexit__(self, *_): return False
+
+    class Pool:
+        def acquire(self): return Acquire()
+
+    repository = TestingGameRepository()
+    response = operation(
+        client_for(User(uuid4()), repository, social_repository=SocialRepository(Pool())),
+        uuid4(),
+    )
+    assert response.status_code == 409
+    assert response.json() == {"detail": expected_message}

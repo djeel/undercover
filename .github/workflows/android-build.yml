@@ -7,35 +7,44 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    name: Build APK
+  client:
+    name: Client build, tests & Android APK
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout source
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: npm
+          cache-dependency-path: package-lock.json
 
-      - name: Install Dependencies
-        working-directory: ./client
+      - name: Deterministic root workspace install
         run: npm ci
 
-      - name: Build Web App
+      - name: Build shared package
+        run: npm run build --workspace=shared
+
+      - name: Client tests
+        run: npm run test --workspace=client -- --run
+
+      - name: Type-check client
         working-directory: ./client
-        run: |
-          npx tsc -b
-          npx vite build --base ./
+        run: npx tsc -b
+
+      - name: Build Web App (base ./)
+        working-directory: ./client
+        run: npx vite build --base ./
 
       - name: Sync Capacitor
         working-directory: ./client
         run: npx cap sync android
 
       - name: Setup Java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '21'
@@ -50,5 +59,30 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug.apk
+          name: app-debug
           path: client/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
+
+  server:
+    name: Server tests (pytest)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: server-py/requirements.txt
+
+      - name: Install server dependencies
+        working-directory: ./server-py
+        run: pip install -r requirements.txt pytest
+
+      - name: Run pytest
+        working-directory: ./server-py
+        run: python -m pytest tests -q

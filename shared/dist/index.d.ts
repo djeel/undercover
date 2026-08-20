@@ -104,6 +104,7 @@ export interface PlayerStatsView {
 }
 export interface CreateGamePayload {
     language: 'en' | 'fr';
+    displayName?: string;
 }
 export interface CreateGameResponse {
     roomCode: string;
@@ -111,6 +112,10 @@ export interface CreateGameResponse {
 }
 export interface JoinGamePayload {
     displayName?: string;
+}
+export interface JoinGameResponse {
+    game: GameView;
+    playerId: string;
 }
 export type UpdateGameSettingsPayload = GameSettingsView;
 export interface VotePayload {

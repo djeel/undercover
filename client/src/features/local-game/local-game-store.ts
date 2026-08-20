@@ -10,6 +10,7 @@ import {
     type LocalGameState,
     type LocalPlayer,
 } from './rules';
+import { validateLocalComposition } from './composition';
 
 export type LocalPhase = 'idle' | 'setup' | 'reveal' | LocalGameState['phase'];
 export interface LocalGameConfig {
@@ -27,7 +28,7 @@ export interface LocalGameStore extends Omit<LocalGameState, 'phase'> {
     addPlayer(name: string): boolean;
     removePlayer(id: string): void;
     updateConfig(config: Partial<LocalGameConfig>): void;
-    startGame(): void;
+    startGame(): boolean;
     nextRevealPlayer(): void;
     startPlaying(): void;
     openVoting(): void;
@@ -73,6 +74,8 @@ export const useLocalGameStore = create<LocalGameStore>((set, get) => ({
     updateConfig: (config) => set((state) => ({ config: { ...state.config, ...config } })),
     startGame: () => {
         const state = get();
+        if (!validateLocalComposition(state.players.length, state.config).valid) return false;
+
         const language = i18n.language.split('-')[0] || 'en';
         const pair = WORD_PAIRS[randomIndex(WORD_PAIRS.length)][language] ?? WORD_PAIRS[randomIndex(WORD_PAIRS.length)].en;
         const [civilianWord, undercoverWord] = randomIndex(2) === 0 ? pair : [pair[1], pair[0]];
@@ -81,10 +84,10 @@ export const useLocalGameStore = create<LocalGameStore>((set, get) => ({
             ...Array(state.config.mrWhiteCount).fill('mr_white' as const),
             ...Array(state.config.jesterCount).fill('jester' as const),
             ...Array(state.config.bodyguardCount).fill('bodyguard' as const),
-            ...Array(Math.max(0, state.players.length - state.config.undercoverCount - state.config.mrWhiteCount - state.config.jesterCount - state.config.bodyguardCount)).fill('civilian' as const),
+            ...Array(state.players.length - state.config.undercoverCount - state.config.mrWhiteCount - state.config.jesterCount - state.config.bodyguardCount).fill('civilian' as const),
         ]);
         const players = state.players.map((player, index): LocalPlayer => {
-            const role = roles[index] ?? 'civilian';
+            const role = roles[index];
             const targets = state.players.filter((candidate) => candidate.id !== player.id);
             return {
                 ...player,
@@ -95,6 +98,7 @@ export const useLocalGameStore = create<LocalGameStore>((set, get) => ({
             };
         });
         set({ ...baseState(), players, phase: 'reveal', config: { ...state.config, civilianWord, undercoverWord }, civilianWord });
+        return true;
     },
     nextRevealPlayer: () => set((state) => ({ currentRevealIndex: state.currentRevealIndex + 1 })),
     startPlaying: () => set({ phase: 'playing' }),

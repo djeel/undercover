@@ -4,6 +4,7 @@ import type {
     FriendshipView,
     GameView,
     JoinGamePayload,
+    JoinGameResponse,
     MrWhiteGuessPayload,
     PlayerStatsView,
     ProfileView,
@@ -30,7 +31,7 @@ export interface ApiClientOptions {
 
 export interface ApiClient {
     createGame(body: CreateGamePayload): Promise<CreateGameResponse>;
-    joinGame(roomCode: string, body: JoinGamePayload): Promise<GameView>;
+    joinGame(roomCode: string, body: JoinGamePayload): Promise<JoinGameResponse>;
     getGame(roomCode: string): Promise<GameView>;
     updateSettings(roomCode: string, body: UpdateGameSettingsPayload): Promise<GameView>;
     startGame(roomCode: string): Promise<GameView>;
@@ -82,7 +83,7 @@ export const createApiClient = ({ baseUrl, getAccessToken, fetcher = fetch }: Ap
 
     return {
         createGame: (body: CreateGamePayload) => request<CreateGameResponse>('/games', { method: 'POST', body: JSON.stringify(body) }),
-        joinGame: (roomCode: string, body: JoinGamePayload) => request<GameView>(`/games/${roomCode}/join`, { method: 'POST', body: JSON.stringify(body) }),
+        joinGame: (roomCode: string, body: JoinGamePayload) => request<JoinGameResponse>(`/games/${roomCode}/join`, { method: 'POST', body: JSON.stringify(body) }),
         getGame: (roomCode: string) => request<GameView>(`/games/${roomCode}`),
         updateSettings: (roomCode: string, body: UpdateGameSettingsPayload) => request<GameView>(`/games/${roomCode}/settings`, { method: 'PATCH', body: JSON.stringify(body) }),
         startGame: (roomCode: string) => request<GameView>(`/games/${roomCode}/start`, { method: 'POST' }),

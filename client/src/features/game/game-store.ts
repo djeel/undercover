@@ -24,7 +24,28 @@ export interface GameStore {
 }
 
 let activeRealtime: GameRealtime | undefined;
+let activeRealtimeGameId: string | undefined;
+let realtimeGeneration = 0;
 const update = (set: (partial: Partial<GameStore>) => void, game: GameView) => set({ game, roomCode: game.roomCode, error: null });
+
+const startActiveRealtimeFor = (game: GameView) => {
+    const realtime = activeRealtime;
+    if (!realtime || activeRealtimeGameId === game.id) return;
+
+    const hadActiveGame = activeRealtimeGameId !== undefined;
+    const generation = ++realtimeGeneration;
+    activeRealtimeGameId = game.id;
+    if (!hadActiveGame) {
+        realtime.start(game.id, game.version);
+        return;
+    }
+
+    void realtime.stop().then(() => {
+        if (activeRealtime === realtime && activeRealtimeGameId === game.id && realtimeGeneration === generation) {
+            realtime.start(game.id, game.version);
+        }
+    });
+};
 
 export const useGameStore = create<GameStore>((set, get) => ({
     game: null,
@@ -34,10 +55,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
     setSession: (game, playerId) => {
         update(set, game);
         set({ playerId });
+        startActiveRealtimeFor(game);
     },
     clear: () => {
-        void activeRealtime?.stop();
-        activeRealtime = undefined;
+        const realtime = activeRealtime;
+        activeRealtimeGameId = undefined;
+        realtimeGeneration += 1;
+        void realtime?.stop();
         set({ game: null, roomCode: null, playerId: null, error: null });
     },
     fetch: async (api) => {
@@ -53,14 +77,34 @@ export const useGameStore = create<GameStore>((set, get) => ({
         }
     },
     startRealtime: (realtime) => {
-        const { game } = get();
-        if (!game) return;
+        if (activeRealtime === realtime) {
+            const { game } = get();
+            if (game) startActiveRealtimeFor(game);
+            return;
+        }
+
+        const previous = activeRealtime;
         activeRealtime = realtime;
-        realtime.start(game.id, game.version);
+        activeRealtimeGameId = undefined;
+        const generation = ++realtimeGeneration;
+        const { game } = get();
+        if (!previous) {
+            if (game) startActiveRealtimeFor(game);
+            return;
+        }
+
+        void previous.stop().then(() => {
+            if (activeRealtime === realtime && realtimeGeneration === generation && get().game === game && game) {
+                startActiveRealtimeFor(game);
+            }
+        });
     },
     stopRealtime: async () => {
-        await activeRealtime?.stop();
+        const realtime = activeRealtime;
         activeRealtime = undefined;
+        activeRealtimeGameId = undefined;
+        realtimeGeneration += 1;
+        await realtime?.stop();
     },
     updateSettings: async (api, settings) => { const game = get().game; if (game) update(set, await api.updateSettings(game.roomCode, settings)); },
     startGame: async (api) => { const game = get().game; if (game) update(set, await api.startGame(game.roomCode)); },

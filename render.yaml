@@ -1,0 +1,21 @@
+# Render Blueprint — API FastAPI (server-py).
+# Les variables marquées `sync: false` sont saisies dans le tableau de bord Render
+# (« set in dashboard ») : aucune valeur ni secret n'est versionné.
+services:
+  - type: web
+    name: undercover-api
+    runtime: python
+    rootDir: server-py
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn src.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: SUPABASE_JWT_AUDIENCE
+        value: authenticated
+      - key: CORS_ORIGINS
+        sync: false

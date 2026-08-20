@@ -27,22 +27,24 @@ export interface GameRealtime {
 export const createGameRealtime = ({ client, fetchGame, onGame, onError, document: page = globalThis.document }: GameRealtimeOptions): GameRealtime => {
     let channel: RealtimeChannel | undefined;
     let version = 0;
-    let loading = false;
-    let stopped = false;
+    let loadingLifecycle: number | undefined;
+    let lifecycle = 0;
+    let activeLifecycle = 0;
 
-    const refetch = async () => {
-        if (loading || stopped) return;
-        loading = true;
+    const refetch = async (requestLifecycle = activeLifecycle) => {
+        if (!requestLifecycle || requestLifecycle !== activeLifecycle || loadingLifecycle === requestLifecycle) return;
+        loadingLifecycle = requestLifecycle;
         try {
             const game = await fetchGame();
+            if (requestLifecycle !== activeLifecycle) return;
             if (game.version > version) {
                 version = game.version;
                 onGame(game);
             }
         } catch (error) {
-            onError?.(error);
+            if (requestLifecycle === activeLifecycle) onError?.(error);
         } finally {
-            loading = false;
+            if (loadingLifecycle === requestLifecycle) loadingLifecycle = undefined;
         }
     };
     const onForeground = () => {
@@ -52,14 +54,15 @@ export const createGameRealtime = ({ client, fetchGame, onGame, onError, documen
     return {
         start(gameId, currentVersion) {
             void this.stop();
-            stopped = false;
+            const currentLifecycle = ++lifecycle;
+            activeLifecycle = currentLifecycle;
             version = currentVersion;
             channel = client.channel(`game:${gameId}`, { config: { private: true } })
                 .on('broadcast', { event: 'game_state_changed' }, ({ payload }) => {
-                    if (payload.version > version) void refetch();
+                    if (currentLifecycle === activeLifecycle && payload.version > version) void refetch(currentLifecycle);
                 })
                 .subscribe((status) => {
-                    if (status === 'SUBSCRIBED') void refetch();
+                    if (currentLifecycle === activeLifecycle && status === 'SUBSCRIBED') void refetch(currentLifecycle);
                 });
             page?.addEventListener('visibilitychange', onForeground);
         },
@@ -67,10 +70,12 @@ export const createGameRealtime = ({ client, fetchGame, onGame, onError, documen
             await refetch();
         },
         async stop() {
-            stopped = true;
+            ++lifecycle;
+            activeLifecycle = 0;
             page?.removeEventListener('visibilitychange', onForeground);
-            if (channel) await client.removeChannel(channel);
+            const current = channel;
             channel = undefined;
+            if (current) await client.removeChannel(current);
         },
     };
 };

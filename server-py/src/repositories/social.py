@@ -1,8 +1,14 @@
 """Profile and friendship repositories for the server-owned Postgres connection."""
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, NoReturn
 from uuid import UUID
+
+
+def _raise_domain_conflict(error: Exception, message: str) -> NoReturn:
+    if getattr(error, "sqlstate", None) == "23505":
+        raise ValueError(message) from error
+    raise error
 
 
 class SocialRepository:
@@ -17,12 +23,15 @@ class SocialRepository:
         return _profile(row)
 
     async def update_profile(self, user_id: UUID, *, handle: str | None, display_name: str | None) -> dict[str, object] | None:
-        async with self.pool.acquire() as connection:
-            row = await connection.fetchrow(
-                """UPDATE profiles SET handle = COALESCE($2, handle), display_name = COALESCE($3, display_name)
-                   WHERE id = $1 RETURNING id, handle, display_name, avatar_url""",
-                user_id, handle, display_name,
-            )
+        try:
+            async with self.pool.acquire() as connection:
+                row = await connection.fetchrow(
+                    """UPDATE profiles SET handle = COALESCE($2, handle), display_name = COALESCE($3, display_name)
+                       WHERE id = $1 RETURNING id, handle, display_name, avatar_url""",
+                    user_id, handle, display_name,
+                )
+        except Exception as error:
+            _raise_domain_conflict(error, "Handle is already taken")
         return _profile(row)
 
     async def search_profiles(self, query: str, exclude_user_id: UUID) -> list[dict[str, object]]:
@@ -53,13 +62,16 @@ class SocialRepository:
         if user_id == profile_id:
             raise ValueError("Cannot add yourself as a friend")
         low, high = sorted((user_id, profile_id))
-        async with self.pool.acquire() as connection:
-            row = await connection.fetchrow(
-                """INSERT INTO friendships (user_low, user_high, requested_by, status)
-                   VALUES ($1, $2, $3, 'pending')
-                   RETURNING user_low, user_high, requested_by, status""",
-                low, high, user_id,
-            )
+        try:
+            async with self.pool.acquire() as connection:
+                row = await connection.fetchrow(
+                    """INSERT INTO friendships (user_low, user_high, requested_by, status)
+                       VALUES ($1, $2, $3, 'pending')
+                       RETURNING user_low, user_high, requested_by, status""",
+                    low, high, user_id,
+                )
+        except Exception as error:
+            _raise_domain_conflict(error, "Friendship already exists")
         if row is None:
             raise ValueError("Friendship could not be created")
         return {"profileId": str(profile_id), "requestedBy": str(row["requested_by"]), "status": row["status"]}

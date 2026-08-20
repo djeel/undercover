@@ -31,6 +31,7 @@ vi.mock('@astryxdesign/core/Layout', () => ({
 }))
 
 import PlayPage from './PlayPage'
+import AccountPage from './AccountPage'
 import { IdentityDialog } from '../features/game/IdentityDialog'
 
 describe('noir asset presentation', () => {
@@ -55,6 +56,23 @@ describe('noir asset presentation', () => {
     expect(art.map((image) => image.getAttribute('src'))).toEqual(expect.arrayContaining([
       expect.stringContaining('local.png'),
       expect.stringContaining('multiplayer.png'),
+    ]))
+  })
+
+  test('renders decorative supplied art for account destinations', async () => {
+    container = document.createElement('div')
+    document.body.append(container)
+    root = createRoot(container)
+
+    await act(async () => { root.render(<AccountPage />) })
+
+    const art = [...container.querySelectorAll<HTMLImageElement>('.mode-action-card__art')]
+    expect(art).toHaveLength(2)
+    expect(art.map((image) => image.getAttribute('alt'))).toEqual(['', ''])
+    expect(art.map((image) => image.getAttribute('aria-hidden'))).toEqual(['true', 'true'])
+    expect(art.map((image) => image.getAttribute('src'))).toEqual(expect.arrayContaining([
+      expect.stringContaining('profile.png'),
+      expect.stringContaining('settings.png'),
     ]))
   })
 

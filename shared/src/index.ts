@@ -116,9 +116,10 @@ export interface PlayerStatsView {
     results: PlayerResultView[];
 }
 
-export interface CreateGamePayload { language: 'en' | 'fr'; }
+export interface CreateGamePayload { language: 'en' | 'fr'; displayName?: string; }
 export interface CreateGameResponse { roomCode: string; hostPlayerId: string; }
 export interface JoinGamePayload { displayName?: string; }
+export interface JoinGameResponse { game: GameView; playerId: string; }
 export type UpdateGameSettingsPayload = GameSettingsView;
 export interface VotePayload { targetPlayerId: string; }
 export interface MrWhiteGuessPayload { guess: string; }

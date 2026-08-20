@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 class CreateGameRequest(BaseModel):
     language: str = Field(pattern="^(en|fr)$")
-
+    display_name: str | None = Field(default=None, min_length=1, max_length=24, alias="displayName")
 
 class JoinRequest(BaseModel):
     display_name: str | None = Field(default=None, min_length=1, max_length=24, alias="displayName")
@@ -144,10 +144,14 @@ def create_app(
         action: Callable[[Any, str], Any],
         *,
         deactivate_player_id: str | None = None,
+        retain_active_players: bool = False,
     ) -> tuple[Any, str]:
         try:
             player_id = await repository.player_id_for_member(room_code, user_id)
-            game = await repository.mutate_game(room_code, user_id, action, deactivate_player_id=deactivate_player_id)
+            game = await repository.mutate_game(
+                room_code, user_id, action, deactivate_player_id=deactivate_player_id,
+                retain_active_players=retain_active_players,
+            )
         except PermissionError as error:
             raise HTTPException(status_code=403, detail=str(error)) from error
         except (NotFoundError, ValueError) as error:
@@ -161,7 +165,12 @@ def create_app(
 
     @app.post("/api/games")
     async def create_game(body: CreateGameRequest, user: AuthenticatedUser = Depends(current_user), repository: Any = Depends(repo)):
-        game = await repository.create_game(user.id, body.language)
+        if user.is_anonymous:
+            if body.display_name is None:
+                raise HTTPException(status_code=422, detail="Anonymous users require displayName")
+        elif body.display_name is not None:
+            raise HTTPException(status_code=422, detail="Authenticated users cannot supply displayName")
+        game = await repository.create_game(user.id, body.language, body.display_name)
         return {"roomCode": game.room_code, "hostPlayerId": game.host_player_id}
 
     @app.post("/api/games/{room_code}/join")
@@ -172,19 +181,22 @@ def create_app(
         repository: Any = Depends(repo),
         social_store: Any = Depends(social),
     ):
-        if user.is_anonymous and not body.display_name:
-            raise HTTPException(status_code=422, detail="Anonymous users require displayName")
-        display_name = body.display_name
-        if display_name is None:
+        if user.is_anonymous:
+            if body.display_name is None:
+                raise HTTPException(status_code=422, detail="Anonymous users require displayName")
+            display_name = body.display_name
+            avatar_url = None
+        else:
             profile = await social_store.get_profile(user.id)
             display_name = str(profile["displayName"]) if profile else "Player"
+            avatar_url = None if profile is None else profile["avatarUrl"]
         try:
-            game = await repository.join_game(room_code, user.id, display_name)
+            game = await repository.join_game(room_code, user.id, display_name, avatar_url)
             player_id = await repository.player_id_for_member(room_code, user.id)
         except (NotFoundError, ValueError) as error:
             raise HTTPException(status_code=409, detail=str(error)) from error
         await publish_committed(game)
-        return view(game, player_id)
+        return {"game": view(game, player_id), "playerId": player_id}
 
     @app.get("/api/games/{room_code}")
     async def get_game(room_code: str, user: AuthenticatedUser = Depends(current_user), repository: Any = Depends(repo)):
@@ -276,9 +288,13 @@ def create_app(
                 raise PermissionError("Host authorization required")
             if game.phase is not GamePhase.FINISHED:
                 raise ValueError("Game is not finished")
-            return transition(game, phase=GamePhase.LOBBY, players=tuple(replace(player, role=None, alive=True, bodyguard_target_id=None) for player in game.players), votes=(), pending_mr_white_id=None, winner=None)
+            players = tuple(
+                replace(player, role=None, alive=True, bodyguard_target_id=None)
+                for player in game.players
+            )
+            return transition(game, phase=GamePhase.LOBBY, players=players, votes=(), pending_mr_white_id=None, winner=None)
 
-        game, caller_id = await mutate_and_publish(repository, room_code, user.id, action)
+        game, caller_id = await mutate_and_publish(repository, room_code, user.id, action, retain_active_players=True)
         return view(game, caller_id)
 
     @app.get("/api/me")

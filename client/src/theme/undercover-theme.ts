@@ -4,7 +4,7 @@ import { neutralTheme } from '@astryxdesign/theme-neutral';
 export const undercoverTheme = defineTheme({
     name: 'undercover',
     extends: neutralTheme,
-    color: { accent: '#6f3df4', neutralStyle: 'cool', contrast: 'standard' },
+    color: { accent: '#43544d', neutralStyle: 'cool', contrast: 'standard' },
     typography: {
         scale: { base: 16, ratio: 1.2 },
         body: { family: 'Manrope', fallbacks: 'system-ui, sans-serif' },
@@ -13,7 +13,7 @@ export const undercoverTheme = defineTheme({
     radius: { base: 4, multiplier: 2 },
     motion: { fast: 175, medium: 410, slow: 975, ratio: 0.75 },
     tokens: {
-        '--color-accent': ['hsl(262 83% 58%)', 'hsl(262 83% 65%)'],
+        '--color-accent': ['#43544d', '#5a7c6c'],
         '--color-on-accent': '#ffffff',
         '--color-background-body': ['hsl(250 35% 97%)', 'hsl(252 28% 8%)'],
         '--color-background-surface': ['hsl(0 0% 100%)', 'hsl(252 24% 12%)'],

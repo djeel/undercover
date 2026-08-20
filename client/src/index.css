@@ -18,14 +18,383 @@
     button, input, select { font: inherit; }
     h1, h2, h3 { font-family: Syne, system-ui, sans-serif; text-wrap: balance; }
 
-    .app-frame { min-height: 100dvh; background: var(--color-background-body); }
+    .app-frame {
+        position: relative;
+        min-height: 100dvh;
+        isolation: isolate;
+        background: var(--color-background-body);
+    }
     .app-main { width: min(100% - 2rem, 72rem); margin-inline: auto; padding-block: 1.5rem calc(6rem + env(safe-area-inset-bottom)); }
-    .identity-dialog-content { display: grid; gap: .5rem; }
-    .identity-dialog-content > :nth-child(3) { margin-top: 1rem; }
+    .identity-reveal-card {
+        --identity-card-rotate-x: 0deg;
+        --identity-card-rotate-y: 0deg;
+        --identity-card-highlight-x: 50%;
+        --identity-card-highlight-y: 50%;
+        perspective: 1000px;
+    }
+
+    .identity-reveal-card__inner {
+        position: relative;
+        display: grid;
+        min-height: 21rem;
+        transform-style: preserve-3d;
+        transition: transform 560ms cubic-bezier(.16, 1, .3, 1);
+    }
+
+    .identity-reveal-card.is-revealed .identity-reveal-card__inner {
+        transform: rotateY(180deg) rotateX(var(--identity-card-rotate-x)) rotateY(var(--identity-card-rotate-y));
+    }
+
+    .identity-reveal-card__back,
+    .identity-reveal-card__front {
+        grid-area: 1 / 1;
+        border-radius: var(--radius-container);
+        backface-visibility: hidden;
+    }
+
+    .identity-reveal-card__back {
+        display: grid;
+        place-content: center;
+        gap: .75rem;
+        min-height: 100%;
+        border: 1px solid color-mix(in srgb, var(--color-accent), transparent 35%);
+        background: linear-gradient(145deg, color-mix(in srgb, var(--color-accent), var(--color-background-card) 30%), var(--color-background-card));
+        color: var(--color-text-primary);
+        font: inherit;
+        cursor: pointer;
+    }
+
+    .identity-reveal-card__back:focus-visible {
+        outline: 3px solid var(--color-accent);
+        outline-offset: 4px;
+    }
+
+    .identity-reveal-card__front {
+        display: grid;
+        gap: .5rem;
+        align-content: start;
+        padding: 1rem;
+        background: var(--color-background-card);
+        transform: rotateY(180deg);
+        overflow: hidden;
+    }
+
+    .identity-reveal-card__front::after {
+        position: absolute;
+        inset: 0;
+        content: '';
+        pointer-events: none;
+        opacity: 0;
+        background: radial-gradient(circle at var(--identity-card-highlight-x) var(--identity-card-highlight-y), rgb(255 255 255 / .18), transparent 38%);
+    }
+
+    .identity-dialog-role-art {
+        width: 100%;
+        max-height: 11rem;
+        object-fit: cover;
+        object-position: center 24%;
+        border-radius: var(--radius-element);
+        opacity: .84;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+        .identity-reveal-card.is-revealed .identity-reveal-card__inner {
+            transition: transform 150ms ease-out;
+        }
+
+        .identity-reveal-card.is-revealed .identity-reveal-card__front::after {
+            opacity: 1;
+        }
+    }
     .role-civilian { color: var(--color-data-categorical-blue); }
     .role-undercover { color: var(--color-data-categorical-orange); }
     .role-mr-white { color: var(--color-data-neutral); }
     .role-jester { color: var(--color-data-categorical-pink); }
     .role-bodyguard { color: var(--color-data-categorical-green); }
     .role-teal { color: var(--color-data-categorical-teal); }
+
+    .dashboard {
+        position: relative;
+        isolation: isolate;
+        display: grid;
+        gap: 1.5rem;
+    }
+
+
+    .dashboard-intro {
+        max-width: 42rem;
+    }
+
+
+    .astryx-button {
+        min-height: 2.75rem;
+        transition: background-color 175ms ease-out, border-color 175ms ease-out, color 175ms ease-out, transform 175ms ease-out;
+    }
+
+    .astryx-button[data-variant='primary'] {
+        background-color: var(--color-accent);
+        color: var(--color-on-accent);
+    }
+
+    .astryx-button[data-variant='secondary'] {
+        border-color: var(--color-border-emphasized);
+        background-color: var(--color-background-surface);
+        color: var(--color-text-primary);
+    }
+
+    .astryx-button[data-variant='ghost'] {
+        color: var(--color-text-primary);
+    }
+
+    .astryx-button[data-variant='destructive'] {
+        color: var(--color-text-red);
+    }
+
+    .astryx-button:not(:is(:disabled, [aria-disabled='true'], [aria-busy='true'])):active {
+        transform: translateY(1px);
+    }
+
+    .astryx-button:focus-visible {
+        outline: 3px solid var(--color-accent);
+        outline-offset: 2px;
+    }
+
+    .astryx-button:is(:disabled, [aria-disabled='true'], [aria-busy='true']) {
+        cursor: not-allowed;
+        opacity: .58;
+    }
+
+    .astryx-text-input {
+        min-height: 2.75rem;
+        border-color: var(--color-border-emphasized);
+        background: var(--color-background-surface);
+        transition: border-color 175ms ease-out, box-shadow 175ms ease-out, background-color 175ms ease-out;
+    }
+
+    .astryx-text-input input {
+        min-height: 2.75rem;
+        color: var(--color-text-primary);
+    }
+
+    .astryx-text-input input::placeholder {
+        color: color-mix(in srgb, var(--color-text-secondary), var(--color-text-primary) 18%);
+        opacity: 1;
+    }
+
+    .astryx-text-input:focus-within {
+        border-color: var(--color-accent);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent), transparent 74%);
+    }
+
+    .astryx-text-input:has(input[aria-invalid='true']) {
+        border-color: var(--color-border-red);
+    }
+
+    .astryx-text-input:has(input:is(:disabled, [aria-disabled='true'])) {
+        background: var(--color-background-muted);
+        opacity: .7;
+    }
+
+    .local-play-card .astryx-button.local-play-card__start[data-variant='primary'][data-size='lg'] {
+        background-color: var(--color-accent);
+        background-image: linear-gradient(rgb(0 0 0 / 0.52), rgb(0 0 0 / 0.52)), url('../assets/button.png');
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+        color: var(--color-on-accent);
+    }
+
+    .local-play-card .astryx-button.local-play-card__start[data-variant='primary'][data-size='lg']:focus-visible {
+        outline-color: var(--color-on-accent);
+    }
+    .local-play-card .astryx-button.local-play-card__start[data-variant='primary'][data-size='lg']:is(:disabled, [aria-disabled='true'], [aria-busy='true']) {
+        background-image: none;
+        color: var(--color-on-accent);
+    }
+    .mode-action-card {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        border-color: color-mix(in srgb, var(--color-accent), transparent 62%);
+        background: color-mix(in srgb, var(--color-background-card), transparent 8%);
+    }
+
+    .mode-action-card__link {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+    }
+
+    .mode-action-card__art {
+        position: absolute;
+        z-index: 0;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: right center;
+        opacity: .48;
+        pointer-events: none;
+        transition: transform 175ms ease-out, opacity 175ms ease-out;
+    }
+
+    .mode-action-card__link::after {
+        position: absolute;
+        z-index: 1;
+        inset: 0;
+        content: '';
+        background: linear-gradient(90deg, color-mix(in srgb, var(--color-background-card), transparent 4%) 0%, color-mix(in srgb, var(--color-background-card), transparent 20%) 48%, color-mix(in srgb, var(--color-background-card), transparent 70%) 100%);
+        pointer-events: none;
+    }
+
+    .mode-action-card:hover .mode-action-card__art,
+    .mode-action-card:focus-within .mode-action-card__art {
+        transform: scale(1.035);
+        opacity: .62;
+    }
+    .local-play-card {
+        isolation: isolate;
+        min-width: 0;
+        border: 1px solid color-mix(in srgb, var(--color-accent), transparent 55%);
+        border-radius: var(--radius-container);
+        background: linear-gradient(
+            135deg,
+            color-mix(in srgb, var(--color-accent), var(--color-background-card) 22%),
+            color-mix(in srgb, var(--color-accent), var(--color-background-card) 58%)
+        );
+        color: var(--color-on-dark);
+        transition: transform 175ms ease-out;
+    }
+
+    .local-play-card__art,
+    .dashboard-online-play__art {
+        position: absolute;
+        z-index: 0;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: right center;
+        opacity: .42;
+        pointer-events: none;
+    }
+
+    .local-play-card::after,
+    .dashboard-online-play::after {
+        position: absolute;
+        z-index: 0;
+        inset: 0;
+        content: '';
+        background: linear-gradient(90deg, color-mix(in srgb, var(--color-background-card), transparent 2%) 0%, color-mix(in srgb, var(--color-background-card), transparent 24%) 54%, color-mix(in srgb, var(--color-background-card), transparent 76%) 100%);
+        pointer-events: none;
+    }
+
+    .local-play-card > :not(.local-play-card__shapes, .local-play-card__art),
+    .dashboard-online-play > :not(.dashboard-online-play__art) {
+        position: relative;
+        z-index: 1;
+    }
+
+    .local-play-card:hover {
+        transform: translateY(-2px);
+    }
+
+    .local-play-card__shapes {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        overflow: hidden;
+        pointer-events: none;
+    }
+
+    .local-play-card > :not(.local-play-card__shapes) {
+        z-index: 1;
+    }
+
+    .local-play-card__shapes::before,
+    .local-play-card__shapes::after {
+        position: absolute;
+        pointer-events: none;
+        content: '';
+        border: 1px solid color-mix(in srgb, var(--color-on-dark), transparent 70%);
+        transform: rotate(35deg);
+        transition: transform 175ms ease-out, opacity 175ms ease-out;
+    }
+    .local-play-card__shapes::before {
+        width: 13rem;
+        height: 13rem;
+        top: -7rem;
+        right: -4rem;
+        opacity: .65;
+    }
+
+    .local-play-card__shapes::after {
+        width: 9rem;
+        height: 9rem;
+        right: 18%;
+        bottom: -6rem;
+        opacity: .35;
+    }
+
+    .local-play-card:hover .local-play-card__shapes::before {
+        transform: rotate(35deg) translateY(-.5rem);
+    }
+
+    .local-play-card button {
+        background: var(--color-data-categorical-pink);
+        color: var(--color-on-dark);
+    }
+
+    .local-play-card button:hover {
+        background: color-mix(in srgb, var(--color-data-categorical-pink), var(--color-on-dark) 12%);
+    }
+
+    @media (min-width: 768px) {
+        .dashboard {
+            grid-template-columns: minmax(0, 1.15fr) minmax(18rem, .85fr);
+        }
+
+        .dashboard-intro,
+        .dashboard > section[aria-label] {
+            grid-column: 1 / -1;
+        }
+
+        .local-play-card {
+            grid-column: 1;
+        }
+
+        .dashboard > section[aria-labelledby='online-play-title'] {
+            grid-column: 2;
+        }
+
+    }
+
+    @media (max-width: 767px) {
+        .mode-action-card__art { object-position: 76% center; }
+        .mode-action-card__link::after {
+            background: linear-gradient(90deg, color-mix(in srgb, var(--color-background-card), transparent 2%) 0%, color-mix(in srgb, var(--color-background-card), transparent 16%) 62%, color-mix(in srgb, var(--color-background-card), transparent 58%) 100%);
+        }
+
+        .local-play-card__art,
+        .dashboard-online-play__art { object-position: 76% center; }
+        .local-play-card::after,
+        .dashboard-online-play::after {
+            background: linear-gradient(90deg, color-mix(in srgb, var(--color-background-card), transparent 2%) 0%, color-mix(in srgb, var(--color-background-card), transparent 16%) 62%, color-mix(in srgb, var(--color-background-card), transparent 58%) 100%);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .identity-reveal-card__inner { transition: none; transform: none; }
+        .identity-reveal-card.is-revealed .identity-reveal-card__back { display: none; }
+        .identity-reveal-card.is-revealed .identity-reveal-card__front { transform: none; }
+        .astryx-button { transition: none; }
+        .astryx-text-input { transition: none; }
+
+        .local-play-card,
+        .local-play-card__shapes,
+        .mode-action-card__art {
+            transition: none;
+            animation: none;
+        }
+    }
 }

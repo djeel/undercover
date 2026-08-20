@@ -2,7 +2,7 @@ import { App } from '@capacitor/app'
 import { Browser } from '@capacitor/browser'
 import { Capacitor } from '@capacitor/core'
 import type { Provider, Session, User } from '@supabase/supabase-js'
-import { createContext, type PropsWithChildren, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, type PropsWithChildren, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 import { api, configureApiTokenProvider } from '../../lib/api-client'
 import { realtimeForGame, useGameStore } from '../game/game-store'
@@ -34,6 +34,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const [session, setSession] = useState<Session | null>(null)
   const [isLoading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const suppressNextAuthLoss = useRef(false)
+  const acceptedUserId = useRef<string | null>(null)
 
   useEffect(() => {
     if (!supabase) {
@@ -41,33 +43,65 @@ export function AuthProvider({ children }: PropsWithChildren) {
       return
     }
     const client = supabase
+    const realtime = realtimeForGame(client.realtime, api)
+
+    const clearOnlineSession = async () => {
+      await useGameStore.getState().stopRealtime()
+      useGameStore.getState().clear()
+    }
+    const acceptSession = async (nextSession: Session) => {
+      const nextUser = nextSession.user
+      const isAccountSwitch = acceptedUserId.current !== null
+        && acceptedUserId.current !== nextUser.id
+
+      if (isAccountSwitch) await clearOnlineSession()
+      if (!active) return
+      acceptedUserId.current = nextUser.id
+      setSession(nextSession)
+      useGameStore.getState().startRealtime(realtime)
+    }
+    const establishAnonymousSession = async () => {
+      const { data: anonymous, error: anonymousError } = await client.auth.signInAnonymously()
+      if (!active) return
+      acceptedUserId.current = anonymous.session?.user.id ?? null
+      setSession(anonymous.session)
+      setError(anonymousError?.message ?? null)
+    }
 
     configureApiTokenProvider(readToken)
+    useGameStore.getState().startRealtime(realtime)
     let active = true
     const initialize = async () => {
       const { data, error: sessionError } = await client.auth.getSession()
       if (sessionError) {
         if (active) setError(sessionError.message)
       } else if (data.session) {
-        if (active) setSession(data.session)
+        await acceptSession(data.session)
       } else {
-        const { data: anonymous, error: anonymousError } = await client.auth.signInAnonymously()
-        if (active) {
-          setSession(anonymous.session)
-          setError(anonymousError?.message ?? null)
-        }
+        await establishAnonymousSession()
       }
       if (active) setLoading(false)
     }
     void initialize()
     const { data: listener } = client.auth.onAuthStateChange((_event, nextSession) => {
       if (!active) return
-      setSession(nextSession)
-      if (nextSession) useGameStore.getState().startRealtime(realtimeForGame(client.realtime, api))
+      if (nextSession) {
+        void acceptSession(nextSession)
+        return
+      }
+      if (suppressNextAuthLoss.current) {
+        suppressNextAuthLoss.current = false
+        return
+      }
+      void (async () => {
+        await clearOnlineSession()
+        await establishAnonymousSession()
+      })()
     })
     return () => {
       active = false
       listener.subscription.unsubscribe()
+      void useGameStore.getState().stopRealtime()
     }
   }, [])
 
@@ -148,12 +182,16 @@ export function AuthProvider({ children }: PropsWithChildren) {
     if (!supabase) return
     await useGameStore.getState().stopRealtime()
     useGameStore.getState().clear()
+    acceptedUserId.current = null
+    suppressNextAuthLoss.current = true
     const { error: signOutError } = await supabase.auth.signOut()
     if (signOutError) {
+      suppressNextAuthLoss.current = false
       setError(signOutError.message)
       return
     }
     const { data, error: anonymousError } = await supabase.auth.signInAnonymously()
+    acceptedUserId.current = data.session?.user.id ?? null
     setSession(data.session)
     setError(anonymousError?.message ?? null)
   }, [])

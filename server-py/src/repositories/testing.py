@@ -24,10 +24,15 @@ class TestingGameRepository:
         self.profiles: dict[UUID, dict[str, object]] = {}
         self.friendships: dict[tuple[UUID, UUID], dict[str, object]] = {}
 
-    async def create_game(self, host_user_id: UUID, language: str) -> GameState:
+    async def create_game(self, host_user_id: UUID, language: str, display_name: str | None = None) -> GameState:
         room_code = self._room_code()
         profile = self._profile(host_user_id)
-        player = Player(id=str(uuid4()), display_name=str(profile["displayName"]), user_id=str(host_user_id))
+        player = Player(
+            id=str(uuid4()),
+            display_name=display_name or str(profile["displayName"]),
+            user_id=str(host_user_id),
+            avatar_url=None if display_name is not None else profile["avatarUrl"],
+        )
         game = GameState(id=str(uuid4()), room_code=room_code, host_player_id=player.id, phase=GamePhase.LOBBY, players=(player,), settings=Settings(), word_pair=WordPair("cat", "dog"), language=language)
         self.games[room_code] = game
         self.members[(room_code, host_user_id)] = player.id
@@ -44,9 +49,12 @@ class TestingGameRepository:
             return self.members[(room_code.upper(), user_id)]
         except KeyError as error:
             raise NotFoundError("Game not found") from error
-    async def mutate_game(self, room_code: str, user_id: UUID, operation, *, deactivate_player_id: str | None = None):
+    async def mutate_game(self, room_code: str, user_id: UUID, operation, *, deactivate_player_id: str | None = None, retain_active_players: bool = False):
         game = await self.get_for_member(room_code, user_id)
         updated = operation(game, self.members[(room_code.upper(), user_id)])
+        if retain_active_players:
+            active_player_ids = await self.active_player_ids(room_code)
+            updated = replace(updated, players=tuple(player for player in updated.players if player.id in active_player_ids))
         self.games[room_code.upper()] = updated
         if deactivate_player_id is not None:
             await self.deactivate_member(room_code, deactivate_player_id)
@@ -54,7 +62,7 @@ class TestingGameRepository:
             self._record_results(updated)
         return updated
 
-    async def join_game(self, room_code: str, user_id: UUID, display_name: str) -> GameState:
+    async def join_game(self, room_code: str, user_id: UUID, display_name: str, avatar_url: str | None = None) -> GameState:
         room_code = room_code.upper()
         if (room_code, user_id) in self.members:
             raise ValueError("Already a game member")
@@ -67,7 +75,7 @@ class TestingGameRepository:
             raise ValueError("Game is full")
         if any(player.alive and player.display_name.casefold() == display_name.casefold() for player in game.players):
             raise ValueError("Display name is already active")
-        player = Player(id=str(uuid4()), display_name=display_name, user_id=str(user_id))
+        player = Player(id=str(uuid4()), display_name=display_name, user_id=str(user_id), avatar_url=avatar_url)
         updated = replace(game, players=(*game.players, player), version=game.version + 1)
         self.games[room_code] = updated
         self.members[(room_code, user_id)] = player.id
@@ -87,6 +95,9 @@ class TestingGameRepository:
         updated = replace(game, players=tuple(player for player in game.players if player.id != player_id), version=game.version + 1)
         self.games[room_code.upper()] = updated
         return updated
+
+    async def active_player_ids(self, room_code: str) -> frozenset[str]:
+        return frozenset(player_id for (code, _), player_id in self.members.items() if code == room_code.upper())
 
     def user_for_player(self, room_code: str, player_id: str) -> UUID:
         return next(user for (code, user), member in self.members.items() if code == room_code.upper() and member == player_id)

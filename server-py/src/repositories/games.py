@@ -9,6 +9,7 @@ from enum import Enum
 from typing import Any, Callable
 from uuid import UUID, uuid4
 
+from ..data.seed_words import get_all_localized_pairs
 from ..game.types import (
     CompositionMode,
     GamePhase,
@@ -110,33 +111,47 @@ class PostgresGameRepository:
     def __init__(self, pool: Any) -> None:
         self.pool = pool
 
-    async def create_game(self, host_user_id: UUID, language: str) -> GameState:
+    async def create_game(self, host_user_id: UUID, language: str, display_name: str | None = None) -> GameState:
         for _ in range(8):
             room_code = "".join(secrets.choice(ALPHABET) for _ in range(6))
-            player = Player(id=str(uuid4()), display_name="Player", user_id=str(host_user_id))
-            game = GameState(
-                id=str(uuid4()), room_code=room_code, host_player_id=player.id,
-                phase=GamePhase.LOBBY, players=(player,), settings=Settings(),
-                word_pair=WordPair("cat", "dog"), language=language,
-            )
-            try:
-                async with self.pool.acquire() as connection, connection.transaction():
-                    await connection.execute(
-                        """INSERT INTO games (id, room_code, host_user_id, phase, composition_mode, language, state, version)
-                           VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, $8)""",
-                        UUID(game.id), room_code, host_user_id, game.phase.value,
-                        game.settings.composition_mode.value, language,
-                        json.dumps(serialize_game(game), default=_json_default), game.version,
+            async with self.pool.acquire() as connection:
+                avatar_url = None
+                if display_name is None:
+                    profile = await connection.fetchrow(
+                        "SELECT display_name, avatar_url FROM profiles WHERE id = $1",
+                        host_user_id,
                     )
-                    await connection.execute(
-                        """INSERT INTO game_members (game_id, user_id, player_id, display_name)
-                           VALUES ($1, $2, $3, $4)""",
-                        UUID(game.id), host_user_id, player.id, player.display_name,
-                    )
+                    display_name = "Player" if profile is None else str(profile["display_name"])
+                    avatar_url = None if profile is None else profile["avatar_url"]
+                selected_pair = secrets.choice(get_all_localized_pairs())
+                civilian, undercover = selected_pair.fr if language == "fr" else selected_pair.en
+                player = Player(
+                    id=str(uuid4()), display_name=display_name, user_id=str(host_user_id), avatar_url=avatar_url,
+                )
+                game = GameState(
+                    id=str(uuid4()), room_code=room_code, host_player_id=player.id,
+                    phase=GamePhase.LOBBY, players=(player,), settings=Settings(),
+                    word_pair=WordPair(civilian, undercover), language=language,
+                )
+                try:
+                    async with connection.transaction():
+                        await connection.execute(
+                            """INSERT INTO games (id, room_code, host_user_id, phase, composition_mode, language, state, version)
+                               VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, $8)""",
+                            UUID(game.id), room_code, host_user_id, game.phase.value,
+                            game.settings.composition_mode.value, language,
+                            json.dumps(serialize_game(game), default=_json_default), game.version,
+                        )
+                        await connection.execute(
+                            """INSERT INTO game_members (game_id, user_id, player_id, display_name, avatar_url)
+                               VALUES ($1, $2, $3, $4, $5)""",
+                            UUID(game.id), host_user_id, player.id, player.display_name, player.avatar_url,
+                        )
+                except Exception as error:
+                    if getattr(error, "sqlstate", None) != "23505":
+                        raise
+                    continue
                 return game
-            except Exception as error:
-                if getattr(error, "sqlstate", None) != "23505":
-                    raise
         raise RuntimeError("Unable to allocate a room code")
 
     async def get_for_member(self, room_code: str, user_id: UUID) -> GameState:
@@ -179,6 +194,7 @@ class PostgresGameRepository:
         operation: Callable[[GameState, str], GameState],
         *,
         deactivate_player_id: str | None = None,
+        retain_active_players: bool = False,
     ) -> GameState:
         async with self.pool.acquire() as connection, connection.transaction():
             row = await connection.fetchrow(
@@ -192,6 +208,13 @@ class PostgresGameRepository:
                 raise NotFoundError("Game not found")
             game = deserialize_game(row["state"], version=int(row["version"]))
             updated = operation(game, str(row["player_id"]))
+            if retain_active_players:
+                member_rows = await connection.fetch(
+                    "SELECT player_id::text FROM game_members WHERE game_id = $1 AND left_at IS NULL",
+                    row["id"],
+                )
+                active_player_ids = frozenset(str(member["player_id"]) for member in member_rows)
+                updated = replace(updated, players=tuple(player for player in updated.players if player.id in active_player_ids))
             if updated.version != game.version + 1:
                 updated = replace(updated, version=game.version + 1)
             await connection.execute(
@@ -214,7 +237,7 @@ class PostgresGameRepository:
                 await self._record_results(connection, row["id"], updated)
             return updated
 
-    async def join_game(self, room_code: str, user_id: UUID, display_name: str) -> GameState:
+    async def join_game(self, room_code: str, user_id: UUID, display_name: str, avatar_url: str | None = None) -> GameState:
         def add_player(game: GameState, _: str) -> GameState:
             if game.phase is not GamePhase.LOBBY:
                 raise ValueError("Game is not in the lobby")
@@ -222,7 +245,8 @@ class PostgresGameRepository:
                 raise ValueError("Game is full")
             if any(player.alive and player.display_name.casefold() == display_name.casefold() for player in game.players):
                 raise ValueError("Display name is already active")
-            return replace(game, players=(*game.players, Player(str(uuid4()), display_name, user_id=str(user_id))), version=game.version + 1)
+            player = Player(str(uuid4()), display_name, user_id=str(user_id), avatar_url=avatar_url)
+            return replace(game, players=(*game.players, player), version=game.version + 1)
 
         async with self.pool.acquire() as connection, connection.transaction():
             row = await connection.fetchrow(
@@ -232,7 +256,7 @@ class PostgresGameRepository:
             if not row:
                 raise NotFoundError("Game not found")
             exists = await connection.fetchval(
-                "SELECT 1 FROM game_members WHERE game_id = $1 AND user_id = $2 AND left_at IS NULL",
+                "SELECT 1 FROM game_members WHERE game_id = $1 AND user_id = $2",
                 row["id"], user_id,
             )
             if exists:
@@ -241,15 +265,24 @@ class PostgresGameRepository:
             updated = add_player(game, "")
             added = updated.players[-1]
             await connection.execute(
-                """INSERT INTO game_members (game_id, user_id, player_id, display_name)
-                   VALUES ($1, $2, $3, $4)""",
-                row["id"], user_id, added.id, added.display_name,
+                """INSERT INTO game_members (game_id, user_id, player_id, display_name, avatar_url)
+                   VALUES ($1, $2, $3, $4, $5)""",
+                row["id"], user_id, added.id, added.display_name, added.avatar_url,
             )
             await connection.execute(
                 "UPDATE games SET state = $1::jsonb, version = version + 1, updated_at = now() WHERE id = $2",
                 json.dumps(serialize_game(updated), default=_json_default), row["id"],
             )
             return updated
+    async def active_player_ids(self, room_code: str) -> frozenset[str]:
+        async with self.pool.acquire() as connection:
+            player_ids = await connection.fetch(
+                """SELECT m.player_id::text FROM game_members AS m JOIN games AS g ON g.id = m.game_id
+                   WHERE g.room_code = $1 AND m.left_at IS NULL""",
+                room_code.upper(),
+            )
+        return frozenset(str(row["player_id"]) for row in player_ids)
+
     async def _record_results(self, connection: Any, game_id: UUID, game: GameState) -> None:
         if game.winner is None:
             return
@@ -262,11 +295,13 @@ class PostgresGameRepository:
                 or (game.winner == "undercovers" and player.role is PlayerRole.UNDERCOVER)
                 or game.winner == player.role.value
             )
-            await connection.execute(
+            inserted = await connection.execute(
                 """INSERT INTO game_results (game_id, user_id, role, winner, won, survived, rounds_played, duration_seconds)
                    VALUES ($1, $2, $3, $4, $5, $6, $7, 0) ON CONFLICT (game_id, user_id) DO NOTHING""",
                 game_id, user_id, player.role.value, game.winner, won, player.alive, game.round,
             )
+            if inserted != "INSERT 0 1":
+                continue
             await connection.execute(
                 """INSERT INTO player_stats (user_id, games_played, games_won, games_lost, current_win_streak, best_win_streak)
                    VALUES ($1, 1, $2, $3, $2::int, $2::int)

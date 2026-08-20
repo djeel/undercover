@@ -2,7 +2,7 @@
 
 ## Decision
 
-Undercover becomes an action-first, adaptive dashboard. Anonymous players can immediately start a local game; signed-in players additionally receive recent-game and friends surfaces backed only by real profile/stat/friend data. The visual direction remains dark-first violet/rose, but uses abstract tactical composition rather than role illustrations.
+Undercover becomes an action-first, adaptive dashboard. Anonymous players can immediately start a local game; signed-in players additionally receive recent-game and friends surfaces backed only by real profile/stat/friend data. The visual direction is dark noir/period artwork with `#43544d` as the semantic primary accent.
 
 ## Information architecture
 
@@ -17,7 +17,7 @@ Desktop uses the same four concepts in the header. Mobile has four safe-area tab
 
 ## Dashboard
 
-The home screen leads with one dominant **Partie locale** action card. It has an abstract layered violet composition, a concise promise, and one primary rose action that opens local setup. It is the only visually dominant element.
+The home screen leads with one dominant **Partie locale** action card using the supplied Local artwork, a concise promise, and one large primary action using the supplied ornamental button background. It is the only visually dominant element. Supporting Local, Multiplayer, Profile, Settings, and role surfaces reuse their supplied artwork with contrast overlays.
 
 Supporting actions are smaller and quieter:
 
@@ -33,7 +33,7 @@ The dashboard keeps a compact active-game resume banner only when an actual loca
 
 ## Form and action system
 
-Inputs use a filled high-contrast surface, stable visible label, clear supporting/error text, keyboard focus ring in violet, and 44px minimum touch target. Buttons use a single primary rose action, a quiet outlined/tonal secondary action, and a text-like tertiary action. Loading/disabled/focus states remain visibly distinct. The system uses existing Astryx primitives and semantic tokens; no parallel component library.
+Inputs use a filled high-contrast surface, stable visible label, clear supporting/error text, a semantic-accent keyboard focus ring, and 44px minimum touch target. Buttons use the semantic primary action, a quiet outlined/tonal secondary action, and a text-like tertiary action. Loading/disabled/focus states remain visibly distinct. The system uses existing Astryx primitives and semantic tokens; no parallel component library.
 
 ## Responsive behavior and motion
 
@@ -49,4 +49,4 @@ Add tests for dashboard state selectors/conditional sections, route grouping, an
 
 ## Non-goals
 
-No presence protocol, chat, matchmaking, fake activity, role illustration assets, or new backend endpoints in this redesign. The existing friends/stat APIs remain the data boundary.
+No presence protocol, chat, matchmaking, fake activity, or new backend endpoints are part of this redesign. The existing friends/stat APIs remain the data boundary.

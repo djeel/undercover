@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Replace the role glossary home page with an abstract, local-play-first adaptive dashboard and consolidate navigation into Accueil, Jouer, Social, and Compte.
+**Goal:** Replace the role glossary home page with a local-play-first adaptive dashboard and consolidate navigation into Accueil, Jouer, Social, and Compte.
 
-**Architecture:** Keep existing URLs and page implementations as deep links. Add focused route-entry pages for mode selection and account grouping, make `HomePage` a self-contained dashboard that loads only authenticated social/stat data, and express the visual system through existing Astryx primitives plus app-layer CSS. No API or Realtime protocol changes.
+**Architecture:** Keep existing URLs and page implementations as deep links. Add focused route-entry pages for mode selection and account grouping, make `HomePage` a self-contained dashboard that loads only authenticated social/stat data, and express the visual system through existing Astryx primitives plus app-layer CSS. The original abstract-only visual constraints are superseded by `2026-08-20-shared-controls-normalization-design.md` and `2026-08-20-role-identity-card-reveal-design.md`, plus the user-approved supplied noir assets and `#43544d` accent. No API or Realtime protocol changes.
 
 **Tech Stack:** React 19, React Router 7, TypeScript, Vitest, i18next, Astryx Design, Tailwind CSS 4, lucide-react.
 
@@ -13,7 +13,7 @@
 - Keep anonymous local play immediately usable; auth-only requests must never block it.
 - Use only real `/friends`, `/me`, and `/me/stats` data; do not imply presence or invent history.
 - Keep `/setup`, `/lobby`, `/friends`, `/profile`, and `/settings` as direct deep links.
-- Keep the dark-first violet/rose semantic-token visual language and use no role illustration assets.
+- Use the user-supplied noir action/role artwork and `#43544d` semantic primary accent; keep the dashboard-wide background artwork removed.
 - Inputs and buttons retain accessible labels, visible focus indication, and at least 44px touch targets.
 - Preserve `prefers-reduced-motion`; only animate opacity and transform.
 - Use a failing behavioral Vitest test before production behavior changes.

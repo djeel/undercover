@@ -8,3 +8,5 @@ export { default as SettingsPage } from './SettingsPage';
 export { default as OnboardingPage } from './OnboardingPage';
 export { default as FriendsPage } from './FriendsPage';
 export { default as ProfilePage } from './ProfilePage';
+export { default as PlayPage } from './PlayPage';
+export { default as AccountPage } from './AccountPage';

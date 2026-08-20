@@ -2,8 +2,6 @@
 
 Language-agnostic: Keys can be used for localization.
 """
-from typing import Dict, List, Tuple
-from ..models.game import ThemeDocument, WordPairData
 
 # ============================================================================
 # Word Pairs by Theme

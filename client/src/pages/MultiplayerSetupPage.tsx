@@ -4,10 +4,11 @@ import { Card } from '@astryxdesign/core/Card'
 import { Text } from '@astryxdesign/core/Text'
 import { TextInput } from '@astryxdesign/core/TextInput'
 import { useEffect, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
 import { useAuth } from '../features/auth'
+import { createOnlineSession, joinOnlineSession } from '../features/game/create-online-session'
 import { useGameStore } from '../features/game/game-store'
 import { api } from '../lib/api-client'
 
@@ -38,7 +39,7 @@ export default function MultiplayerSetupPage() {
     void api.getProfile().then((profile) => setName((current) => current || profile.displayName)).catch(() => undefined)
   }, [isAnonymous])
 
-  const join = async (roomCode: string, hostPlayerId?: string) => {
+  const join = async (roomCode: string) => {
     const displayName = name.trim()
     if (isAnonymous && !displayName) {
       setError(t('setup.playerName'))
@@ -46,10 +47,12 @@ export default function MultiplayerSetupPage() {
     }
     setWorking(true); setError(null)
     try {
-      const joined = await api.joinGame(roomCode, isAnonymous ? { displayName } : {})
-      const own = hostPlayerId ? joined.players.find((player) => player.id === hostPlayerId) : joined.players.find((player) => player.displayName === (displayName || name))
-      if (!own) throw new Error(t('multiplayer.errorJoin'))
-      setSession(joined, own.id)
+      if (isAnonymous) {
+        const joined = await api.joinGame(roomCode, { displayName })
+        setSession(joined.game, joined.playerId)
+      } else {
+        await joinOnlineSession({ api, roomCode, setSession })
+      }
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : t('multiplayer.errorJoin'))
     } finally {
@@ -58,13 +61,23 @@ export default function MultiplayerSetupPage() {
   }
 
   const create = async () => {
+    const displayName = name.trim()
+    if (isAnonymous && !displayName) {
+      setError(t('setup.playerName'))
+      return
+    }
+
     setWorking(true); setError(null)
     try {
-      const room = await api.createGame({ language: i18n.language.startsWith('fr') ? 'fr' : 'en' })
-      setWorking(false)
-      await join(room.roomCode, room.hostPlayerId)
+      await createOnlineSession({
+        api,
+        language: i18n.language.startsWith('fr') ? 'fr' : 'en',
+        ...(isAnonymous ? { displayName } : {}),
+        setSession,
+      })
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : t('multiplayer.errorCreate'))
+    } finally {
       setWorking(false)
     }
   }
@@ -72,6 +85,7 @@ export default function MultiplayerSetupPage() {
   const updateSettings = (key: Exclude<keyof GameSettingsView, 'compositionMode'>, value: string) => setSettings((current) => ({ ...current, [key]: Math.max(0, Number(value) || 0) }))
 
   if (authLoading) return <p role="status">{t('multiplayer.waitingForSession')}</p>
+  if (game && game.phase !== 'lobby') return <Navigate to="/game" replace />
   if (game) {
     const host = game.hostPlayerId === playerId
     const currentSettings = game.settings ?? settings

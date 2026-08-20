@@ -1,158 +1,19 @@
 {
-    "app": {
-        "title": "UNDERCOVER"
-    },
-    "nav": {
-        "home": "Home",
-        "play": "Local",
-        "multiplayer": "Multiplayer",
-        "friends": "Friends",
-        "profile": "Profile",
-        "settings": "Settings",
-        "primary": "Primary navigation"
-    },
-    "home": {
-        "subtitle": "Welcome to Undercover, the ultimate social deduction game.\nYour goal? Unmask the impostors before they eliminate you.\n\nThe Roles:\n- Civilians: You all share the same secret word. Find out who has a different one!\n- Undercovers: You have a slightly different word. Bluff your way to survival.\n- Mr. White: You have NO word. Listen, deduce, and guess the Civilian word to steal the win.\n\nEach round, give a clue, debate, and vote to eliminate a suspect.\nTrust no one. Your friends might not be who you think they are...",
-        "newGame": "Play",
-        "playOnline": "Multiplayer",
-        "howToPlay": "Rules (Concept)",
-        "selectMode": "Select a mode from the bottom menu to start playing."
-    },
-    "tutorial": {
-        "welcome": "Welcome!",
-        "conceptTitle": "The Concept",
-        "conceptDesc": "Find the intruder among you. Everyone has the same secret word, except the Undercovers and Mr. White.",
-        "rolesTitle": "The Roles",
-        "rolesDesc": "Civilian: Has the secret word.\nUndercover: Has a similar word.\nMr. White: Has NO word.",
-        "gameTitle": "The Game",
-        "gameDesc": "Describe your word, debate, and vote to eliminate suspects. Trust no one!",
-        "next": "Next",
-        "finish": "Got it!",
-        "skip": "Skip"
-    },
-    "settings": {
-        "language": "Language",
-        "languageDesc": "Choose your preferred language",
-        "theme": "Theme",
-        "themeDesc": "Customize interface appearance",
-        "light": "Light",
-        "dark": "Dark",
-        "system": "System"
-    },
-    "identity": {
-        "title": "Your identity",
-        "open": "Voir mon mot",
-        "role": "Role",
-        "word": "Word",
-        "noWord": "No word",
-        "protect": "Protect {{name}}"
-    },
-    "setup": {
-        "title": "Plotting the Crime",
-        "players": "Participants",
-        "addPlayer": "Add a Victim",
-        "playerName": "Codename",
-        "minPlayers": "Need at least {{count}} liars to start",
-        "settings": "Conspiracy Settings",
-        "undercoverCount": "Impostors count",
-        "mrWhiteCount": "Mr. White count",
-        "startGame": "Let the Betrayal Begin!",
-        "removePlayer": "Kick this person",
-        "duplicateName": "Original... but taken!"
-    },
-    "players": {
-        "title": "The Suspects",
-        "ready": "{{count}} liars ready"
-    },
-    "reveal": {
-        "passPhone": "Hand device to",
-        "iam": "I am",
-        "yourWord": "Your Secret Word",
-        "youAreMrWhite": "You are Mr. White!",
-        "mrWhiteHint": "You have zero clue. Lie through your teeth!",
-        "memorize": "Memorize this and don't get caught",
-        "nextPlayer": "Next Victim!",
-        "startDiscussion": "Let the Lies Begin",
-        "getReady": "Shhh!",
-        "yourRole": "Your Identity",
-        "identify": "Tap to see your fate",
-        "jesterHint": "Get voted out to win the game.",
-        "bodyguardHint": "Make sure your target survives (and Civilians win)."
-    },
-    "game": {
-        "title": "Heated Debate",
-        "round": "Round {{round}}",
-        "playersRemaining": "{{count}} survivors",
-        "eliminated": "Eliminated",
-        "alive": "Alive",
-        "voteFor": "Vote",
-        "votesRecorded": "votes recorded",
-        "tie": "Tie: no one is eliminated. Start a new vote when ready.",
-        "bodyguardProtected": "The Bodyguard protected their target.",
-        "awaitingMrWhiteGuess": "Waiting for Mr. White.",
-        "openVoting": "Open voting",
-        "voter": "Voter",
-        "selectPlayer": "Select player",
-        "mrWhiteFound": "Mr. White Busted!",
-        "mrWhiteGuessPrompt": "Last chance: guess the Civilian word to steal the win.",
-        "enterWordPlaceholder": "Take a wild guess...",
-        "submitGuess": "Final answer",
-        "voteTitle": "Cast your vote",
-        "resolveVote": "Resolve vote"
-    },
-    "results": {
-        "title": "Final Verdict",
-        "civiliansWin": "Civilians Survived!",
-        "undercoversWin": "Undercovers Fooled You!",
-        "mrWhiteWins": "Mr. White Stole It!",
-        "civilianWord": "The real word was",
-        "undercoverWord": "The impostor word",
-        "jesterWins": "The Jester Played You All!",
-        "playAgain": "Another Round?",
-        "backHome": "Back to home",
-        "roles": "Masks Off"
-    },
-    "multiplayer": {
-        "title": "Multiplayer Lobby",
-        "lobby": "Waiting Room",
-        "roomCode": "Room code",
-        "create": "Create room",
-        "join": "Join room",
-        "start": "Start game",
-        "errorCreate": "Can't create room.",
-        "errorJoin": "Can't join room.",
-        "errorStart": "Can't start game."
-    },
-    "common": {
-        "back": "Back",
-        "remove": "Remove",
-        "loading": "Loading…",
-        "error": "Something went wrong"
-    },
-    "roles": {
-        "civilian": "Civilian (Innocent)",
-        "undercover": "Undercover (Liar)",
-        "mrWhite": "Mr. White (Impostor)",
-        "unknown": "???",
-        "jester": "Jester (The Fool)",
-        "bodyguard": "Bodyguard (Protector)",
-        "protect": "Protect"
-    },
-    "roleDescriptions": {
-        "civilian": "You are part of the majority. Find the intruders!",
-        "undercover": "Blends in with the civilians. Don't get caught!",
-        "mrWhite": "Has no word. Must guess the civilian word to win.",
-        "jester": "Wants to be voted out. Act suspicious!",
-        "bodyguard": "Protects a secret target. Wins if they survive."
-    }
-    ,"settings": {
-        "language": "Language",
-        "theme": "Theme",
-        "light": "Light",
-        "dark": "Dark",
-        "system": "System",
-        "help": "Help",
-        "helpDesc": "Review the rules before the next game.",
-        "restartTutorial": "Restart tutorial"
-    }
+  "app": { "title": "UNDERCOVER" },
+  "nav": { "home": "Home", "play": "Local", "multiplayer": "Multiplayer", "friends": "Friends", "profile": "Profile", "settings": "Settings", "primary": "Primary navigation" },
+  "home": { "subtitle": "Welcome to Undercover, the social deduction game. Find the impostors before they eliminate you.", "newGame": "Play", "playOnline": "Multiplayer", "howToPlay": "Rules", "selectMode": "Select a mode from the menu to start." },
+  "settings": { "language": "Language", "theme": "Theme", "light": "Light", "dark": "Dark", "system": "System", "help": "Help", "helpDesc": "Review the rules before the next game.", "restartTutorial": "Restart tutorial" },
+  "identity": { "title": "Your identity", "open": "View my word", "role": "Role", "word": "Word", "noWord": "No word", "protect": "Protect {{name}}" },
+  "setup": { "title": "Game setup", "players": "Participants", "addPlayer": "Add player", "playerName": "Display name", "minPlayers": "Need at least {{count}} players to start", "settings": "Game settings", "undercoverCount": "Undercover count", "mrWhiteCount": "Mr. White count", "jesterCount": "Jester count", "bodyguardCount": "Bodyguard count", "startGame": "Start game", "removePlayer": "Remove player", "duplicateName": "That name is already taken" },
+  "players": { "title": "Players", "ready": "{{count}} players ready" },
+  "reveal": { "passPhone": "Pass the device to", "iam": "I am", "yourWord": "Your secret word", "youAreMrWhite": "You are Mr. White", "mrWhiteHint": "You have no word.", "memorize": "Remember your word", "nextPlayer": "Next player", "startDiscussion": "Start discussion", "getReady": "Get ready", "yourRole": "Your role", "identify": "Tap to reveal", "jesterHint": "Get voted out to win.", "bodyguardHint": "Protect your secret target." },
+  "game": { "title": "Discussion", "round": "Round {{round}}", "playersRemaining": "{{count}} survivors", "eliminated": "Eliminated", "alive": "Alive", "voteFor": "Vote", "votesRecorded": "votes recorded", "tie": "Tie: nobody is eliminated. Start another vote.", "bodyguardProtected": "The Bodyguard protected their target.", "awaitingMrWhiteGuess": "Waiting for Mr. White.", "openVoting": "Open voting", "voter": "Voter", "selectPlayer": "Select player", "mrWhiteFound": "Mr. White found", "mrWhiteGuessPrompt": "Last chance: guess the Civilian word.", "enterWordPlaceholder": "Enter a guess", "submitGuess": "Submit guess", "voteTitle": "Cast your vote", "resolveVote": "Resolve vote" },
+  "results": { "title": "Results", "civiliansWin": "Civilians win", "undercoversWin": "Undercovers win", "mrWhiteWins": "Mr. White wins", "civilianWord": "Civilian word", "undercoverWord": "Undercover word", "jesterWins": "Jester wins", "playAgain": "Play again", "backHome": "Back home", "roles": "Roles" },
+  "multiplayer": { "title": "Multiplayer", "lobby": "Lobby", "roomCode": "Room code", "create": "Create room", "join": "Join room", "start": "Start game", "errorCreate": "Unable to create room.", "errorJoin": "Unable to join room.", "errorStart": "Unable to start game.", "composition": "Role composition", "visibleManual": "Visible manual", "hiddenManual": "Hidden manual", "hiddenRandom": "Hidden random", "hiddenManualDisclosure": "Only the host sees the role counts before the game.", "hiddenRandomDisclosure": "Nobody sees the role composition before results.", "mysteryComposition": "Role composition is hidden.", "waitingForSession": "Preparing your session…" },
+  "friends": { "title": "Friends", "subtitle": "Find people by handle, then invite accepted friends from a lobby.", "searchLabel": "Find by handle", "searchPlaceholder": "Start typing a handle", "searchMinimum": "Enter at least two characters.", "add": "Add", "incoming": "Incoming requests", "outgoing": "Sent requests", "accepted": "Friends", "accept": "Accept", "decline": "Decline", "cancel": "Cancel request", "remove": "Remove", "invite": "Invite to lobby", "emptyIncoming": "No incoming requests.", "emptyOutgoing": "No sent requests.", "emptyAccepted": "No friends yet. Search by handle to add someone." },
+  "profile": { "title": "Profile", "identity": "Public identity", "displayName": "Display name", "handle": "Handle", "save": "Save changes", "played": "Games played", "won": "Wins", "lost": "Losses", "winRate": "Win rate", "currentStreak": "Current streak", "bestStreak": "Best streak", "byRole": "Performance by role", "role": "Role", "recent": "Latest games", "outcome": "Outcome", "victory": "Won", "defeat": "Lost", "emptyResults": "Your finished games will appear here.", "signOut": "Sign out" },
+  "auth": { "title": "Play with your people", "subtitle": "Use Google or Discord to keep your profile, friends and game history.", "unavailable": "Sign in unavailable", "configurationError": "Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY.", "continueGoogle": "Continue with Google", "continueDiscord": "Continue with Discord", "continueAnonymous": "Keep playing anonymously", "callbackTitle": "Finishing sign-in", "callbackLoading": "Connecting your account…", "callbackFailure": "Unable to complete sign-in.", "callbackCodeMissing": "The sign-in callback did not include a code." },
+  "common": { "back": "Back", "remove": "Remove", "loading": "Loading…", "error": "Something went wrong" },
+  "roles": { "civilian": "Civilian", "undercover": "Undercover", "mrWhite": "Mr. White", "unknown": "???", "jester": "Jester", "bodyguard": "Bodyguard", "protect": "Protect" },
+  "roleDescriptions": { "civilian": "Find the intruders.", "undercover": "Blend in with the civilians.", "mrWhite": "Has no word and must guess the Civilian word.", "jester": "Wants to be voted out.", "bodyguard": "Protects a secret target." }
 }

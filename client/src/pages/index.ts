@@ -6,3 +6,5 @@ export { default as ResultsPage } from './ResultsPage';
 export { default as MultiplayerSetupPage } from './MultiplayerSetupPage';
 export { default as SettingsPage } from './SettingsPage';
 export { default as OnboardingPage } from './OnboardingPage';
+export { default as FriendsPage } from './FriendsPage';
+export { default as ProfilePage } from './ProfilePage';

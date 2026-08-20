@@ -8,7 +8,7 @@ export default defineConfig({
     base: process.env.VERCEL ? '/' : '/undercover/',
     plugins: [react(), tailwindcss()],
     test: {
-        include: ['tests/**/*.test.ts'],
+        include: ['tests/**/*.test.ts', 'src/**/*.test.ts'],
         environment: 'jsdom',
     },
 })

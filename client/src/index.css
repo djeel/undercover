@@ -1,123 +1,31 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600&family=Outfit:wght@400;500;700&family=Syne:wght@700;800&display=swap');
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Syne:wght@700;800&display=swap');
+@import '@astryxdesign/core/reset.css';
+@import '@astryxdesign/core/astryx.css';
+@import '@astryxdesign/theme-neutral/theme.css';
+@import 'tailwindcss';
 
-@plugin "tailwindcss-animate";
+@layer reset, astryx, utilities, app;
 
-@custom-variant dark (&:where(.dark, .dark *));
-
-:root {
-    /* Light Mode Variables */
-    --background: 240 5% 96%;
-    --foreground: 240 10% 3.9%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-
-    --primary: 262 83% 58%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-
-    --accent: 346 87% 60%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 262 83% 58%;
-
-    --radius: 1rem;
-}
-
-.dark {
-    --background: 240 10% 3.9%;
-    --foreground: 240 5.9% 98%;
-
-    --card: 240 10% 3.9%;
-    --card-foreground: 240 5.9% 98%;
-
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 240 5.9% 98%;
-
-    --primary: 262 83% 58%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 240 6% 15%;
-    --secondary-foreground: 0 0% 98%;
-
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-
-    --accent: 346 87% 60%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 262 83% 58%;
-}
-
-@theme {
-    --color-background: hsl(var(--background));
-    --color-foreground: hsl(var(--foreground));
-
-    --color-card: hsl(var(--card));
-    --color-card-foreground: hsl(var(--card-foreground));
-
-    --color-popover: hsl(var(--popover));
-    --color-popover-foreground: hsl(var(--popover-foreground));
-
-    --color-primary: hsl(var(--primary));
-    --color-primary-foreground: hsl(var(--primary-foreground));
-
-    --color-secondary: hsl(var(--secondary));
-    --color-secondary-foreground: hsl(var(--secondary-foreground));
-
-    --color-muted: hsl(var(--muted));
-    --color-muted-foreground: hsl(var(--muted-foreground));
-
-    --color-accent: hsl(var(--accent));
-    --color-accent-foreground: hsl(var(--accent-foreground));
-
-    --color-destructive: hsl(var(--destructive));
-    --color-destructive-foreground: hsl(var(--destructive-foreground));
-
-    --color-border: hsl(var(--border));
-    --color-input: hsl(var(--input));
-    --color-ring: hsl(var(--ring));
-
-    --radius-lg: var(--radius);
-    --radius-md: calc(var(--radius) - 2px);
-    --radius-sm: calc(var(--radius) - 4px);
-}
-
-@layer base {
-    * {
-        @apply border-border;
+@layer app {
+    :root {
+        color-scheme: light dark;
+        font-family: Manrope, system-ui, sans-serif;
+        background: var(--color-background-body);
+        color: var(--color-text-primary);
     }
 
-    body {
-        @apply bg-background text-foreground transition-colors duration-300;
-        font-family: 'Manrope', sans-serif;
-    }
+    body { min-width: 320px; min-height: 100dvh; margin: 0; }
+    button, input, select { font: inherit; }
+    h1, h2, h3 { font-family: Syne, system-ui, sans-serif; text-wrap: balance; }
 
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6 {
-        font-family: 'Syne', sans-serif;
-    }
+    .app-frame { min-height: 100dvh; background: var(--color-background-body); }
+    .app-main { width: min(100% - 2rem, 72rem); margin-inline: auto; padding-block: 1.5rem calc(6rem + env(safe-area-inset-bottom)); }
+    .identity-dialog-content { display: grid; gap: .5rem; }
+    .identity-dialog-content > :nth-child(3) { margin-top: 1rem; }
+    .role-civilian { color: var(--color-data-categorical-blue); }
+    .role-undercover { color: var(--color-data-categorical-orange); }
+    .role-mr-white { color: var(--color-data-neutral); }
+    .role-jester { color: var(--color-data-categorical-pink); }
+    .role-bodyguard { color: var(--color-data-categorical-green); }
+    .role-teal { color: var(--color-data-categorical-teal); }
 }

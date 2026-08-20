@@ -1,122 +1,17 @@
-import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
-import { Button } from '../components/ui/Button';
-import { Moon, Sun, Monitor, Languages, Settings as SettingsIcon, BookOpen } from 'lucide-react';
-import { useTheme } from '../components/theme-provider';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { Button } from '@astryxdesign/core/Button';
+import { Card } from '@astryxdesign/core/Card';
+import { Text } from '@astryxdesign/core/Text';
+import { useThemePreference, type ThemePreference } from '../theme/AppTheme';
 
 const SettingsPage = () => {
     const { t, i18n } = useTranslation();
-    const { setTheme, theme } = useTheme();
     const navigate = useNavigate();
+    const [theme, setTheme] = useThemePreference();
+    const setLanguage = (language: 'en' | 'fr') => { i18n.changeLanguage(language); localStorage.setItem('language', language); };
 
-    const changeLanguage = (lang: string) => {
-        i18n.changeLanguage(lang);
-        localStorage.setItem('language', lang);
-    };
-
-    const handleResetTutorial = () => {
-        localStorage.removeItem('hasSeenTutorial');
-        navigate('/onboarding');
-    };
-
-    return (
-        <div className="flex flex-col gap-6 animate-in fade-in duration-500">
-            <header className="flex items-center gap-3 py-4">
-                <SettingsIcon className="w-8 h-8 text-primary" />
-                <h1 className="text-3xl font-black text-foreground tracking-tight">{t('nav.settings')}</h1>
-            </header>
-
-            <div className="grid gap-6">
-                {/* Language Settings */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Languages className="w-5 h-5 text-primary" />
-                            {t('settings.language')}
-                        </CardTitle>
-                        <CardDescription>{t('settings.languageDesc')}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="grid grid-cols-2 gap-4">
-                        <Button
-                            variant={i18n.language === 'en' ? 'default' : 'outline'}
-                            onClick={() => changeLanguage('en')}
-                            className="h-20 flex flex-col gap-2"
-                        >
-                            <span className="text-2xl">🇬🇧</span>
-                            English
-                        </Button>
-                        <Button
-                            variant={i18n.language === 'fr' ? 'default' : 'outline'}
-                            onClick={() => changeLanguage('fr')}
-                            className="h-20 flex flex-col gap-2"
-                        >
-                            <span className="text-2xl">🇫🇷</span>
-                            Français
-                        </Button>
-                    </CardContent>
-                </Card>
-
-                {/* Theme Settings */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Monitor className="w-5 h-5 text-primary" />
-                            {t('settings.theme')}
-                        </CardTitle>
-                        <CardDescription>{t('settings.themeDesc')}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="grid grid-cols-3 gap-3">
-                        <Button
-                            variant={theme === 'light' ? 'default' : 'outline'}
-                            onClick={() => setTheme('light')}
-                            className="h-20 flex flex-col gap-2"
-                        >
-                            <Sun className="w-6 h-6" />
-                            {t('settings.light')}
-                        </Button>
-                        <Button
-                            variant={theme === 'dark' ? 'default' : 'outline'}
-                            onClick={() => setTheme('dark')}
-                            className="h-20 flex flex-col gap-2"
-                        >
-                            <Moon className="w-6 h-6" />
-                            {t('settings.dark')}
-                        </Button>
-                        <Button
-                            variant={theme === 'system' ? 'default' : 'outline'}
-                            onClick={() => setTheme('system')}
-                            className="h-20 flex flex-col gap-2"
-                        >
-                            <Monitor className="w-6 h-6" />
-                            {t('settings.system')}
-                        </Button>
-                    </CardContent>
-                </Card>
-
-                {/* Help / Tutorial */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <BookOpen className="w-5 h-5 text-primary" />
-                            {t('tutorial.welcome')}
-                        </CardTitle>
-                        <CardDescription>{t('home.howToPlay')}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <Button
-                            variant="outline"
-                            className="w-full h-20 flex flex-col gap-2 font-bold text-lg"
-                            onClick={handleResetTutorial}
-                        >
-                            <BookOpen className="w-8 h-8" />
-                            {t('home.howToPlay')}
-                        </Button>
-                    </CardContent>
-                </Card>
-            </div>
-        </div>
-    );
+    return <section className="space-y-7"><header><h1 className="text-3xl font-bold">{t('nav.settings')}</h1></header><Card><div className="space-y-4 p-5"><h2 className="text-lg font-bold">{t('settings.language')}</h2><div className="grid grid-cols-2 gap-3"><Button variant={i18n.language.startsWith('en') ? 'primary' : 'secondary'} label="English" onClick={() => setLanguage('en')} width="100%" /><Button variant={i18n.language.startsWith('fr') ? 'primary' : 'secondary'} label="Français" onClick={() => setLanguage('fr')} width="100%" /></div></div></Card><Card><div className="space-y-4 p-5"><h2 className="text-lg font-bold">{t('settings.theme')}</h2><div className="grid grid-cols-3 gap-3">{(['dark', 'light', 'system'] as ThemePreference[]).map((preference) => <Button key={preference} variant={theme === preference ? 'primary' : 'secondary'} label={t(`settings.${preference}`)} onClick={() => setTheme(preference)} width="100%" />)}</div></div></Card><Card><div className="space-y-4 p-5"><h2 className="text-lg font-bold">{t('settings.help')}</h2><Text as="p" type="supporting">{t('settings.helpDesc')}</Text><Button variant="secondary" label={t('settings.restartTutorial')} onClick={() => { localStorage.removeItem('hasSeenTutorial'); navigate('/onboarding'); }} /></div></Card></section>;
 };
 
 export default SettingsPage;

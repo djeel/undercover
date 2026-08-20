@@ -10,7 +10,7 @@ const resources = {
 
 i18n.use(initReactI18next).init({
     resources,
-    lng: localStorage.getItem('language') || 'en',
+    lng: globalThis.localStorage?.getItem('language') || 'en',
     fallbackLng: 'en',
     interpolation: {
         escapeValue: false,

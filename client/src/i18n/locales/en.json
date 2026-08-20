@@ -4,9 +4,12 @@
     },
     "nav": {
         "home": "Home",
-        "play": "Play",
+        "play": "Local",
         "multiplayer": "Multiplayer",
-        "settings": "Settings"
+        "friends": "Friends",
+        "profile": "Profile",
+        "settings": "Settings",
+        "primary": "Primary navigation"
     },
     "home": {
         "subtitle": "Welcome to Undercover, the ultimate social deduction game.\nYour goal? Unmask the impostors before they eliminate you.\n\nThe Roles:\n- Civilians: You all share the same secret word. Find out who has a different one!\n- Undercovers: You have a slightly different word. Bluff your way to survival.\n- Mr. White: You have NO word. Listen, deduce, and guess the Civilian word to steal the win.\n\nEach round, give a clue, debate, and vote to eliminate a suspect.\nTrust no one. Your friends might not be who you think they are...",
@@ -35,6 +38,14 @@
         "light": "Light",
         "dark": "Dark",
         "system": "System"
+    },
+    "identity": {
+        "title": "Your identity",
+        "open": "Voir mon mot",
+        "role": "Role",
+        "word": "Word",
+        "noWord": "No word",
+        "protect": "Protect {{name}}"
     },
     "setup": {
         "title": "Plotting the Crime",
@@ -72,22 +83,22 @@
         "title": "Heated Debate",
         "round": "Round {{round}}",
         "playersRemaining": "{{count}} survivors",
-        "eliminated": "Liquidated",
-        "vote": "Vote (Betray)",
-        "votingPhase": "Judgment Time",
-        "selectToEliminate": "Who deserves to go?",
-        "confirmElimination": "Are you sure you want to kick them?",
-        "eliminatePlayer": "Bye bye {{name}}?",
-        "cancel": "Mercy!",
-        "confirm": "Get Out!",
+        "eliminated": "Eliminated",
+        "alive": "Alive",
+        "voteFor": "Vote",
+        "votesRecorded": "votes recorded",
+        "tie": "Tie: no one is eliminated. Start a new vote when ready.",
+        "bodyguardProtected": "The Bodyguard protected their target.",
+        "awaitingMrWhiteGuess": "Waiting for Mr. White.",
+        "openVoting": "Open voting",
+        "voter": "Voter",
+        "selectPlayer": "Select player",
         "mrWhiteFound": "Mr. White Busted!",
-        "mrWhiteGuessPrompt": "You're toast! Last chance: guess the Civilian word to steal the win.",
+        "mrWhiteGuessPrompt": "Last chance: guess the Civilian word to steal the win.",
         "enterWordPlaceholder": "Take a wild guess...",
-        "submitGuess": "Final Answer",
-        "voteTitle": "Cast Your Vote",
-        "alreadyVoted": "Vote Cast",
-        "voteConfirm": "Vote against {{name}}?",
-        "voteAction": "VOTE"
+        "submitGuess": "Final answer",
+        "voteTitle": "Cast your vote",
+        "resolveVote": "Resolve vote"
     },
     "results": {
         "title": "Final Verdict",
@@ -98,37 +109,25 @@
         "undercoverWord": "The impostor word",
         "jesterWins": "The Jester Played You All!",
         "playAgain": "Another Round?",
-        "backToHome": "Flee to Home",
+        "backHome": "Back to home",
         "roles": "Masks Off"
     },
     "multiplayer": {
         "title": "Multiplayer Lobby",
-        "identity": "Identity",
-        "leaveRoom": "Desert",
         "lobby": "Waiting Room",
-        "roomCode": "Secret Code",
-        "shareCode": "Give this to your accomplices",
-        "players": "Accomplices",
-        "host": "BOSS",
-        "you": "(You)",
-        "waitingForHost": "Boss is taking their time...",
-        "joinOrCreate": "Join or Create",
-        "enterName": "Your alias",
-        "nickname": "Handle",
-        "yourName": "What do we call you?",
-        "createRoom": "Create Room",
-        "joinRoom": "Infiltrate Room",
-        "joinGame": "Crash In",
-        "cancel": "Nevermind",
-        "enterCode": "Room Code",
-        "errorCreate": "Can't create room. Server grumpy?",
-        "errorJoin": "Can't get in. Wrong code?"
+        "roomCode": "Room code",
+        "create": "Create room",
+        "join": "Join room",
+        "start": "Start game",
+        "errorCreate": "Can't create room.",
+        "errorJoin": "Can't join room.",
+        "errorStart": "Can't start game."
     },
     "common": {
         "back": "Back",
-        "continue": "Next",
-        "loading": "Loading the plot...",
-        "error": "Oops, everything exploded"
+        "remove": "Remove",
+        "loading": "Loading…",
+        "error": "Something went wrong"
     },
     "roles": {
         "civilian": "Civilian (Innocent)",
@@ -145,5 +144,15 @@
         "mrWhite": "Has no word. Must guess the civilian word to win.",
         "jester": "Wants to be voted out. Act suspicious!",
         "bodyguard": "Protects a secret target. Wins if they survive."
+    }
+    ,"settings": {
+        "language": "Language",
+        "theme": "Theme",
+        "light": "Light",
+        "dark": "Dark",
+        "system": "System",
+        "help": "Help",
+        "helpDesc": "Review the rules before the next game.",
+        "restartTutorial": "Restart tutorial"
     }
 }

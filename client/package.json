@@ -33,6 +33,7 @@
         "react-dom": "^19.2.8",
         "react-i18next": "^16.5.0",
         "react-router-dom": "^7.10.1",
+        "tailwind-merge": "^3.6.0",
         "tailwindcss": "^4.1.18",
         "tailwindcss-animate": "^1.0.7",
         "zustand": "^5.0.9"

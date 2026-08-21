@@ -25,6 +25,24 @@
         background: var(--color-background-body);
     }
     .app-main { width: min(100% - 2rem, 72rem); margin-inline: auto; padding-block: 1.5rem calc(6rem + env(safe-area-inset-bottom)); }
+    .reveal-page {
+        display: grid;
+        justify-items: center;
+        gap: 1.5rem;
+        width: min(100%, 32rem);
+        margin-inline: auto;
+        text-align: center;
+    }
+
+    .reveal-page__header {
+        display: grid;
+        gap: .35rem;
+    }
+
+    .reveal-page__header p,
+    .reveal-page__header h1 { margin: 0; }
+    .reveal-page__header h1 { font-size: clamp(2rem, 8vw, 3rem); line-height: 1; }
+    .reveal-page__action { width: min(100%, 22rem); min-height: 2.75rem; }
     .identity-reveal-card {
         --identity-card-rotate-x: 0deg;
         --identity-card-rotate-y: 0deg;
@@ -462,6 +480,7 @@
     }
 
     @media (max-width: 767px) {
+        .reveal-page { gap: 1rem; }
         .mode-action-card__art { object-position: 76% center; }
         .mode-action-card__link::after {
             background: linear-gradient(90deg, color-mix(in srgb, var(--color-background-card), transparent 2%) 0%, color-mix(in srgb, var(--color-background-card), transparent 16%) 62%, color-mix(in srgb, var(--color-background-card), transparent 58%) 100%);
@@ -481,7 +500,7 @@
         .identity-reveal-card__inner,
         .identity-reveal-card__front::after,
         .identity-reveal-card__hold-progress::after { transition: none; }
-        .identity-reveal-card.is-revealed .identity-reveal-card__inner { transform: none; }
+        .identity-reveal-card.is-revealed .identity-reveal-card__inner { transition: none; transform: none; }
         .identity-reveal-card.is-revealed .identity-reveal-card__back { display: none; }
         .identity-reveal-card.is-revealed .identity-reveal-card__front { transform: none; }
         .astryx-button { transition: none; }

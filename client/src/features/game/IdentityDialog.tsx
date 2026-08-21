@@ -1,40 +1,14 @@
 import { Dialog, DialogHeader } from '@astryxdesign/core/Dialog';
 import { Layout, LayoutContent } from '@astryxdesign/core/Layout';
 import { useTranslation } from 'react-i18next';
-import type { PlayerRole } from '@undercover/shared';
-import civilianArt from '../../assets/roles/civilians.png';
-import undercoverArt from '../../assets/roles/undercover.png';
-import mrWhiteArt from '../../assets/roles/mrwhite.png';
-import jesterArt from '../../assets/roles/jester.png';
-import bodyguardArt from '../../assets/roles/bodyguard.png';
-import cardBackArt from '../../assets/roles/card.png';
-import { RoleRevealCard } from './RoleRevealCard';
+import { IdentityRevealCard, type PrivateIdentity } from './IdentityRevealCard';
 
 export interface IdentityDialogProps {
     open: boolean;
     onClose: () => void;
-    identity: {
-        role: PlayerRole;
-        word: string | null;
-        bodyguardTargetName?: string;
-    };
+    identity: PrivateIdentity;
 }
 
-const roleKey: Record<PlayerRole, string> = {
-    civilian: 'roles.civilian',
-    undercover: 'roles.undercover',
-    mr_white: 'roles.mrWhite',
-    jester: 'roles.jester',
-    bodyguard: 'roles.bodyguard',
-};
-
-const roleArt: Record<PlayerRole, string> = {
-    civilian: civilianArt,
-    undercover: undercoverArt,
-    mr_white: mrWhiteArt,
-    jester: jesterArt,
-    bodyguard: bodyguardArt,
-};
 
 export function IdentityDialog({ open, onClose, identity }: IdentityDialogProps) {
     const { t } = useTranslation();
@@ -45,20 +19,7 @@ export function IdentityDialog({ open, onClose, identity }: IdentityDialogProps)
                 header={<DialogHeader title={t('identity.title', 'Your identity')} onOpenChange={(isOpen) => { if (!isOpen) onClose(); }} />}
                 content={(
                     <LayoutContent>
-                        <RoleRevealCard
-                            open={open}
-                            identity={identity}
-                            roleLabel={t(roleKey[identity.role])}
-                            roleArt={roleArt[identity.role]}
-                            backArt={cardBackArt}
-                            roleLabelCaption={t('identity.role', 'Role')}
-                            wordLabelCaption={t('identity.word', 'Word')}
-                            noWordLabel={t('identity.noWord', 'No word')}
-                            revealLabel={t('identity.revealCard')}
-                            holdLabel={t('identity.holdCard')}
-                            instructionLabel={t('identity.memorize')}
-                            protectLabel={(name) => t('identity.protect', 'Protect {{name}}', { name })}
-                        />
+                        <IdentityRevealCard active={open} identity={identity} />
                     </LayoutContent>
                 )}
             />

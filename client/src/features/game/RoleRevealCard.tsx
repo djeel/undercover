@@ -2,51 +2,103 @@ import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } fr
 import { Text } from '@astryxdesign/core/Text'
 import type { PlayerRole } from '@undercover/shared'
 
+const HOLD_DURATION_MS = 700
+
 export interface RoleRevealCardProps {
   open: boolean
   identity: { role: PlayerRole; word: string | null; bodyguardTargetName?: string }
   roleLabel: string
   roleArt: string
-  backArt: string
+  cardBackArt: string
   roleLabelCaption: string
   wordLabelCaption: string
   noWordLabel: string
   revealLabel: string
   holdLabel: string
-  instructionLabel: string
+  memorizeLabel: string
   protectLabel: (name: string) => string
+  onReveal?: () => void
 }
 
-const HOLD_DURATION_MS = 700
-
-export function RoleRevealCard({ open, identity, roleLabel, roleArt, backArt, roleLabelCaption, wordLabelCaption, noWordLabel, revealLabel, holdLabel, instructionLabel, protectLabel }: RoleRevealCardProps) {
-  const [revealed, setRevealed] = useState(false)
-  const identityKey = `${identity.role}:${identity.word ?? ''}:${identity.bodyguardTargetName ?? ''}`
-  const lifecycleKey = `${open}:${identityKey}`
-  const [previousLifecycleKey, setPreviousLifecycleKey] = useState(lifecycleKey)
+export function RoleRevealCard({ open, identity, roleLabel, roleArt, cardBackArt, roleLabelCaption, wordLabelCaption, noWordLabel, revealLabel, holdLabel, memorizeLabel, protectLabel, onReveal }: RoleRevealCardProps) {
+  const lifecycleKey = JSON.stringify([open, identity.role, identity.word, identity.bodyguardTargetName])
+  const [revealedLifecycleKey, setRevealedLifecycleKey] = useState<string | null>(null)
   const cardRef = useRef<HTMLDivElement>(null)
-  const holdTimerRef = useRef<ReturnType<typeof globalThis.setTimeout> | null>(null)
+  const holdTimerRef = useRef<number | null>(null)
+  const suppressionTimerRef = useRef<number | null>(null)
+  const revealedLifecycleRef = useRef<string | null>(null)
   const activeTouchPointerRef = useRef<number | null>(null)
+  const suppressClickRef = useRef(false)
+  const isRevealed = open && revealedLifecycleKey === lifecycleKey
 
   const cancelHold = () => {
-    clearTimeout(holdTimerRef.current ?? undefined)
+    if (holdTimerRef.current !== null) window.clearTimeout(holdTimerRef.current)
     holdTimerRef.current = null
     activeTouchPointerRef.current = null
     cardRef.current?.style.setProperty('--identity-card-hold-progress', '0')
     cardRef.current?.classList.remove('is-holding')
   }
 
-  useEffect(() => cancelHold, [lifecycleKey])
-
-  if (previousLifecycleKey !== lifecycleKey) {
-    setPreviousLifecycleKey(lifecycleKey)
-    setRevealed(false)
+  const clearClickSuppression = () => {
+    if (suppressionTimerRef.current !== null) window.clearTimeout(suppressionTimerRef.current)
+    suppressionTimerRef.current = null
+    suppressClickRef.current = false
   }
 
-  const isRevealed = open && revealed && previousLifecycleKey === lifecycleKey
+  useEffect(() => {
+    cancelHold()
+    clearClickSuppression()
+    revealedLifecycleRef.current = null
+    setRevealedLifecycleKey(null)
+
+    return () => {
+      cancelHold()
+      clearClickSuppression()
+    }
+  }, [lifecycleKey])
+
   const reveal = () => {
     cancelHold()
-    setRevealed(true)
+    if (isRevealed || revealedLifecycleRef.current === lifecycleKey) return
+    revealedLifecycleRef.current = lifecycleKey
+    setRevealedLifecycleKey(lifecycleKey)
+    onReveal?.()
+  }
+
+  const startHold = (event: PointerEvent<HTMLButtonElement>) => {
+    if (event.pointerType !== 'touch' && event.pointerType !== 'pen') return
+    event.preventDefault()
+    cancelHold()
+    clearClickSuppression()
+    activeTouchPointerRef.current = event.pointerId
+    event.currentTarget.setPointerCapture?.(event.pointerId)
+    cardRef.current?.classList.add('is-holding')
+    cardRef.current?.style.setProperty('--identity-card-hold-progress', '1')
+    suppressClickRef.current = true
+    holdTimerRef.current = window.setTimeout(reveal, HOLD_DURATION_MS)
+  }
+
+  const finishHold = (event: PointerEvent<HTMLButtonElement>) => {
+    if (event.pointerType !== 'touch' && event.pointerType !== 'pen') return
+    if (activeTouchPointerRef.current !== null && event.pointerId !== activeTouchPointerRef.current) return
+    cancelHold()
+    if (!suppressClickRef.current) return
+    suppressionTimerRef.current = window.setTimeout(clearClickSuppression, 0)
+  }
+
+  const cancelTouchHold = (event: PointerEvent<HTMLButtonElement>) => {
+    if (event.pointerType !== 'touch' && event.pointerType !== 'pen') return
+    if (activeTouchPointerRef.current !== null && event.pointerId !== activeTouchPointerRef.current) return
+    cancelHold()
+    clearClickSuppression()
+  }
+
+  const handleClick = () => {
+    if (suppressClickRef.current) {
+      clearClickSuppression()
+      return
+    }
+    reveal()
   }
 
   const resetTilt = () => {
@@ -68,21 +120,6 @@ export function RoleRevealCard({ open, identity, roleLabel, roleArt, backArt, ro
     event.currentTarget.style.setProperty('--identity-card-highlight-y', `${(y + .5) * 100}%`)
   }
 
-  const startHold = (event: PointerEvent<HTMLButtonElement>) => {
-    if (event.pointerType !== 'touch') return
-    event.preventDefault()
-    cancelHold()
-    activeTouchPointerRef.current = event.pointerId
-    event.currentTarget.setPointerCapture?.(event.pointerId)
-    cardRef.current?.classList.add('is-holding')
-    cardRef.current?.style.setProperty('--identity-card-hold-progress', '1')
-    holdTimerRef.current = setTimeout(reveal, HOLD_DURATION_MS)
-  }
-
-  const endHold = (event: PointerEvent<HTMLButtonElement>) => {
-    if (event.pointerType === 'touch' && activeTouchPointerRef.current === event.pointerId) cancelHold()
-  }
-
   return (
     <div ref={cardRef} className={`identity-reveal-card${isRevealed ? ' is-revealed' : ''}`} onPointerMove={trackPointer} onPointerLeave={resetTilt}>
       <div className="identity-reveal-card__inner">
@@ -90,14 +127,11 @@ export function RoleRevealCard({ open, identity, roleLabel, roleArt, backArt, ro
           className="identity-reveal-card__back"
           type="button"
           aria-label={revealLabel}
-          onClick={(event) => {
-            if ((event.nativeEvent as globalThis.PointerEvent).pointerType === 'touch') return
-            reveal()
-          }}
+          onClick={handleClick}
           onPointerDown={startHold}
-          onPointerUp={endHold}
-          onPointerCancel={endHold}
-          onLostPointerCapture={endHold}
+          onPointerUp={finishHold}
+          onPointerCancel={cancelTouchHold}
+          onPointerLeave={cancelTouchHold}
           onKeyDown={(event: KeyboardEvent<HTMLButtonElement>) => {
             if (event.key === 'Enter' || event.key === ' ') {
               event.preventDefault()
@@ -105,7 +139,7 @@ export function RoleRevealCard({ open, identity, roleLabel, roleArt, backArt, ro
             }
           }}
         >
-          <img className="identity-reveal-card__back-art" src={backArt} alt="" aria-hidden="true" />
+          <img className="identity-reveal-card__back-art" src={cardBackArt} alt="" aria-hidden="true" />
           <span className="identity-reveal-card__back-title" aria-hidden="true">UNDERCOVER</span>
           <span className="identity-reveal-card__click-label">{revealLabel}</span>
           <span className="identity-reveal-card__hold-label">{holdLabel}</span>
@@ -119,7 +153,7 @@ export function RoleRevealCard({ open, identity, roleLabel, roleArt, backArt, ro
               <Text as="p" type="large" weight="bold">{roleLabel}</Text>
               <Text as="p" type="supporting">{wordLabelCaption}</Text>
               <Text as="p" type="large" weight="bold">{identity.role === 'mr_white' ? noWordLabel : identity.word}</Text>
-              <Text as="p" type="body">{instructionLabel}</Text>
+              <Text as="p" type="body">{memorizeLabel}</Text>
               {identity.role === 'bodyguard' && identity.bodyguardTargetName ? <Text as="p" type="body">{protectLabel(identity.bodyguardTargetName)}</Text> : null}
             </div>
           </div>

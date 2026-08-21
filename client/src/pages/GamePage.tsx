@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@astryxdesign/core/Button';
+import { AlertDialog } from '@astryxdesign/core/AlertDialog';
 import { Card } from '@astryxdesign/core/Card';
 import { TextInput } from '@astryxdesign/core/TextInput';
 import { Text } from '@astryxdesign/core/Text';
@@ -9,6 +10,7 @@ import { Vote } from 'lucide-react';
 import type { GamePlayerView, GameView } from '@undercover/shared';
 
 import { IdentityDialog } from '../features/game/IdentityDialog';
+import { PlayerActionCard } from '../features/game/PlayerActionCard';
 import { canSubmitLocalMrWhiteGuess, resolveGameMode, selectLocalIdentityPlayer } from '../features/game/game-page-state';
 import { selectCanOpenVoting, selectOwnPlayer } from '../features/game/game-selectors';
 import { useGameStore } from '../features/game/game-store';
@@ -66,22 +68,21 @@ function LocalGame() {
     const phase = useLocalGameStore((state) => state.phase);
     const winner = useLocalGameStore((state) => state.winner);
     const round = useLocalGameStore((state) => state.round);
-    const votes = useLocalGameStore((state) => state.votes);
     const lastResolution = useLocalGameStore((state) => state.lastResolution);
-    const openVoting = useLocalGameStore((state) => state.openVoting);
-    const castVote = useLocalGameStore((state) => state.castVote);
-    const resolveVote = useLocalGameStore((state) => state.resolveVote);
+    const eliminatePlayer = useLocalGameStore((state) => state.eliminatePlayer);
     const submitMrWhiteGuess = useLocalGameStore((state) => state.submitMrWhiteGuess);
     const pendingMrWhiteId = useLocalGameStore((state) => state.pendingMrWhiteId);
-    const [voterId, setVoterId] = useState('');
-    const [guess, setGuess] = useState('');
-    const [identityPlayerId, setIdentityPlayerId] = useState('');
-    const [identityOpen, setIdentityOpen] = useState(false);
+    const [expandedPlayerId, setExpandedPlayerId] = useState<string | null>(null);
+    const [identityPlayerId, setIdentityPlayerId] = useState<string | null>(null);
+    const [eliminationTargetId, setEliminationTargetId] = useState<string | null>(null);
     const [confirmedMrWhiteId, setConfirmedMrWhiteId] = useState<string | null>(null);
+    const [guess, setGuess] = useState('');
     const alivePlayers = players.filter((player) => player.alive);
-    const identity = selectLocalIdentityPlayer(players, identityPlayerId);
+    const identity = selectLocalIdentityPlayer(players, identityPlayerId ?? '');
     const bodyguardTarget = identity?.bodyguardTargetId ? players.find((player) => player.id === identity.bodyguardTargetId) : undefined;
     const pendingMrWhite = players.find((player) => player.id === pendingMrWhiteId);
+    const eliminationTarget = players.find((player) => player.id === eliminationTargetId);
+
     useEffect(() => {
         if (phase === 'finished' || winner) navigate('/results');
         if (phase === 'idle') navigate('/');
@@ -89,12 +90,56 @@ function LocalGame() {
 
     useEffect(() => { if (phase !== 'mr_white_guess') setConfirmedMrWhiteId(null); }, [phase]);
 
+    const closeElimination = () => setEliminationTargetId(null);
+    const confirmElimination = () => {
+        if (!eliminationTargetId) return;
+        eliminatePlayer(eliminationTargetId);
+        setEliminationTargetId(null);
+        setExpandedPlayerId(null);
+    };
+
     if (phase === 'mr_white_guess') {
         const confirmed = canSubmitLocalMrWhiteGuess(pendingMrWhiteId, confirmedMrWhiteId);
         return <section className="space-y-6"><header><Text as="p" type="supporting">{t('game.round', { round })}</Text><h1 className="text-3xl font-bold">{t('game.mrWhiteFound')}</h1></header><Card><div className="space-y-4 p-5"><Text as="p" type="body">{confirmed ? t('game.mrWhiteGuessPrompt') : t('game.passDeviceToMrWhite', { name: pendingMrWhite?.displayName })}</Text>{confirmed ? <><TextInput label={t('game.enterWordPlaceholder')} value={guess} onChange={setGuess} width="100%" placeholder={t('game.enterWordPlaceholder')} /><Button variant="primary" label={t('game.submitGuess')} onClick={() => submitMrWhiteGuess(guess)} width="100%" /></> : <Button variant="primary" label={t('game.confirmMrWhiteIdentity')} isDisabled={!pendingMrWhite} onClick={() => setConfirmedMrWhiteId(pendingMrWhiteId)} width="100%" />}</div></Card></section>;
     }
 
-    return <section className="space-y-6"><header className="flex items-end justify-between gap-4"><div><Text as="p" type="supporting">{t('game.round', { round })}</Text><h1 className="text-3xl font-bold">{phase === 'voting' ? t('game.voteTitle') : t('game.title')}</h1></div>{(phase === 'playing' || phase === 'voting') && <div className="flex items-end gap-2"><label className="block text-sm font-semibold" htmlFor="identity-player">{t('game.voter')}</label><select id="identity-player" className="rounded-[var(--radius-element)] border border-[var(--color-border)] bg-[var(--color-background-surface)] p-3" value={identityPlayerId} onChange={(event) => setIdentityPlayerId(event.target.value)}><option value="">{t('game.selectPlayer')}</option>{alivePlayers.map((player) => <option key={player.id} value={player.id}>{player.displayName}</option>)}</select><Button variant="secondary" label={t('identity.open')} isDisabled={!identity} onClick={() => setIdentityOpen(true)} /></div>}</header><ResolutionNotice resolution={lastResolution} />{phase === 'playing' && <Button variant="primary" label={t('game.openVoting')} icon={<Vote aria-hidden="true" />} onClick={openVoting} width="100%" />}{phase === 'voting' && <Card><div className="space-y-3 p-5"><label className="block text-sm font-semibold" htmlFor="voter">{t('game.voter')}</label><select id="voter" className="w-full rounded-[var(--radius-element)] border border-[var(--color-border)] bg-[var(--color-background-surface)] p-3" value={voterId} onChange={(event) => { setVoterId(event.target.value); setIdentityPlayerId(event.target.value); }}><option value="">{t('game.selectPlayer')}</option>{alivePlayers.filter((player) => !votes[player.id]).map((player) => <option key={player.id} value={player.id}>{player.displayName}</option>)}</select><Text as="p" type="supporting">{Object.keys(votes).length} / {alivePlayers.length} {t('game.votesRecorded')}</Text></div></Card>}<div className="grid grid-cols-2 gap-3 sm:grid-cols-3">{players.map((player) => <button key={player.id} type="button" disabled={!player.alive || phase !== 'voting' || !voterId || Boolean(votes[voterId])} onClick={() => { castVote(voterId, player.id); setVoterId(''); setIdentityPlayerId(''); }} className="min-h-28 rounded-[var(--radius-container)] border border-[var(--color-border)] bg-[var(--color-background-card)] p-4 text-center font-semibold enabled:hover:bg-[var(--color-background-muted)] disabled:opacity-45"><span className={player.alive ? '' : 'line-through'}>{player.displayName}</span><Text as="span" type="supporting" display="block">{player.alive ? (phase === 'voting' ? t('game.voteFor') : t('game.alive')) : t('game.eliminated')}</Text></button>)}</div>{phase === 'voting' && <Button variant="primary" label={t('game.resolveVote')} isDisabled={Object.keys(votes).length !== alivePlayers.length} onClick={resolveVote} width="100%" />}{identity && <IdentityDialog open={identityOpen} onClose={() => setIdentityOpen(false)} identity={{ role: identity.role, word: identity.word, bodyguardTargetName: bodyguardTarget?.displayName }} />}</section>;
+    return (
+        <section className="space-y-6">
+            <header>
+                <Text as="p" type="supporting">{t('game.round', { round })}</Text>
+                <h1 className="text-3xl font-bold">{t('game.title')}</h1>
+                <Text as="p" type="supporting">{t('game.playersRemaining', { count: alivePlayers.length })}</Text>
+            </header>
+            <ResolutionNotice resolution={lastResolution} />
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {players.map((player) => (
+                    <PlayerActionCard
+                        key={player.id}
+                        playerId={player.id}
+                        displayName={player.displayName}
+                        alive={player.alive}
+                        expanded={expandedPlayerId === player.id}
+                        confirmationPending={eliminationTargetId !== null}
+                        onToggle={() => setExpandedPlayerId((current) => current === player.id ? null : player.id)}
+                        onViewRole={() => setIdentityPlayerId(player.id)}
+                        onVote={() => setEliminationTargetId(player.id)}
+                    />
+                ))}
+            </div>
+            {identity && <IdentityDialog open onClose={() => setIdentityPlayerId(null)} identity={{ role: identity.role, word: identity.word, bodyguardTargetName: bodyguardTarget?.displayName }} />}
+            <AlertDialog
+                isOpen={eliminationTarget !== undefined}
+                onOpenChange={(isOpen) => { if (!isOpen) closeElimination(); }}
+                title={t('game.confirmEliminationTitle', { name: eliminationTarget?.displayName })}
+                description={t('game.confirmEliminationDescription')}
+                cancelLabel={t('common.cancel')}
+                actionLabel={t('game.confirmElimination')}
+                actionVariant="destructive"
+                onAction={confirmElimination}
+                width="min(94vw, 26rem)"
+            />
+        </section>
+    );
 }
 
 const GamePage = () => {

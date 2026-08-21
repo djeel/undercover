@@ -2,10 +2,8 @@ import { create } from 'zustand';
 import { WORD_PAIRS } from '../../data/wordPairs';
 import i18n from '../../i18n';
 import {
-    castVote,
+    eliminatePlayer as eliminateLocalPlayer,
     leaveGame,
-    openVoting,
-    resolveVote,
     submitMrWhiteGuess,
     type LocalGameState,
     type LocalPlayer,
@@ -31,10 +29,8 @@ export interface LocalGameStore extends Omit<LocalGameState, 'phase'> {
     startGame(): boolean;
     nextRevealPlayer(): void;
     startPlaying(): void;
-    openVoting(): void;
-    castVote(voterId: string, targetId: string): void;
-    resolveVote(): void;
     submitMrWhiteGuess(guess: string): void;
+    eliminatePlayer(playerId: string): void;
     leaveGame(playerId: string): void;
     resetGame(): void;
     restartGame(): void;
@@ -102,10 +98,8 @@ export const useLocalGameStore = create<LocalGameStore>((set, get) => ({
     },
     nextRevealPlayer: () => set((state) => ({ currentRevealIndex: state.currentRevealIndex + 1 })),
     startPlaying: () => set({ phase: 'playing' }),
-    openVoting: () => set((state) => openVoting(localState(state))),
-    castVote: (voterId, targetId) => set((state) => castVote(localState(state), voterId, targetId)),
-    resolveVote: () => set((state) => resolveVote(localState(state))),
     submitMrWhiteGuess: (guess) => set((state) => submitMrWhiteGuess(localState(state), guess)),
+    eliminatePlayer: (playerId) => set((state) => eliminateLocalPlayer(localState(state), playerId)),
     leaveGame: (playerId) => set((state) => leaveGame(localState(state), playerId)),
     resetGame: () => set({ ...baseState(), config: initialConfig }),
     restartGame: () => set((state) => ({ ...baseState(), phase: 'setup', players: state.players.map((player) => ({ ...player, role: 'civilian', word: null, alive: true, bodyguardTargetId: undefined })), config: initialConfig })),

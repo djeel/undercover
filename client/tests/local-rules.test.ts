@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import {
     castVote,
+    eliminatePlayer,
     openVoting,
     resolveVote,
     submitMrWhiteGuess,
@@ -25,6 +26,47 @@ const player = (id: string, role: LocalGameState['players'][number]['role'], ali
     role,
     word: role === 'mr_white' ? null : 'café',
     alive,
+});
+
+describe('eliminatePlayer', () => {
+    test('rejects inactive games and missing or eliminated targets', () => {
+        const active = game([player('a', 'civilian'), player('b', 'undercover'), player('c', 'civilian')]);
+
+        expect(() => eliminatePlayer({ ...active, phase: 'finished' }, 'a')).toThrow('Elimination is not available');
+        expect(() => eliminatePlayer(active, 'missing')).toThrow('Only living players may be eliminated');
+        expect(() => eliminatePlayer({ ...active, players: active.players.map((entry) => entry.id === 'a' ? { ...entry, alive: false } : entry) }, 'a')).toThrow('Only living players may be eliminated');
+    });
+
+    test('eliminates a normal target through existing winner checks', () => {
+        const result = eliminatePlayer(game([player('a', 'civilian'), player('b', 'civilian'), player('c', 'undercover'), player('d', 'civilian')]), 'a');
+
+        expect(result.players.find((entry) => entry.id === 'a')?.alive).toBe(false);
+        expect(result.lastResolution).toMatchObject({ type: 'elimination', source: 'vote', playerId: 'a' });
+    });
+
+    test('awards the Jester when the group eliminates the Jester', () => {
+        const result = eliminatePlayer(game([player('j', 'jester'), player('c', 'civilian'), player('u', 'undercover')]), 'j');
+
+        expect(result).toMatchObject({ phase: 'finished', winner: 'jester' });
+    });
+
+    test('holds Mr. White for the existing guess flow', () => {
+        const result = eliminatePlayer(game([player('w', 'mr_white'), player('c', 'civilian'), player('u', 'undercover')]), 'w');
+
+        expect(result).toMatchObject({ phase: 'mr_white_guess', pendingMrWhiteId: 'w' });
+        expect(result.lastResolution).toMatchObject({ type: 'mr_white_pending', playerId: 'w' });
+    });
+
+    test('uses the one-shot Bodyguard protection path', () => {
+        const target = player('target', 'civilian');
+        const guard = { ...player('guard', 'bodyguard'), bodyguardTargetId: 'target' };
+        const result = eliminatePlayer(game([target, guard, player('u', 'undercover'), player('c', 'civilian')]), 'target');
+
+        expect(result.players.find((entry) => entry.id === 'target')?.alive).toBe(true);
+        expect(result.players.find((entry) => entry.id === 'guard')?.alive).toBe(false);
+        expect(result.protectionAvailable).toBe(false);
+        expect(result.lastResolution).toMatchObject({ source: 'bodyguard_protection', playerId: 'guard' });
+    });
 });
 
 describe('local rules', () => {

@@ -17,6 +17,26 @@ describe('setup translations', () => {
     expect(fr.identity.memorize).toBeTruthy()
     expect(Object.keys(en.identity).sort()).toEqual(Object.keys(fr.identity).sort())
   })
+
+  test('keeps player action translations in locale parity', () => {
+    expect(Object.keys(en.game).sort()).toEqual(Object.keys(fr.game).sort())
+    expect(en.game.viewRole).toBeTruthy()
+    expect(fr.game.viewRole).toBeTruthy()
+    expect(en.game.confirmEliminationTitle).toBeTruthy()
+    expect(fr.game.confirmEliminationTitle).toBeTruthy()
+    expect(en.game.confirmEliminationDescription).toBeTruthy()
+    expect(fr.game.confirmEliminationDescription).toBeTruthy()
+    expect(en.game.confirmElimination).toBeTruthy()
+    expect(fr.game.confirmElimination).toBeTruthy()
+    expect(en.common.cancel).toBeTruthy()
+    expect(fr.common.cancel).toBeTruthy()
+    for (const locale of [en, fr]) {
+      expect(locale.game).not.toHaveProperty('voter')
+      expect(locale.game).not.toHaveProperty('selectPlayer')
+      expect(locale.game).not.toHaveProperty('votesRecorded')
+    }
+  })
+
   test('omits retired dashboard online action copy', () => {
     for (const locale of [en, fr]) {
       expect(locale.dashboard).not.toHaveProperty('onlineTitle');

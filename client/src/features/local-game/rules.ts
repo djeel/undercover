@@ -72,6 +72,16 @@ const eliminate = (state: LocalGameState, playerId: string, source: NonNullable<
     return finishOrContinue(updated, { type: 'elimination', source: actualSource, playerId: eliminated.id });
 };
 
+export const eliminatePlayer = (state: LocalGameState, playerId: string): LocalGameState => {
+    if (state.phase !== 'playing' && state.phase !== 'voting') throw new Error('Elimination is not available');
+    const target = state.players.find((player) => player.id === playerId);
+    if (!target?.alive) throw new Error('Only living players may be eliminated');
+    if (target.role === 'mr_white') {
+        return { ...state, phase: 'mr_white_guess', votes: {}, pendingMrWhiteId: target.id, lastResolution: { type: 'mr_white_pending', playerId: target.id } };
+    }
+    return eliminate({ ...state, votes: {} }, playerId, 'vote');
+};
+
 export const openVoting = (state: LocalGameState): LocalGameState => {
     if (state.phase !== 'playing') throw new Error('Voting can only open during play');
     return { ...state, phase: 'voting', votes: {} };
@@ -94,11 +104,7 @@ export const resolveVote = (state: LocalGameState): LocalGameState => {
     const targets = Object.keys(tally).filter((id) => tally[id] === highest);
     if (targets.length !== 1) return { ...state, phase: 'playing', votes: {}, lastResolution: { type: 'tie' } };
 
-    const target = state.players.find((player) => player.id === targets[0]);
-    if (target?.role === 'mr_white') {
-        return { ...state, phase: 'mr_white_guess', votes: {}, pendingMrWhiteId: target.id, lastResolution: { type: 'mr_white_pending', playerId: target.id } };
-    }
-    return eliminate(state, targets[0], 'vote');
+    return eliminatePlayer(state, targets[0]);
 };
 
 export const submitMrWhiteGuess = (state: LocalGameState, guess: string): LocalGameState => {

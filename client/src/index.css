@@ -492,6 +492,45 @@
         }
     }
 
+    .player-action-card {
+        overflow: hidden;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-container);
+        background: var(--color-background-card);
+        transition: border-color 175ms ease-out, background-color 175ms ease-out, transform 175ms ease-out;
+    }
+
+    .player-action-card.is-expanded { border-color: var(--color-accent); }
+
+    .player-action-card__trigger {
+        display: flex;
+        min-height: 7rem;
+        width: 100%;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+        padding: 1rem;
+        color: var(--color-text-primary);
+        text-align: center;
+    }
+
+    .player-action-card__trigger:focus-visible {
+        outline: 3px solid var(--color-accent);
+        outline-offset: -3px;
+    }
+
+    .player-action-card__trigger:not(:disabled):active { transform: scale(.99); }
+
+    .player-action-card__actions {
+        display: grid;
+        gap: .75rem;
+        border-top: 1px solid var(--color-border);
+        padding: .75rem;
+    }
+
+    .player-action-card.is-eliminated { opacity: .52; }
+
     @media (prefers-reduced-motion: reduce) {
         .identity-reveal-card {
             --identity-card-rotate-x: 0deg;
@@ -506,6 +545,11 @@
         .astryx-button { transition: none; }
         .astryx-text-input { transition: none; }
 
+
+        .player-action-card,
+        .player-action-card__trigger { transition: none; }
+
+        .player-action-card__trigger:not(:disabled):active { transform: none; }
         .primary-action-card,
         .action-card__art {
             transition: none;

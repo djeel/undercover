@@ -293,6 +293,10 @@
         text-decoration: none;
     }
 
+    .primary-action-card__link:active {
+        transform: translateY(1px);
+    }
+
     .action-card__art {
         position: absolute;
         z-index: 0;
@@ -416,8 +420,13 @@
         .astryx-text-input { transition: none; }
 
         .primary-action-card,
-        .primary-action-card__shapes,
         .action-card__art {
+            transition: none;
+            animation: none;
+        }
+
+        .primary-action-card__shapes::before,
+        .primary-action-card__shapes::after {
             transition: none;
             animation: none;
         }

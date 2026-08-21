@@ -9,4 +9,12 @@ describe('setup translations', () => {
     expect(en.setup.subtitle).not.toBe('setup.subtitle');
     expect(fr.setup.subtitle).not.toBe('setup.subtitle');
   });
+
+  test('omits retired dashboard online action copy', () => {
+    for (const locale of [en, fr]) {
+      expect(locale.dashboard).not.toHaveProperty('onlineTitle');
+      expect(locale.dashboard).not.toHaveProperty('createRoom');
+      expect(locale.dashboard).not.toHaveProperty('joinRoom');
+    }
+  });
 });

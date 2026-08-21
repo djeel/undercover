@@ -17,6 +17,33 @@ const activeOnlineGame: GameView = {
   players: [{ id: 'host-1', displayName: 'Host', avatarUrl: null, alive: true }],
   version: 1, round: 2, winner: null, lastResolution: null,
 }
+const css = readFileSync(resolve(process.cwd(), 'src/index.css'), 'utf8').replace(/\s+/g, ' ')
+
+function block(source: string, opener: string) {
+  const start = source.indexOf(opener)
+  const openingBrace = source.indexOf('{', start)
+
+  if (start < 0 || openingBrace < 0) throw new Error(`Missing CSS block: ${opener}`)
+
+  let depth = 0
+
+  for (let index = openingBrace; index < source.length; index += 1) {
+    if (source[index] === '{') depth += 1
+    if (source[index] === '}') depth -= 1
+    if (depth === 0) return source.slice(openingBrace + 1, index)
+  }
+
+  throw new Error(`Unclosed CSS block: ${opener}`)
+}
+
+function ruleIn(source: string, selector: string) {
+  const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const match = source.match(new RegExp(`${escapedSelector}\\s*\\{([^}]*)\\}`))
+
+  if (!match) throw new Error(`Missing CSS rule: ${selector}`)
+
+  return match[1]
+}
 
 describe('getDashboardState', () => {
   it('never exposes account data to anonymous users', () => {
@@ -47,9 +74,20 @@ describe('getDashboardState', () => {
   })
 })
 
-it('keeps dashboard transitions reduced-motion safe', () => {
-  const css = readFileSync(resolve(process.cwd(), 'src/index.css'), 'utf8')
+describe('dashboard action card CSS', () => {
+  it('provides pressed feedback on the primary link', () => {
+    expect(ruleIn(css, '.primary-action-card__link:active')).toContain('transform: translateY(1px)')
+  })
 
-  expect(css).toContain('@media (prefers-reduced-motion: reduce)')
-  expect(css).toContain('.primary-action-card')
+  it('disables card, artwork, and shape motion inside reduced motion', () => {
+    const reducedMotion = block(css, '@media (prefers-reduced-motion: reduce)')
+
+    for (const selector of [
+      '.primary-action-card, .action-card__art',
+      '.primary-action-card__shapes::before, .primary-action-card__shapes::after',
+    ]) {
+      expect(ruleIn(reducedMotion, selector)).toContain('transition: none;')
+      expect(ruleIn(reducedMotion, selector)).toContain('animation: none;')
+    }
+  })
 })

@@ -17,7 +17,7 @@ export const undercoverTheme = defineTheme({
         '--color-on-accent': '#ffffff',
         '--color-background-body': ['hsl(150 18% 97%)', 'hsl(156 18% 7%)'],
         '--color-background-surface': ['hsl(150 12% 100%)', 'hsl(154 15% 11%)'],
-        '--color-background-card': ['hsl(150 12% 100%)', 'hsl(152 13% 14%)'],
+        '--color-background-card': ['hsl(150 14% 98.5%)', 'hsl(152 13% 14%)'],
         '--color-text-primary': ['hsl(156 22% 12%)', 'hsl(150 20% 96%)'],
         '--color-text-secondary': ['hsl(154 12% 34%)', 'hsl(150 10% 74%)'],
         '--color-data-categorical-blue': 'hsl(220 80% 58%)',

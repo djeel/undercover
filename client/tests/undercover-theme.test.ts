@@ -20,17 +20,28 @@ describe('Undercover theme', () => {
         }
     });
 
-    test('uses green-neutral surfaces and text tokens', () => {
+    test('uses pairwise-distinct green-neutral surfaces and text tokens', () => {
         const expectedNeutralTokens = {
             '--color-background-body': 'light-dark(hsl(150 18% 97%), hsl(156 18% 7%))',
             '--color-background-surface': 'light-dark(hsl(150 12% 100%), hsl(154 15% 11%))',
-            '--color-background-card': 'light-dark(hsl(150 12% 100%), hsl(152 13% 14%))',
+            '--color-background-card': 'light-dark(hsl(150 14% 98.5%), hsl(152 13% 14%))',
             '--color-text-primary': 'light-dark(hsl(156 22% 12%), hsl(150 20% 96%))',
             '--color-text-secondary': 'light-dark(hsl(154 12% 34%), hsl(150 10% 74%))',
             '--color-data-neutral': 'hsl(152 10% 62%)',
         } as const;
+        const backgrounds = [
+            expectedNeutralTokens['--color-background-body'],
+            expectedNeutralTokens['--color-background-surface'],
+            expectedNeutralTokens['--color-background-card'],
+        ].map(token => token.match(/^light-dark\((.+), (.+)\)$/)!.slice(1));
 
         expect(undercoverTheme.tokens).toMatchObject(expectedNeutralTokens);
+        expect(backgrounds[0][0]).not.toBe(backgrounds[1][0]);
+        expect(backgrounds[0][0]).not.toBe(backgrounds[2][0]);
+        expect(backgrounds[1][0]).not.toBe(backgrounds[2][0]);
+        expect(backgrounds[0][1]).not.toBe(backgrounds[1][1]);
+        expect(backgrounds[0][1]).not.toBe(backgrounds[2][1]);
+        expect(backgrounds[1][1]).not.toBe(backgrounds[2][1]);
 
         for (const token of Object.keys(expectedNeutralTokens) as Array<keyof typeof expectedNeutralTokens>) {
             expect(undercoverTheme.tokens[token]).not.toMatch(/hsl\(25[02]\b/);

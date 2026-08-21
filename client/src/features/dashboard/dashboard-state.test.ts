@@ -51,5 +51,5 @@ it('keeps dashboard transitions reduced-motion safe', () => {
   const css = readFileSync(resolve(process.cwd(), 'src/index.css'), 'utf8')
 
   expect(css).toContain('@media (prefers-reduced-motion: reduce)')
-  expect(css).toContain('.local-play-card')
+  expect(css).toContain('.primary-action-card')
 })

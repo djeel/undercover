@@ -1,8 +1,7 @@
-import { Button } from '@astryxdesign/core/Button'
 import { Card } from '@astryxdesign/core/Card'
 import { Text } from '@astryxdesign/core/Text'
-import { Clock3, DoorOpen, Play, Plus, UsersRound } from 'lucide-react'
-import { useEffect, useState, type CSSProperties } from 'react'
+import { Clock3, Play, UsersRound } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import type { FriendshipView, PlayerResultView, PlayerStatsView } from '@undercover/shared'
@@ -13,8 +12,6 @@ import { useGameStore } from '../features/game/game-store'
 import { useLocalGameStore } from '../features/local-game/local-game-store'
 import { api } from '../lib/api-client'
 import localArt from '../assets/local.png'
-import multiplayerArt from '../assets/multiplayer.png'
-import buttonArt from '../assets/button.png'
 
 const HomePage = () => {
 
@@ -81,25 +78,17 @@ const HomePage = () => {
       <h1 className="text-4xl font-bold tracking-tight">{t('app.title')}</h1>
       <Text as="p" type="large" color="secondary">{t('home.subtitle')}</Text>
     </header>
-    <section className="local-play-card relative overflow-hidden p-6" aria-labelledby="local-play-title">
-      <img className="dashboard-action-art local-play-card__art" src={localArt} alt="" aria-hidden="true" />
-      <div className="local-play-card__shapes" aria-hidden="true" />
-      <div className="relative space-y-4">
-        <p className="eyebrow">{t('dashboard.localEyebrow')}</p>
-        <h2 id="local-play-title" className="text-2xl font-bold">{t('dashboard.localTitle')}</h2>
-        <Text as="p" type="large">{t('dashboard.localDescription')}</Text>
-        <Button variant="primary" size="lg" className="local-play-card__start" style={{ '--local-play-button-art': `url(${buttonArt})` } as CSSProperties} label={t('dashboard.startLocal')} onClick={() => navigate('/setup')} />
-      </div>
-    </section>
-    <section aria-labelledby="online-play-title" className="dashboard-online-play relative space-y-3 overflow-hidden p-5">
-      <img className="dashboard-action-art dashboard-online-play__art" src={multiplayerArt} alt="" aria-hidden="true" />
-      <div className="relative z-10 space-y-3">
-        <h2 id="online-play-title" className="text-xl font-bold">{t('dashboard.onlineTitle')}</h2>
-        <div className="grid gap-3 md:grid-cols-2">
-          <Card><Link className="flex min-h-11 items-center gap-3 p-5 font-semibold" to="/lobby"><Plus aria-hidden="true" size={20} />{t('dashboard.createRoom')}</Link></Card>
-          <Card><Link className="flex min-h-11 items-center gap-3 p-5 font-semibold" to="/lobby"><DoorOpen aria-hidden="true" size={20} />{t('dashboard.joinRoom')}</Link></Card>
+    <section className="primary-action-card" aria-labelledby="local-play-title">
+      <Link className="primary-action-card__link" to="/setup">
+        <img className="action-card__art" src={localArt} alt="" aria-hidden="true" />
+        <div className="primary-action-card__shapes" aria-hidden="true" />
+        <div className="primary-action-card__content space-y-4">
+          <p className="eyebrow">{t('dashboard.localEyebrow')}</p>
+          <h2 id="local-play-title" className="text-2xl font-bold">{t('dashboard.localTitle')}</h2>
+          <Text as="p" type="large">{t('dashboard.localDescription')}</Text>
+          <span className="primary-action-card__label">{t('dashboard.startLocal')}</span>
         </div>
-      </div>
+      </Link>
     </section>
 
     {dashboard.resumeGame ? <Card><div className="flex flex-wrap items-center justify-between gap-4 p-5"><div className="flex items-center gap-3"><Play aria-hidden="true" size={20} /><div><h2 className="text-lg font-bold">{t('dashboard.resumeTitle')}</h2><Text as="p" type="supporting">{t(`dashboard.resume${dashboard.resumeGame.mode === 'local' ? 'Local' : 'Online'}`)}</Text></div></div><Link className="min-h-11 rounded-[var(--radius-element)] bg-[var(--color-accent)] px-4 py-3 font-semibold text-[var(--color-on-dark)]" to="/game">{t('dashboard.resumeAction')}</Link></div></Card> : null}

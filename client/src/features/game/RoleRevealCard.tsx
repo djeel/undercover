@@ -1,4 +1,4 @@
-import { useRef, useState, type KeyboardEvent, type PointerEvent } from 'react'
+import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react'
 import { Text } from '@astryxdesign/core/Text'
 import type { PlayerRole } from '@undercover/shared'
 
@@ -7,27 +7,86 @@ export interface RoleRevealCardProps {
   identity: { role: PlayerRole; word: string | null; bodyguardTargetName?: string }
   roleLabel: string
   roleArt: string
+  cardBackArt: string
   roleLabelCaption: string
   wordLabelCaption: string
   noWordLabel: string
   revealLabel: string
+  holdLabel: string
+  memorizeLabel: string
   protectLabel: (name: string) => string
+  onReveal?: () => void
 }
 
-export function RoleRevealCard({ open, identity, roleLabel, roleArt, roleLabelCaption, wordLabelCaption, noWordLabel, revealLabel, protectLabel }: RoleRevealCardProps) {
-  const [revealed, setRevealed] = useState(false)
-  const identityKey = `${identity.role}:${identity.word ?? ''}:${identity.bodyguardTargetName ?? ''}`
-  const lifecycleKey = `${open}:${identityKey}`
-  const [previousLifecycleKey, setPreviousLifecycleKey] = useState(lifecycleKey)
+export function RoleRevealCard({ open, identity, roleLabel, roleArt, cardBackArt, roleLabelCaption, wordLabelCaption, noWordLabel, revealLabel, holdLabel, memorizeLabel, protectLabel, onReveal }: RoleRevealCardProps) {
+  const lifecycleKey = JSON.stringify([open, identity.role, identity.word, identity.bodyguardTargetName])
+  const [revealedLifecycleKey, setRevealedLifecycleKey] = useState<string | null>(null)
   const cardRef = useRef<HTMLDivElement>(null)
+  const holdTimerRef = useRef<number | null>(null)
+  const suppressionTimerRef = useRef<number | null>(null)
+  const revealedLifecycleRef = useRef<string | null>(null)
+  const suppressClickRef = useRef(false)
+  const isRevealed = open && revealedLifecycleKey === lifecycleKey
 
-  if (previousLifecycleKey !== lifecycleKey) {
-    setPreviousLifecycleKey(lifecycleKey)
-    setRevealed(false)
+  const cancelHold = () => {
+    if (holdTimerRef.current !== null) window.clearTimeout(holdTimerRef.current)
+    holdTimerRef.current = null
   }
 
-  const isRevealed = open && revealed && previousLifecycleKey === lifecycleKey
+  const clearClickSuppression = () => {
+    if (suppressionTimerRef.current !== null) window.clearTimeout(suppressionTimerRef.current)
+    suppressionTimerRef.current = null
+    suppressClickRef.current = false
+  }
 
+  useEffect(() => {
+    cancelHold()
+    clearClickSuppression()
+    revealedLifecycleRef.current = null
+    setRevealedLifecycleKey(null)
+
+    return () => {
+      cancelHold()
+      clearClickSuppression()
+    }
+  }, [lifecycleKey])
+
+  const reveal = () => {
+    cancelHold()
+    if (isRevealed || revealedLifecycleRef.current === lifecycleKey) return
+    revealedLifecycleRef.current = lifecycleKey
+    setRevealedLifecycleKey(lifecycleKey)
+    onReveal?.()
+  }
+
+  const startHold = (event: PointerEvent<HTMLButtonElement>) => {
+    if (event.pointerType !== 'touch' && event.pointerType !== 'pen') return
+    cancelHold()
+    clearClickSuppression()
+    suppressClickRef.current = true
+    holdTimerRef.current = window.setTimeout(reveal, 700)
+  }
+
+  const finishHold = (event: PointerEvent<HTMLButtonElement>) => {
+    if (event.pointerType !== 'touch' && event.pointerType !== 'pen') return
+    cancelHold()
+    if (!suppressClickRef.current) return
+    suppressionTimerRef.current = window.setTimeout(clearClickSuppression, 0)
+  }
+
+  const cancelTouchHold = (event: PointerEvent<HTMLButtonElement>) => {
+    if (event.pointerType !== 'touch' && event.pointerType !== 'pen') return
+    cancelHold()
+    clearClickSuppression()
+  }
+
+  const handleClick = () => {
+    if (suppressClickRef.current) {
+      clearClickSuppression()
+      return
+    }
+    reveal()
+  }
   const resetTilt = () => {
     cardRef.current?.style.setProperty('--identity-card-rotate-x', '0deg')
     cardRef.current?.style.setProperty('--identity-card-rotate-y', '0deg')
@@ -51,14 +110,25 @@ export function RoleRevealCard({ open, identity, roleLabel, roleArt, roleLabelCa
   return (
     <div ref={cardRef} className={`identity-reveal-card${isRevealed ? ' is-revealed' : ''}`} onPointerMove={trackPointer} onPointerLeave={resetTilt}>
       <div className="identity-reveal-card__inner">
-        <button className="identity-reveal-card__back" type="button" aria-label={revealLabel} onClick={() => setRevealed(true)} onKeyDown={(event: KeyboardEvent<HTMLButtonElement>) => {
-          if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault()
-            setRevealed(true)
-          }
-        }}>
-          <span aria-hidden="true">UNDERCOVER</span>
+        <button
+          className="identity-reveal-card__back"
+          type="button"
+          aria-label={revealLabel}
+          onClick={handleClick}
+          onPointerDown={startHold}
+          onPointerUp={finishHold}
+          onPointerCancel={cancelTouchHold}
+          onPointerLeave={cancelTouchHold}
+          onKeyDown={(event: KeyboardEvent<HTMLButtonElement>) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault()
+              reveal()
+            }
+          }}
+        >
+          <img src={cardBackArt} alt="" aria-hidden="true" />
           <span>{revealLabel}</span>
+          <span>{holdLabel}</span>
         </button>
         {isRevealed && (
           <div className="identity-reveal-card__front">
@@ -68,6 +138,7 @@ export function RoleRevealCard({ open, identity, roleLabel, roleArt, roleLabelCa
             <Text as="p" type="supporting">{wordLabelCaption}</Text>
             <Text as="p" type="large" weight="bold">{identity.role === 'mr_white' ? noWordLabel : identity.word}</Text>
             {identity.role === 'bodyguard' && identity.bodyguardTargetName && <Text as="p" type="body">{protectLabel(identity.bodyguardTargetName)}</Text>}
+            <Text as="p" type="supporting">{memorizeLabel}</Text>
           </div>
         )}
       </div>

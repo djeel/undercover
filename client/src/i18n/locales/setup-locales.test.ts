@@ -45,3 +45,11 @@ describe('setup translations', () => {
     }
   });
 });
+
+test('provides complete tutorial copy in both locales', () => {
+  const tutorialKeys = ['welcome', 'conceptTitle', 'conceptDesc', 'rolesTitle', 'rolesDesc', 'gameTitle', 'gameDesc', 'next', 'finish'] as const
+  for (const locale of [en, fr]) {
+    for (const key of tutorialKeys) expect(locale.tutorial[key]).toBeTruthy()
+  }
+  expect(Object.keys(en.tutorial).sort()).toEqual(Object.keys(fr.tutorial).sort())
+})

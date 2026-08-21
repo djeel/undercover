@@ -330,4 +330,21 @@ async function renderCard() {
     expect(commitText).not.toContain('Lantern')
     expect(container.querySelector('.identity-dialog-role-art')).toBeNull()
   })
+
+  test('keeps the card back generic and tracks the page pointer after reveal', async () => {
+    await renderCard()
+    const card = container.querySelector<HTMLElement>('.identity-reveal-card')!
+    expect(card.textContent).not.toContain('UNDERCOVER')
+
+    await act(async () => { container.querySelector<HTMLButtonElement>('button')?.click() })
+    Object.defineProperty(card, 'getBoundingClientRect', { value: () => ({ left: 100, top: 100, width: 200, height: 300 }) })
+    await act(async () => {
+      const move = new Event('pointermove', { bubbles: true })
+      Object.defineProperties(move, { clientX: { value: 300 }, clientY: { value: 0 }, pointerType: { value: 'mouse' } })
+      window.dispatchEvent(move)
+    })
+
+    expect(card.style.getPropertyValue('--identity-card-rotate-x')).not.toBe('0deg')
+    expect(card.style.getPropertyValue('--identity-card-rotate-y')).not.toBe('0deg')
+  })
 })

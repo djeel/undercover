@@ -13,6 +13,7 @@ import { useLocalGameStore } from '../features/local-game/local-game-store'
 import { api } from '../lib/api-client'
 import localArt from '../assets/local.png'
 
+
 const HomePage = () => {
 
   const { t } = useTranslation()
@@ -90,7 +91,6 @@ const HomePage = () => {
         </div>
       </Link>
     </section>
-
     {dashboard.resumeGame ? <Card><div className="flex flex-wrap items-center justify-between gap-4 p-5"><div className="flex items-center gap-3"><Play aria-hidden="true" size={20} /><div><h2 className="text-lg font-bold">{t('dashboard.resumeTitle')}</h2><Text as="p" type="supporting">{t(`dashboard.resume${dashboard.resumeGame.mode === 'local' ? 'Local' : 'Online'}`)}</Text></div></div><Link className="min-h-11 rounded-[var(--radius-element)] bg-[var(--color-accent)] px-4 py-3 font-semibold text-[var(--color-on-dark)]" to="/game">{t('dashboard.resumeAction')}</Link></div></Card> : null}
 
     {dashboard.showMemberSections ? <section className="grid gap-3 md:grid-cols-2" aria-label={t('dashboard.memberSummary')}>

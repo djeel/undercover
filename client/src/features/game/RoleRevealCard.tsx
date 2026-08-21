@@ -108,20 +108,30 @@ export function RoleRevealCard({ open, identity, roleLabel, roleArt, cardBackArt
     cardRef.current?.style.setProperty('--identity-card-highlight-y', '50%')
   }
 
-  const trackPointer = (event: PointerEvent<HTMLDivElement>) => {
-    if (!isRevealed || event.pointerType !== 'mouse') return
-    const bounds = event.currentTarget.getBoundingClientRect()
-    const x = Math.max(-.5, Math.min(.5, (event.clientX - bounds.left) / bounds.width - .5))
-    const y = Math.max(-.5, Math.min(.5, (event.clientY - bounds.top) / bounds.height - .5))
-
-    event.currentTarget.style.setProperty('--identity-card-rotate-x', `${y * -6}deg`)
-    event.currentTarget.style.setProperty('--identity-card-rotate-y', `${x * 6}deg`)
-    event.currentTarget.style.setProperty('--identity-card-highlight-x', `${(x + .5) * 100}%`)
-    event.currentTarget.style.setProperty('--identity-card-highlight-y', `${(y + .5) * 100}%`)
-  }
+  useEffect(() => {
+    if (!isRevealed || window.matchMedia?.('(pointer: fine)').matches === false) return
+    const trackPointer = (event: globalThis.PointerEvent) => {
+      if (event.pointerType && event.pointerType !== 'mouse') return
+      const bounds = cardRef.current?.getBoundingClientRect()
+      if (!bounds) return
+      const centerX = bounds.left + bounds.width / 2
+      const centerY = bounds.top + bounds.height / 2
+      const x = Math.max(-1, Math.min(1, (event.clientX - centerX) / (window.innerWidth / 2)))
+      const y = Math.max(-1, Math.min(1, (event.clientY - centerY) / (window.innerHeight / 2)))
+      cardRef.current?.style.setProperty('--identity-card-rotate-x', `${y * -6}deg`)
+      cardRef.current?.style.setProperty('--identity-card-rotate-y', `${x * 6}deg`)
+      cardRef.current?.style.setProperty('--identity-card-highlight-x', `${(x + 1) * 50}%`)
+      cardRef.current?.style.setProperty('--identity-card-highlight-y', `${(y + 1) * 50}%`)
+    }
+    window.addEventListener('pointermove', trackPointer, { passive: true })
+    return () => {
+      window.removeEventListener('pointermove', trackPointer)
+      resetTilt()
+    }
+  }, [isRevealed])
 
   return (
-    <div ref={cardRef} className={`identity-reveal-card${isRevealed ? ' is-revealed' : ''}`} onPointerMove={trackPointer} onPointerLeave={resetTilt}>
+    <div ref={cardRef} className={`identity-reveal-card${isRevealed ? ' is-revealed' : ''}`}>
       <div className="identity-reveal-card__inner">
         <button
           className="identity-reveal-card__back"
@@ -140,7 +150,7 @@ export function RoleRevealCard({ open, identity, roleLabel, roleArt, cardBackArt
           }}
         >
           <img className="identity-reveal-card__back-art" src={cardBackArt} alt="" aria-hidden="true" />
-          <span className="identity-reveal-card__back-title" aria-hidden="true">UNDERCOVER</span>
+
           <span className="identity-reveal-card__click-label">{revealLabel}</span>
           <span className="identity-reveal-card__hold-label">{holdLabel}</span>
           <span className="identity-reveal-card__hold-progress" aria-hidden="true" />

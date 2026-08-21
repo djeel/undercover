@@ -61,7 +61,13 @@ const errorCodeFor = (status: number): ApiErrorCode => {
 };
 
 export const createApiClient = ({ baseUrl, getAccessToken, fetcher = fetch }: ApiClientOptions): ApiClient => {
+    const resolvedBaseUrl = baseUrl?.trim().replace(/\/$/, '');
+
     const request = async <T>(path: string, init: RequestInit = {}): Promise<T> => {
+        if (!resolvedBaseUrl) {
+            throw new ApiError('network', 'Online play is unavailable because the game server is not configured.');
+        }
+
         const token = await getAccessToken();
         const headers = new Headers(init.headers);
         headers.set('Accept', 'application/json');
@@ -70,7 +76,7 @@ export const createApiClient = ({ baseUrl, getAccessToken, fetcher = fetch }: Ap
 
         let response: Response;
         try {
-            response = await fetcher(`${baseUrl.replace(/\/$/, '')}${path}`, { ...init, headers });
+            response = await fetcher(`${resolvedBaseUrl}${path}`, { ...init, headers });
         } catch {
             throw new ApiError('network', 'Network request failed');
         }

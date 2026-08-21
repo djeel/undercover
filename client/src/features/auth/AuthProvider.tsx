@@ -13,6 +13,7 @@ export type AuthState = {
   session: Session | null
   user: User | null
   isLoading: boolean
+  isAuthenticating: boolean
   error: string | null
   configurationError: string | null
   isAnonymous: boolean
@@ -33,6 +34,7 @@ const getCallbackUrl = () => getOAuthCallbackUrl(window.location.origin, import.
 export function AuthProvider({ children }: PropsWithChildren) {
   const [session, setSession] = useState<Session | null>(null)
   const [isLoading, setLoading] = useState(true)
+  const [isAuthenticating, setAuthenticating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const suppressNextAuthLoss = useRef(false)
   const acceptedUserId = useRef<string | null>(null)
@@ -145,15 +147,18 @@ export function AuthProvider({ children }: PropsWithChildren) {
     const callback = new URL(url, window.location.origin)
     const oauthError = getCallbackError(callback.toString())
     if (oauthError) {
+      setAuthenticating(false)
       setError(oauthError)
       return '/auth'
     }
     const code = callback.searchParams.get('code')
     if (!code) {
+      setAuthenticating(false)
       setError('auth.callbackCodeMissing')
       return '/auth'
     }
     const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+    setAuthenticating(false)
     if (exchangeError) {
       setError(exchangeError.message)
       return '/auth'
@@ -164,6 +169,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   const signInWithOAuth = useCallback(async (provider: Provider, returnPath = '/') => {
     if (!supabase) return
+    setAuthenticating(true)
     const safeReturnPath = getSafeReturnPath(returnPath)
     sessionStorage.setItem('undercover.auth.returnPath', safeReturnPath)
     const options = { redirectTo: getCallbackUrl(), skipBrowserRedirect: Capacitor.isNativePlatform() }
@@ -172,6 +178,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       : await supabase.auth.signInWithOAuth({ provider, options })
     const { data, error: oauthError } = response
     if (oauthError) {
+      setAuthenticating(false)
       setError(oauthError.message)
       return
     }
@@ -200,13 +207,14 @@ export function AuthProvider({ children }: PropsWithChildren) {
     session,
     user: session?.user ?? null,
     isLoading,
-    error,
     configurationError: supabaseConfigurationError,
+    error,
+    isAuthenticating,
     isAnonymous: session?.user.is_anonymous ?? true,
     signInWithOAuth,
     completeCallback,
     signOut,
-  }), [session, isLoading, error, signInWithOAuth, completeCallback, signOut])
+  }), [session, isLoading, isAuthenticating, error, signInWithOAuth, completeCallback, signOut])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

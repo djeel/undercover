@@ -1,7 +1,7 @@
 import { BrowserRouter, HashRouter, Route, Routes } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
 import { AuthProvider, AuthCallbackPage, AuthPage, RequireSession } from './features/auth';
-import { AppTheme } from './theme/AppTheme';
+import { ThemePreferenceProvider } from './theme/AppTheme';
 import { Layout } from './components/layout/Layout';
 import { AccountPage, FriendsPage, GamePage, HomePage, MultiplayerSetupPage, OnboardingPage, PlayPage, ProfilePage, ResultsPage, RevealPage, SettingsPage, SetupPage } from './pages';
 
@@ -10,7 +10,7 @@ function App() {
     const Router = Capacitor.isNativePlatform() ? HashRouter : BrowserRouter;
     const routerProps = Capacitor.isNativePlatform() ? {} : { basename: import.meta.env.BASE_URL };
 
-    return <AppTheme><AuthProvider><Router {...routerProps}><Routes>
+    return <ThemePreferenceProvider><AuthProvider><Router {...routerProps}><Routes>
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/auth/callback" element={<AuthCallbackPage />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
@@ -27,7 +27,7 @@ function App() {
             <Route path="/profile" element={<RequireSession><ProfilePage /></RequireSession>} />
             <Route path="/settings" element={<SettingsPage />} />
         </Route>
-    </Routes></Router></AuthProvider></AppTheme>;
+    </Routes></Router></AuthProvider></ThemePreferenceProvider>;
 }
 
 export default App;

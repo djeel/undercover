@@ -17,4 +17,11 @@ describe('setup translations', () => {
     expect(fr.identity.memorize).toBeTruthy()
     expect(Object.keys(en.identity).sort()).toEqual(Object.keys(fr.identity).sort())
   })
+  test('omits retired dashboard online action copy', () => {
+    for (const locale of [en, fr]) {
+      expect(locale.dashboard).not.toHaveProperty('onlineTitle');
+      expect(locale.dashboard).not.toHaveProperty('createRoom');
+      expect(locale.dashboard).not.toHaveProperty('joinRoom');
+    }
+  });
 });

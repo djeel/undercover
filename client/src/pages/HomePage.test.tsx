@@ -50,7 +50,7 @@ vi.mock('react-i18next', () => ({
 }))
 
 vi.mock('react-router-dom', () => ({
-  Link: ({ children }: { children: React.ReactNode }) => <a>{children}</a>,
+  Link: ({ children, className, to }: { children: React.ReactNode; className?: string; to: string }) => <a className={className} href={to}>{children}</a>,
   useNavigate: () => vi.fn(),
   useSearchParams: () => [new URLSearchParams()],
 }))
@@ -92,7 +92,7 @@ describe('HomePage account transitions', () => {
     vi.clearAllMocks()
   })
 
-  test('renders the supplied noir art as decorative dashboard action backgrounds', async () => {
+  test('renders one full-card local launch action without Home multiplayer actions', async () => {
     memberData.isAnonymous = true
     container = document.createElement('div')
     document.body.append(container)
@@ -100,12 +100,24 @@ describe('HomePage account transitions', () => {
 
     await act(async () => { root.render(<HomePage />) })
 
-    const art = [...container.querySelectorAll<HTMLImageElement>('.dashboard-action-art')]
-    expect(art.map((image) => image.getAttribute('alt'))).toEqual(['', ''])
-    expect(art.map((image) => image.getAttribute('src'))).toEqual(expect.arrayContaining([
-      expect.stringContaining('local.png'),
-      expect.stringContaining('multiplayer.png'),
-    ]))
+    const launchLinks = [...container.querySelectorAll<HTMLAnchorElement>('.primary-action-card__link')]
+    const actionCard = launchLinks[0]?.closest('section')
+    const titleId = actionCard?.getAttribute('aria-labelledby')
+    const art = launchLinks[0]?.querySelector<HTMLImageElement>('.action-card__art')
+
+    expect(launchLinks).toHaveLength(1)
+    expect(launchLinks[0]?.getAttribute('href')).toBe('/setup')
+    expect(launchLinks[0]?.textContent).toContain('dashboard.localTitle')
+    expect(launchLinks[0]?.textContent).toContain('dashboard.startLocal')
+    expect(launchLinks[0]?.querySelector('button')).toBeNull()
+    expect(titleId).toBe('local-play-title')
+    expect(actionCard?.querySelector(`#${titleId}`)?.textContent).toBe('dashboard.localTitle')
+    expect(art?.getAttribute('src')).toContain('local.png')
+    expect(art?.getAttribute('alt')).toBe('')
+    expect(art?.getAttribute('aria-hidden')).toBe('true')
+    expect(container.querySelector('.dashboard-online-play')).toBeNull()
+    expect(container.textContent).not.toContain('dashboard.createRoom')
+    expect(container.textContent).not.toContain('dashboard.joinRoom')
   })
   test('does not render account A dashboard data during a direct authenticated switch to account B', async () => {
     const firstFriends = deferred<typeof accountAFriends>()

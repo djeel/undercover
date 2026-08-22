@@ -14,10 +14,11 @@ type RoleCounter = {
     role: 'undercover' | 'mrWhite' | 'jester' | 'bodyguard';
     minimum: number;
     maximum?: number;
+    required?: boolean;
 };
 
 const roleCounters: readonly RoleCounter[] = [
-    { key: 'undercoverCount', role: 'undercover', minimum: 1 },
+    { key: 'undercoverCount', role: 'undercover', minimum: 1, required: true },
     { key: 'mrWhiteCount', role: 'mrWhite', minimum: 0 },
     { key: 'jesterCount', role: 'jester', minimum: 0 },
     { key: 'bodyguardCount', role: 'bodyguard', minimum: 0, maximum: 1 },
@@ -86,9 +87,9 @@ const SetupPage = () => {
         </Card>
 
         <Card>
+            <h2 className="text-lg font-bold">{t('setup.settings')}</h2>
             <div className="space-y-4 p-5">
-                <h2 className="text-lg font-bold">{t('setup.settings')}</h2>
-                <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
+                <div className="mt-1 divide-y divide-[var(--color-border)]">
                     {roleCounters.map((counter) => {
                         const roleName = t(`roles.${counter.role}`);
                         const specialRoleLimit = Math.max(0, players.length - 2);
@@ -97,14 +98,14 @@ const SetupPage = () => {
                         const canDecrease = config[counter.key] > counter.minimum;
                         const canIncrease = config[counter.key] < maximum;
 
-                        return <div className="space-y-3" key={counter.key} role="group" aria-label={roleName}>
-                            <div>
-                                <h3 className="font-semibold">{roleName}</h3>
+                        return <div className="flex items-center justify-between gap-4 py-4" key={counter.key} role="group" aria-label={roleName}>
+                            <div className="min-w-0">
+                                <h3 className="font-semibold">{roleName}{counter.required ? <span aria-hidden="true"> · {t('setup.required')}</span> : null}</h3>
                                 <Text as="p" type="supporting">{t(`roleDescriptions.${counter.role}`)}</Text>
                             </div>
-                            <div className="flex items-center gap-3">
+                            <div className="flex shrink-0 items-center gap-2">
                                 <Button className="min-h-11 min-w-11" variant="secondary" icon={<Minus aria-hidden="true" />} isIconOnly label={t('setup.decreaseRole', { role: roleName })} isDisabled={!canDecrease} onClick={() => updateCount(counter, -1)} />
-                                <output className="min-w-10 text-center text-3xl font-bold tabular-nums" aria-live="polite">{config[counter.key]}</output>
+                                <output className="min-w-8 text-center text-2xl font-bold tabular-nums" aria-live="polite">{config[counter.key]}</output>
                                 <Button className="min-h-11 min-w-11" variant="secondary" icon={<Plus aria-hidden="true" />} isIconOnly label={t('setup.increaseRole', { role: roleName })} isDisabled={!canIncrease} onClick={() => updateCount(counter, 1)} />
                             </div>
                         </div>;

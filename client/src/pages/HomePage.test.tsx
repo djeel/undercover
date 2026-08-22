@@ -108,7 +108,7 @@ describe('HomePage account transitions', () => {
     expect(launchLinks).toHaveLength(1)
     expect(launchLinks[0]?.getAttribute('href')).toBe('/setup')
     expect(launchLinks[0]?.textContent).toContain('dashboard.localTitle')
-    expect(launchLinks[0]?.textContent).toContain('dashboard.startLocal')
+    expect(launchLinks[0]?.textContent).not.toContain('dashboard.startLocal')
     expect(launchLinks[0]?.querySelector('button')).toBeNull()
     expect(titleId).toBe('local-play-title')
     expect(actionCard?.querySelector(`#${titleId}`)?.textContent).toBe('dashboard.localTitle')

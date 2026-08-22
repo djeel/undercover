@@ -331,6 +331,21 @@ async function renderCard() {
     expect(container.querySelector('.identity-dialog-role-art')).toBeNull()
   })
 
+  test('tracks the page pointer on the card back before reveal', async () => {
+    await renderCard()
+    const card = container.querySelector<HTMLElement>('.identity-reveal-card')!
+    expect(card.textContent).not.toContain('UNDERCOVER')
+    Object.defineProperty(card, 'getBoundingClientRect', { value: () => ({ left: 100, top: 100, width: 200, height: 300 }) })
+    await act(async () => {
+      const move = new Event('pointermove', { bubbles: true })
+      Object.defineProperties(move, { clientX: { value: 300 }, clientY: { value: 0 }, pointerType: { value: 'mouse' } })
+      window.dispatchEvent(move)
+    })
+
+    expect(card.style.getPropertyValue('--identity-card-rotate-x')).toMatch(/\d+deg/)
+    expect(card.style.getPropertyValue('--identity-card-rotate-y')).toMatch(/\d+deg/)
+  })
+
   test('keeps the card back generic and tracks the page pointer after reveal', async () => {
     await renderCard()
     const card = container.querySelector<HTMLElement>('.identity-reveal-card')!

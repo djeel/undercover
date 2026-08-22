@@ -109,7 +109,9 @@ export function RoleRevealCard({ open, identity, roleLabel, roleArt, cardBackArt
   }
 
   useEffect(() => {
-    if (!isRevealed || window.matchMedia?.('(pointer: fine)').matches === false) return
+    if (!isRevealed && !open) return
+    if (window.matchMedia?.('(pointer: fine)').matches === false) return
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
     const trackPointer = (event: globalThis.PointerEvent) => {
       if (event.pointerType && event.pointerType !== 'mouse') return
       const bounds = cardRef.current?.getBoundingClientRect()
@@ -128,7 +130,7 @@ export function RoleRevealCard({ open, identity, roleLabel, roleArt, cardBackArt
       window.removeEventListener('pointermove', trackPointer)
       resetTilt()
     }
-  }, [isRevealed])
+  }, [open, isRevealed])
 
   return (
     <div ref={cardRef} className={`identity-reveal-card${isRevealed ? ' is-revealed' : ''}`}>

@@ -422,13 +422,7 @@
 
     .primary-action-card__content { position: relative; z-index: 1; max-width: 38rem; }
 
-    .primary-action-card__label {
-        display: inline-flex;
-        min-height: 2.75rem;
-        align-items: center;
-        border-bottom: 2px solid currentColor;
-        font-weight: 700;
-    }
+
 
     .primary-action-card__shapes {
         position: absolute;
@@ -526,6 +520,8 @@
         .settings-help-card__content {
             align-items: stretch;
             flex-direction: column;
+            padding-block: 1rem;
+            padding-inline: 1rem;
         }
     }
     @media (prefers-reduced-motion: reduce) {

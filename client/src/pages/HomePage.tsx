@@ -87,7 +87,6 @@ const HomePage = () => {
           <p className="eyebrow">{t('dashboard.localEyebrow')}</p>
           <h2 id="local-play-title" className="text-2xl font-bold">{t('dashboard.localTitle')}</h2>
           <Text as="p" type="large">{t('dashboard.localDescription')}</Text>
-          <span className="primary-action-card__label">{t('dashboard.startLocal')}</span>
         </div>
       </Link>
     </section>

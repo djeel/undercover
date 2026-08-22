@@ -10,8 +10,13 @@ export const undercoverTheme = defineTheme({
         body: { family: 'Manrope', fallbacks: 'system-ui, sans-serif' },
         heading: { family: 'Syne', fallbacks: 'system-ui, sans-serif', weight: 'bold', weights: { 1: 'bold', 2: 'bold', 3: 'bold' } },
     },
-    radius: { base: 4, multiplier: 2 },
+    components: {
+        'text-input': {
+            base: { paddingInline: '14px !important' },
+        },
+    },
     motion: { fast: 175, medium: 410, slow: 975, ratio: 0.75 },
+    radius: { base: 4, multiplier: 2 },
     tokens: {
         '--color-accent': ['#43544d', '#5a7c6c'],
         '--color-on-accent': '#ffffff',

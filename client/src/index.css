@@ -4,7 +4,7 @@
 @import '@astryxdesign/theme-neutral/theme.css';
 @import 'tailwindcss';
 
-@layer reset, astryx, utilities, app;
+@layer reset, astryx, utilities, app, astryx-theme;
 
 @layer app {
     :root {

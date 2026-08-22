@@ -38,10 +38,10 @@ const SetupPage = () => {
     const [startError, setStartError] = useState('');
     const composition = validateLocalComposition(players.length, config);
     const validationMessage = composition.valid ? '' : t(`setup.validation.${composition.reason}`);
-
     const add = () => {
-        if (!addPlayer(name)) {
-            setNameError(t('setup.invalidName'));
+        const result = addPlayer(name);
+        if (!result.ok) {
+            setNameError(t(`setup.${result.reason}`));
             return;
         }
         setName('');
@@ -74,8 +74,8 @@ const SetupPage = () => {
         </header>
 
         <Card>
-            <div className="space-y-4 p-5">
-                <TextInput label={t('setup.playerName')} value={name} onChange={setName} onEnter={add} width="100%" status={nameError ? { type: 'error', message: nameError } : undefined} />
+            <div className="setup-players-card">
+                <TextInput label={t('setup.playerName')} value={name} onChange={(value) => { setName(value); if (nameError) setNameError(''); }} onEnter={add} width="100%" status={nameError ? { type: 'error', message: nameError } : undefined} />
                 <Button variant="secondary" label={t('setup.addPlayer')} onClick={add} width="100%" />
                 <div className="divide-y divide-[var(--color-border)]">
                     {players.map((player) => <div key={player.id} className="flex items-center justify-between py-3">

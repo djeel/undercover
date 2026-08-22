@@ -30,3 +30,16 @@ describe('local store public API', () => {
     expect(store.resolveVote).toBeUndefined()
   })
 })
+
+describe('local store addPlayer', () => {
+  test('returns a reason when the name is blank', () => {
+    expect(useLocalGameStore.getState().addPlayer('   ')).toEqual({ ok: false, reason: 'invalidName' })
+    expect(useLocalGameStore.getState().players).toHaveLength(0)
+  })
+
+  test('returns nameTaken for an accent-insensitive duplicate', () => {
+    expect(useLocalGameStore.getState().addPlayer('René')).toEqual({ ok: true })
+    expect(useLocalGameStore.getState().addPlayer('RENE')).toEqual({ ok: false, reason: 'nameTaken' })
+    expect(useLocalGameStore.getState().players).toHaveLength(1)
+  })
+})

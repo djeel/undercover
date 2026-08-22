@@ -23,7 +23,7 @@ export interface LocalGameStore extends Omit<LocalGameState, 'phase'> {
     phase: LocalPhase;
     config: LocalGameConfig;
     currentRevealIndex: number;
-    addPlayer(name: string): boolean;
+    addPlayer(name: string): LocalAddPlayerResult;
     removePlayer(id: string): void;
     updateConfig(config: Partial<LocalGameConfig>): void;
     startGame(): boolean;
@@ -35,6 +35,8 @@ export interface LocalGameStore extends Omit<LocalGameState, 'phase'> {
     resetGame(): void;
     restartGame(): void;
 }
+
+export type LocalAddPlayerResult = { ok: true } | { ok: false; reason: 'invalidName' | 'nameTaken' };
 
 const initialConfig: LocalGameConfig = { civilianWord: '', undercoverWord: '', undercoverCount: 1, mrWhiteCount: 0, jesterCount: 0, bodyguardCount: 0 };
 const baseState = (): Pick<LocalGameStore, 'phase' | 'players' | 'votes' | 'round' | 'civilianWord' | 'protectionAvailable' | 'lastResolution' | 'winner' | 'pendingMrWhiteId' | 'currentRevealIndex'> => ({
@@ -62,9 +64,11 @@ export const useLocalGameStore = create<LocalGameStore>((set, get) => ({
     config: initialConfig,
     addPlayer: (name) => {
         const displayName = name.trim();
-        if (!displayName || get().players.some((player) => player.displayName.localeCompare(displayName, undefined, { sensitivity: 'accent' }) === 0)) return false;
+        if (!displayName) return { ok: false, reason: 'invalidName' };
+        const folded = displayName.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase();
+        if (get().players.some((player) => player.displayName.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase() === folded)) return { ok: false, reason: 'nameTaken' };
         set((state) => ({ players: [...state.players, { id: crypto.randomUUID(), displayName, role: 'civilian', word: null, alive: true }] }));
-        return true;
+        return { ok: true };
     },
     removePlayer: (id) => set((state) => ({ players: state.players.filter((player) => player.id !== id) })),
     updateConfig: (config) => set((state) => ({ config: { ...state.config, ...config } })),

@@ -61,6 +61,11 @@
         gap: 1.5rem;
         padding: 1.25rem;
     }
+    .setup-players-card {
+        display: grid;
+        gap: 1rem;
+        padding: 1.25rem;
+    }
     .reveal-page {
         display: grid;
         justify-items: center;

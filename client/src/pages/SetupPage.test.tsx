@@ -15,8 +15,8 @@ vi.mock('@astryxdesign/core/Button', () => ({
   Button: ({ label, icon, isDisabled, onClick, className }: { label: string; icon?: React.ReactNode; isDisabled?: boolean; onClick?: () => void; className?: string }) => <button aria-label={label} className={className} disabled={isDisabled} onClick={onClick}>{icon}</button>,
 }))
 vi.mock('@astryxdesign/core/Card', () => ({ Card: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }))
-vi.mock('@astryxdesign/core/TextInput', () => ({ TextInput: () => <input type="text" /> }))
 vi.mock('@astryxdesign/core/Text', () => ({ Text: ({ children }: { children: React.ReactNode }) => <p>{children}</p> }))
+vi.mock('@astryxdesign/core/TextInput', () => ({ TextInput: ({ onChange, status }: { onChange?: (value: string) => void; status?: { type: string; message: string } }) => <input aria-invalid={status?.type === 'error' || undefined} aria-describedby={status ? 'status-id' : undefined} type="text" onChange={(event) => onChange?.(event.target.value)} /> }))
 vi.mock('lucide-react', () => ({ Minus: () => null, Plus: () => null, Trash2: () => null }))
 
 import SetupPage from './SetupPage'
@@ -76,5 +76,44 @@ describe('SetupPage role counters', () => {
     await act(async () => { button(label('increaseRole', 'jesterCount')).click() })
     expect(useLocalGameStore.getState().config.jesterCount).toBe(1)
     expect(button(label('increaseRole', 'mrWhiteCount')).disabled).toBe(true)
+  })
+})
+
+describe('SetupPage player name error', () => {
+  let container: HTMLDivElement
+  let root: Root
+
+  afterEach(async () => {
+    await act(async () => { root?.unmount() })
+    container?.remove()
+    useLocalGameStore.getState().resetGame()
+  })
+  test('shows the unique-name message and clears it while typing', async () => {
+    useLocalGameStore.setState({
+      phase: 'setup',
+      players: [{ id: 'existing', displayName: 'Ada', role: 'civilian' as const, word: null, alive: true }],
+      config: { civilianWord: '', undercoverWord: '', undercoverCount: 1, mrWhiteCount: 0, jesterCount: 0, bodyguardCount: 0 },
+    })
+    container = document.createElement('div')
+    document.body.append(container)
+    root = createRoot(container)
+    await act(async () => { root.render(<SetupPage />) })
+
+    const input = container.querySelector('input') as HTMLInputElement
+    const setInput = (value: string) => {
+        const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set
+        setter?.call(input, value)
+        input.dispatchEvent(new Event('input', { bubbles: true }))
+    }
+    await act(async () => { setInput('ada') })
+    const addButton = [...container.querySelectorAll('button')].find((element) => element.getAttribute('aria-label') === 'setup.addPlayer') as HTMLButtonElement
+    await act(async () => { addButton.click() })
+
+    expect(input.getAttribute('aria-invalid')).toBe('true')
+    expect(input.getAttribute('aria-describedby')).toBe('status-id')
+
+    await act(async () => { setInput('ada ') })
+    expect(input.getAttribute('aria-invalid')).toBeNull()
+    expect(input.getAttribute('aria-describedby')).toBeNull()
   })
 })
